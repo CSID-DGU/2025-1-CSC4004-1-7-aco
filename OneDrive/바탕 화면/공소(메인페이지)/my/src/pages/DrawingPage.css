@@ -1,0 +1,113 @@
+.drawing-page {
+    padding: 20px;
+    height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.drawing-container {
+    display: flex;
+    gap: 20px;
+    height: 100%;
+}
+
+.calendar-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.drawing-section {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calendar {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.drawing-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.drawing-buttons button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.drawing-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+}
+
+.canvas-container {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-buttons button:first-child {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal-buttons button:nth-child(2) {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-buttons button:last-child {
+    background-color: #6c757d;
+    color: white;
+}
+
+.modal-buttons button:hover {
+    opacity: 0.9;
+}
