@@ -3,6 +3,7 @@ import { Stage, Layer, Line } from 'react-konva';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './DrawingPage.css';
+import Navigation from "../components/Navigation";
 
 const DrawingPage = () => {
     const [lines, setLines] = useState([]);
@@ -57,6 +58,7 @@ const DrawingPage = () => {
 
     return (
         <div className="drawing-page">
+            <Navigation />
             <div className="drawing-container">
                 <div className="calendar-section">
                     <Calendar
