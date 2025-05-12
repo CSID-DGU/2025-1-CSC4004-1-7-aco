@@ -1,6 +1,6 @@
-package com.example.blog.Repository;
+package com.oss.maeumnaru.medical.repository;
 
-import com.example.blog.Entity.MedicalEntity;
+import com.oss.maeumnaru.medical.entity.MedicalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

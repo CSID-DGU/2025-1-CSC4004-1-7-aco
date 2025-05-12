@@ -1,7 +1,6 @@
-package com.example.blog.Repository;
-
-import com.example.blog.Entity.DiaryAnalysisEntity;
-import com.example.blog.Entity.DiaryEntity;
+package com.oss.maeumnaru.diary.repostiory;
+import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
+import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

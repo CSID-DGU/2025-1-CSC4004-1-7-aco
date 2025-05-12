@@ -1,8 +1,9 @@
-package com.example.blog.Entity;
+package com.oss.maeumnaru.diary.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.oss.maeumnaru.diary.entity.DiaryEntity;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity

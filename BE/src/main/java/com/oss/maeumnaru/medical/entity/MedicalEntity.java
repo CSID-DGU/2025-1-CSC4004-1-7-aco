@@ -1,8 +1,9 @@
-package com.example.blog.Entity;
+package com.oss.maeumnaru.medical.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.oss.maeumnaru.user.entity.DoctorEntity;
+import com.oss.maeumnaru.user.entity.PatientEntity;
 import java.util.Date;
 
 @Entity

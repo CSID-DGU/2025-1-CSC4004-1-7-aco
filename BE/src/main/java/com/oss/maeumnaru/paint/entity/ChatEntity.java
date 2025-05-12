@@ -1,8 +1,8 @@
-package com.example.blog.Entity;
+package com.oss.maeumnaru.paint.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.oss.maeumnaru.paint.entity.PaintEntity;
 import java.util.Date;
 
 @Entity
@@ -24,7 +24,6 @@ public class ChatEntity {
     @Enumerated(EnumType.STRING)
     private WriterType writerType;
 
-    private int paintId;
     private String comment;
 
     public enum WriterType {

@@ -1,8 +1,12 @@
-package com.example.blog.Entity;
+package com.oss.maeumnaru.diary.entity;
 
+import com.oss.maeumnaru.paint.entity.PaintEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.oss.maeumnaru.diary.entity.DiaryEntity;
+import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
+import com.oss.maeumnaru.user.entity.PatientEntity;
+import com.oss.maeumnaru.user.entity.MemberEntity;
 import java.util.Date;
 
 @Entity
@@ -29,9 +33,9 @@ public class DiaryEntity {
 
     private String patientCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patientCode")
-    private PatientEntity patient;
+    @ManyToOne
+    @JoinColumn(name = "paint_id")
+    private PaintEntity paint;
 
     @OneToOne
     @JoinColumn(name = "member_id")  // 외래 키 설정

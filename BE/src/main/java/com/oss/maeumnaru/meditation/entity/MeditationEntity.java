@@ -1,4 +1,4 @@
-package com.example.blog.Entity;
+package com.oss.maeumnaru.meditation.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

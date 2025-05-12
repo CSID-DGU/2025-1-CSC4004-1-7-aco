@@ -1,6 +1,6 @@
-package com.example.blog.Repository;
+package com.oss.maeumnaru.user.repository;
 
-import com.example.blog.Entity.DoctorEntity;
+import com.oss.maeumnaru.user.entity.DoctorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DoctorRepository extends JpaRepository<DoctorEntity, String> {

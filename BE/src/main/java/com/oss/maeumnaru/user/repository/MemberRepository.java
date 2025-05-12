@@ -1,6 +1,6 @@
-package com.example.blog.Repository;
+package com.oss.maeumnaru.user.repository;
 
-import com.example.blog.Entity.MemberEntity;
+import com.oss.maeumnaru.user.entity.MemberEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,5 +13,5 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Long> {
     Optional<MemberEntity> findByEmail(String email);
 
     // 멤버 ID로 멤버 찾기
-    Optional<MemberEntity> findByMemberId(String memberId);
+    Optional<MemberEntity> findByMemberId(Long memberId);
 }

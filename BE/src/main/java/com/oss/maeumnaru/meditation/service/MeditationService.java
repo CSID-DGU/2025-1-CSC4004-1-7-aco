@@ -1,7 +1,7 @@
-package com.example.blog.Service;
+package com.oss.maeumnaru.meditation.service;
 
-import com.example.blog.Entity.MeditationEntity;
-import com.example.blog.Repository.MeditationRepository;
+import com.oss.maeumnaru.meditation.entity.MeditationEntity;
+import com.oss.maeumnaru.meditation.repository.MeditationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

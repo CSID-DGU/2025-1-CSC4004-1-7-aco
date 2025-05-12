@@ -1,4 +1,4 @@
-package com.oss.maeumnaru.global.config;
-
-public class JwtExceptionFilter {
-}
+//package com.oss.maeumnaru.global.config;
+//
+//public class JwtExceptionFilter {
+//}

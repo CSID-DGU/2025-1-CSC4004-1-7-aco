@@ -1,6 +1,10 @@
-package com.example.blog.repository;
+package com.oss.maeumnaru.diary.repostiory;
 
+import com.oss.maeumnaru.paint.entity.ChatEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
