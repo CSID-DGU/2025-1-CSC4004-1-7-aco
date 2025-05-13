@@ -10,10 +10,10 @@ function App() {
         <Route path="/" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
       </Routes>
-      <div>
+      {/* <div>
         <Link to={"/"}>Signin</Link>
         <Link to={"/signup"}>Signup</Link>
-      </div>
+      </div> */}
     </div>
   );
 }

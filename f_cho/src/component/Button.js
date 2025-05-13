@@ -1,8 +1,13 @@
 import "./Button.css";
 
-const Button = ({ text, onClick }) => {
+const Button = ({ text, onClick, disabled }) => {
+    const classNames = [
+        "Button",
+        disabled ? "Button_disabled" : ""
+    ].join(" ");
+
     return (
-        <button className="Button" onClick={onClick}>
+        <button className={classNames} onClick={onClick} disabled={disabled}>
             {text}
         </button>
     );
