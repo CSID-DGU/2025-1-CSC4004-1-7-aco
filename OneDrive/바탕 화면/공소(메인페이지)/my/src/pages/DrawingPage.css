@@ -81,7 +81,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -89,49 +89,47 @@
 }
 
 .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 600px;
+    background: #FFFFFF;
+    padding: 30px;
+    border-radius: 20px;
+    width: 600px;
+    max-width: 90%;
+}
+
+.modal-content h2 {
+    font-family: 'Plus Jakarta Sans';
+    font-weight: 600;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .canvas-container {
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    width: 100%;
+    height: 500px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 10px;
-    margin-top: 20px;
 }
 
 .modal-buttons button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border: 1px solid #000000;
+    border-radius: 100px;
+    background: #FFFFFF;
+    font-family: 'Roboto';
+    font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.modal-buttons button:first-child {
-    background-color: #dc3545;
-    color: white;
-}
-
-.modal-buttons button:nth-child(2) {
-    background-color: #28a745;
-    color: white;
-}
-
-.modal-buttons button:last-child {
-    background-color: #6c757d;
-    color: white;
 }
 
 .modal-buttons button:hover {
-    opacity: 0.9;
+    background: #f5f5f5;
 }

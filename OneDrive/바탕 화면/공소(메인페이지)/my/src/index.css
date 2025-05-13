@@ -123,6 +123,12 @@ body {
     border-radius: 8px;
 }
 
+.calendar-cell.blue {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    border-radius: 8px;
+}
+
 /* 메모장 컨테이너 */
 .diary-editor-container {
     background: #F7F6FB;
