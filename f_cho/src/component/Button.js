@@ -1,8 +1,9 @@
 import "./Button.css";
 
-const Button = ({ text, onClick, disabled }) => {
+const Button = ({ text, onClick, disabled, size = "default" }) => {
     const classNames = [
         "Button",
+        `Button_${size}`,
         disabled ? "Button_disabled" : ""
     ].join(" ");
 

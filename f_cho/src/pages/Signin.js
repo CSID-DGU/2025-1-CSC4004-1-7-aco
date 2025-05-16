@@ -21,7 +21,7 @@ const Signin = () => {
                     정신 건강 케어 플랫폼
                 </div>
                 <div className="signin">
-                    Sign in to
+                    로그인
                 </div>
                 <div className='name'>
                     마음나루

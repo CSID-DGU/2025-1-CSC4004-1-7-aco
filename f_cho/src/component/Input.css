@@ -1,0 +1,40 @@
+.inputBlock {
+    margin-top: 10px;
+}
+
+.inputLabel {
+    font-size: 14px;
+}
+
+.inputWrap {
+    display: flex;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 8px;
+    background-color: white;
+    border: 1px solid #ADADAD;
+}
+
+.inputWrap:focus-within {
+    border: 1px solid #2b9cef;
+}
+
+.inputField {
+    outline: none;
+    border: none;
+    height: 12px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.inputField::placeholder {
+    color: #dadada;
+}
+
+.inputBlock.short .inputField {
+    width: 180px;
+}
+
+.inputBlock.long .inputField {
+    width: 100%;
+}
