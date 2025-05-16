@@ -1,12 +1,10 @@
+// DiaryEntity.java
 package com.oss.maeumnaru.diary.entity;
 
 import com.oss.maeumnaru.paint.entity.PaintEntity;
+import com.oss.maeumnaru.user.entity.MemberEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import com.oss.maeumnaru.diary.entity.DiaryEntity;
-import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
-import com.oss.maeumnaru.user.entity.PatientEntity;
-import com.oss.maeumnaru.user.entity.MemberEntity;
 import java.util.Date;
 
 @Entity
@@ -17,7 +15,6 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class DiaryEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long diaryId;
@@ -38,6 +35,6 @@ public class DiaryEntity {
     private PaintEntity paint;
 
     @OneToOne
-    @JoinColumn(name = "member_id")  // 외래 키 설정
-    private MemberEntity member;  // member 테이블의 id를 참조하는 외래 키
+    @JoinColumn(name = "member_id")
+    private MemberEntity member;
 }

@@ -1,13 +1,13 @@
+// DiaryAnalysisEntity.java
 package com.oss.maeumnaru.diary.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
-@Table(name = "diaryAnalysis")
+@Table(name = "diary_analysis")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +19,10 @@ public class DiaryAnalysisEntity {
     private Long diaryAnalysisId;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date diaryReultDate;
+    private Date analysisCreatedDate;
+
+    @Temporal(TemporalType.DATE)
+    private Date analysisTargetDate;
 
     private long emotionRate;
 
@@ -29,8 +32,14 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    @OneToOne
-    @JoinColumn(name = "diaryId")
-    private DiaryEntity diary;
+    private String resultFilePath;
 
+    private String resultFileName;
+
+    @Lob
+    private String diarySourceIdsJson; // [1,2,3] 형식으로 저장
+
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private com.oss.maeumnaru.user.entity.MemberEntity member;
 }
