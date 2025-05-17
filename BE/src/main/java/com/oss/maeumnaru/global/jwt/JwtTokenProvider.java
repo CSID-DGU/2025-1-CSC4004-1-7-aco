@@ -1,4 +1,3 @@
-// JwtTokenProvider.java
 package com.oss.maeumnaru.global.jwt;
 
 import com.oss.maeumnaru.global.redis.TokenRedis;
@@ -8,7 +7,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,8 +45,11 @@ public class JwtTokenProvider {
     }
 
     public TokenResponseDTO generateToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().stream()
+        String authorities = authentication.getAuthorities().isEmpty()
+                ? "ROLE_USER"
+                : authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
+                .filter(a -> !a.isBlank())
                 .collect(Collectors.joining(","));
 
         String accessToken = Jwts.builder()
@@ -75,7 +76,15 @@ public class JwtTokenProvider {
         cookie.setPath("/");
         cookie.setDomain(cookieResponseDomain);
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(60 * 30);
+        cookie.setMaxAge(60 * 30); // 30분
+        response.addCookie(cookie);
+    }
+
+    public void clearCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("accessToken", null);
+        cookie.setPath("/");
+        cookie.setDomain(cookieResponseDomain);
+        cookie.setMaxAge(0); // 즉시 만료
         response.addCookie(cookie);
     }
 
@@ -95,18 +104,25 @@ public class JwtTokenProvider {
 
     public UsernamePasswordAuthenticationToken createAuthenticationFromToken(String token, String memberId) {
         Authentication authentication = getAuthentication(token, memberId);
-        return new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), null, authentication.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(
+                authentication.getPrincipal(),
+                null,
+                authentication.getAuthorities()
+        );
     }
 
     public Authentication getAuthentication(String token, String memberId) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
-        String subject = claims.get("type", String.class) != null && claims.get("type", String.class).equals("refresh")
-                ? memberId
-                : claims.getSubject();
+        String subject = "refresh".equals(claims.get("type", String.class)) ? memberId : claims.getSubject();
 
-        Collection<? extends GrantedAuthority> authorities = Arrays
-                .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        String authString = claims.get(AUTHORITIES_KEY, String.class);
+        if (authString == null || authString.isBlank()) {
+            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+        }
+
+        Collection<? extends GrantedAuthority> authorities = Arrays.stream(authString.split(","))
+                .filter(a -> !a.isBlank())
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
@@ -119,10 +135,11 @@ public class JwtTokenProvider {
                 .orElseThrow(() -> new RuntimeException("다시 로그인 해 주세요."));
 
         String refreshToken = tokenRedis.getRefreshToken();
-        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken);
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken); // 유효성 검사
 
         String memberId = tokenRedis.getId();
         Authentication authentication = createAuthenticationFromToken(refreshToken, memberId);
+
         String newAccessToken = generateAccessToken(memberId, authentication.getAuthorities());
 
         saveCookie(response, newAccessToken);
@@ -133,7 +150,10 @@ public class JwtTokenProvider {
     }
 
     private String generateAccessToken(String subject, Collection<? extends GrantedAuthority> authorities) {
-        String auth = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        String auth = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> !a.isBlank())
+                .collect(Collectors.joining(","));
 
         return Jwts.builder()
                 .setSubject(subject)
