@@ -44,4 +44,3 @@ public class MemberEntity {
     @JoinColumn(name = "member_id")
     private DoctorEntity doctor;
 }
-
