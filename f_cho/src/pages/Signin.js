@@ -3,6 +3,9 @@ import Button from "../component/Button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { mockLogin } from '../api/authMock';
+// import { login } from '../api/auth'; // 나중에 백엔드 연결할 때 이걸로 교체
+
 const Signin = () => {
     const [email, setEmail] = useState();
     const [pw, setPw] = useState();
@@ -11,6 +14,18 @@ const Signin = () => {
     const handleSetPw = (e) => { setPw(e.target.value); };
 
     const navigate = useNavigate();
+
+
+    const handleLogin = async () => {
+        try {
+            const res = await mockLogin({ email, password: pw });
+            alert(`${res.data.user.name}님, 환영합니다!`);
+            navigate("/"); // 성공 시 이동할 페이지
+        } catch (err) {
+            alert(err.data.message);
+        }
+    };
+
 
     return (
         <div className='signinPage'>
@@ -43,7 +58,8 @@ const Signin = () => {
 
                 {/* 이메일과 비밀번호 미작성 시 버튼 비활성화 */}
                 <div className='btn'>
-                    <Button text={"로그인"} disabled={!email || !pw} />
+                    {/* <Button text={"로그인"} onClick={() => navigate("/")} disabled={!email || !pw} /> */}
+                    <Button text={"로그인"} onClick={handleLogin} disabled={!email || !pw} />
                 </div>
 
                 {/* 계정 없으면 회원가입 페이지로 이동 */}
