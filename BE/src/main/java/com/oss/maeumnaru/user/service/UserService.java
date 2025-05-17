@@ -8,6 +8,7 @@ import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
 import com.oss.maeumnaru.user.entity.*;
 import com.oss.maeumnaru.user.repository.*;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -62,25 +63,17 @@ public class UserService {
 
                 doctorRepository.save(doctor);
 
-            } if (dto.memberType() == MemberEntity.MemberType.DOCTOR) {
-                System.out.println("DOCTOR 처리 중");
-                DoctorEntity doctor = DoctorEntity.builder()
-                        .licenseNumber(dto.licenseNumber())   // ✅ 필수
-                        .hospital(dto.hospital())
-                        .certificationPath(dto.certificationPath())
-                        .member(member)
-                        .build();
-                doctorRepository.save(doctor);
             } else {
                 System.out.println("PATIENT 처리 중");
+
                 PatientEntity patient = PatientEntity.builder()
                         .patientCode(dto.patientCode())
                         .patientHospital(dto.hospital())
                         .member(member)
                         .build();
+
                 patientRepository.save(patient);
             }
-
 
             System.out.println("회원가입 처리 완료");
 
@@ -90,7 +83,7 @@ public class UserService {
         }
     }
 
-    public TokenResponseDTO login(LoginRequestDTO dto) {
+    public TokenResponseDTO login(LoginRequestDTO dto, HttpServletResponse response) {
         try {
             System.out.println("로그인 요청: " + dto.email());
 
@@ -103,7 +96,7 @@ public class UserService {
                 throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
             }
 
-            // 인증 객체 수동 생성
+            // 인증 객체 생성
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     member.getEmail(), member.getPassword()
             );
@@ -124,14 +117,14 @@ public class UserService {
 
             System.out.println("Redis 저장 완료");
 
+            // 쿠키 저장
+            jwtTokenProvider.saveCookie(response, tokenInfo.accessToken());
+
             return tokenInfo;
 
         } catch (Exception e) {
-            e.printStackTrace(); // 콘솔에 전체 에러 스택 출력
+            e.printStackTrace();
             throw new RuntimeException("로그인 중 오류 발생: " + e.getMessage());
         }
     }
-
-
-
 }
