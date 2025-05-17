@@ -3,6 +3,7 @@ package com.oss.maeumnaru.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import com.oss.maeumnaru.medical.entity.MedicalEntity;
+
 @Entity
 @Table(name = "patient")
 @Getter
@@ -13,14 +14,13 @@ import com.oss.maeumnaru.medical.entity.MedicalEntity;
 public class PatientEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String patientCode;
+    private String patientCode; // 직접 받는 값
 
     private String patientHospital;
-
     private String memberType;
+
     @OneToOne
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private MemberEntity member;
 
     @OneToOne
