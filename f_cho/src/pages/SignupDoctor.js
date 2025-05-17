@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 const SignupDoctor = () => {
     const navigate = useNavigate();
 
+    const [role, setRole] = useState("");
     const [state, setState] = useState({
         name: "",
         gender: "",
@@ -46,11 +47,21 @@ const SignupDoctor = () => {
 
                     <div className="row">
                         <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"} value={state.name} onChange={handleOnChange} />
-                        <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"} value={state.id} onChange={handleOnChange} />
+
+                        <div className="gender-row-dp">
+                            <div className="gender-label-dp">성별</div>
+                            <div className="gender-buttons-dp">
+                                <Button text={"남자"} type={"man"} onClick={() => setRole("man")} isSelected={role === "man"} />
+                                <Button text={"여자"} type={"woman"} onClick={() => setRole("woman")} isSelected={role === "woman"} />
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <Input name="phone" label={"연락처"} placeholder={"연락처를 입력해주세요"} value={state.phone} onChange={handleOnChange} />
+
                     <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"} value={state.email} onChange={handleOnChange} />
+                    <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"} value={state.id} onChange={handleOnChange} />
                     <Input name="pw" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"} value={state.pw} onChange={handleOnChange} />
                 </div>
 
@@ -58,7 +69,7 @@ const SignupDoctor = () => {
 
                     <div className="row">
                         <Input name="birth" label={"생년월일"} placeholder={"YYYY-MM-DD"} value={state.birth} onChange={handleOnChange} />
-                        <Input name="gender" label={"성별"} placeholder={"남 또는 여"} value={state.gender} onChange={handleOnChange} />
+                        <Input name="phone" label={"연락처"} placeholder={"연락처를 입력해주세요"} value={state.phone} onChange={handleOnChange} />
                     </div>
 
                     <Input name="address" label={"주소"} placeholder={"주소를 입력해주세요"} value={state.address} onChange={handleOnChange} />

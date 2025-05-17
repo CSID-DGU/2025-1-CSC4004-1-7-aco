@@ -58,12 +58,29 @@
     gap: 20px;
 
     margin-bottom: 15px;
-    
+
 }
 
 .row {
     display: flex;
     gap: 20px;
+}
+
+.gender-row-dp {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-top: 10px;
+}
+
+.gender-label-dp {
+    font-size: 14px;
+}
+
+.gender-buttons-dp {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
 }
 
 .signupbtndt {

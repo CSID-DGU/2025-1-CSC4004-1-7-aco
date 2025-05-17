@@ -27,3 +27,29 @@
 .Button_large {
     max-width: 800px;
 }
+
+.Button_man {
+    max-width: 80px;
+    height: 47.6px;
+    background-color: white;
+    border: 1px solid #ADADAD;
+    color: #2b2b2b;
+}
+
+.Button_woman {
+    max-width: 80px;
+    height: 47.6px;
+    background-color: white;
+    border: 1px solid #ADADAD;
+    color: #2b2b2b;
+}
+
+.Button_selected.Button_man {
+    background-color: #2fabed;
+    color: white;
+}
+
+.Button_selected.Button_woman {
+    background-color: #fc83ce;
+    color: white;
+}
