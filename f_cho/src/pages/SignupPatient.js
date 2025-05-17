@@ -32,7 +32,7 @@ const SignupPatient = () => {
 
             <div className="titlepp">
                 <div className="welcomepp">
-                    의사선생님, 환영합니다!
+                    소중한 환자분, 환영합니다!
                 </div>
 
                 <div className="signuppp">
@@ -41,8 +41,8 @@ const SignupPatient = () => {
             </div>
 
 
-            <div className="formgrid">
-                <div className="formcolumn">
+            <div className="formgridpp">
+                <div className="formcolumnpp">
 
                     <div className="row">
                         <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"} value={state.name} onChange={handleOnChange} />
@@ -54,7 +54,7 @@ const SignupPatient = () => {
                     <Input name="pw" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"} value={state.pw} onChange={handleOnChange} />
                 </div>
 
-                <div className="formcolumn">
+                <div className="formcolumnpp">
 
                     <div className="row">
                         <Input name="birth" label={"생년월일"} placeholder={"YYYY-MM-DD"} value={state.birth} onChange={handleOnChange} />
@@ -62,7 +62,7 @@ const SignupPatient = () => {
                     </div>
 
                     <Input name="address" label={"주소"} placeholder={"주소를 입력해주세요"} value={state.address} onChange={handleOnChange} />
-                    <Input name="hospital" label={"근무 병원"} placeholder={"근무 병원을 입력해주세요"} value={state.hospital} onChange={handleOnChange} />
+                    <Input name="hospital" label={"병원"} placeholder={"진료받는 병원을 입력해주세요"} value={state.hospital} onChange={handleOnChange} />
                     <Input name="workspace" label={"직장"} placeholder={"직장을 입력해주세요"} value={state.workspace} onChange={handleOnChange}/>
                 </div>
             </div>

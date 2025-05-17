@@ -41,8 +41,8 @@ const SignupDoctor = () => {
             </div>
 
 
-            <div className="formgrid">
-                <div className="formcolumn">
+            <div className="formgriddp">
+                <div className="formcolumndp">
 
                     <div className="row">
                         <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"} value={state.name} onChange={handleOnChange} />
@@ -54,7 +54,7 @@ const SignupDoctor = () => {
                     <Input name="pw" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"} value={state.pw} onChange={handleOnChange} />
                 </div>
 
-                <div className="formcolumn">
+                <div className="formcolumndp">
 
                     <div className="row">
                         <Input name="birth" label={"생년월일"} placeholder={"YYYY-MM-DD"} value={state.birth} onChange={handleOnChange} />
