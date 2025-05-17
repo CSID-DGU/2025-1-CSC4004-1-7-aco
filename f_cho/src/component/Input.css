@@ -24,11 +24,10 @@
     border: none;
     height: 12px;
     font-size: 14px;
-    font-weight: 400;
 }
 
 .inputField::placeholder {
-    color: #dadada;
+    color: #adb5bd;;
 }
 
 .inputBlock.short .inputField {

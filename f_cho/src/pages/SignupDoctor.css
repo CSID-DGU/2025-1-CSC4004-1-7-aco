@@ -83,30 +83,49 @@
     margin-top: 8px;
 }
 
-.file-upload-wrapper {
+.input-wrapper {
     display: flex;
     flex-direction: column;
-    margin-top: 1rem;
+    margin-top: 10px;
+    margin-bottom: 1.2rem;
+}
+
+.input-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 9px;
+    color: #212529;
 }
 
 .file-upload-label {
-    border: 1px solid #dee2e6;
-    background-color: #f8f9fa;
+    border: 1px solid #ADADAD;
+    background-color: white;
     color: #adb5bd;
     padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-size: 0.95rem;
+    border-radius: 5px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    position: relative;
+    justify-content: space-between;
+    transition: border-color 0.2s;
 }
 
-.file-upload-label::after {
-    content: "🔗";
-    font-size: 1rem;
-    color: #adb5bd;
+.file-upload-label:hover {
+    border-color: #ced4da;
+}
+
+.placeholder-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+}
+
+.upload-icon {
+    width: 18px;
+    height: 18px;
+    margin-left: 0.8rem;
 }
 
 .signupbtndt {

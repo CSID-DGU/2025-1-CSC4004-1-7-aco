@@ -69,13 +69,17 @@ const SignupDoctor = () => {
                     <Input name="address" label={"주소"} placeholder={"주소를 입력해주세요"} value={state.address} onChange={handleOnChange} />
                     <Input name="hospital" label={"근무 병원"} placeholder={"근무 병원을 입력해주세요"} value={state.hospital} onChange={handleOnChange} />
 
-                    <div className="file-upload-wrapper">
+
+                    <div className="input-wrapper">
+                        <label className="input-label">파일 선택</label>
                         <label htmlFor="certificate-upload" className="file-upload-label">
-                            {state.certification ? state.certification.name : "파일 선택"}
+                            <span className="placeholder-text">{state.certification ? state.certification.name : "의사 면허증을 첨부해주세요"}</span>
                             <input type="file" id="certificate-upload" name="certificate" onChange={handleFileChange} hidden />
+                            <img src="/attach_icon.svg" alt="첨부 아이콘" className="upload-icon" />
                         </label>
                     </div>
-                    
+
+
                 </div>
             </div>
 
