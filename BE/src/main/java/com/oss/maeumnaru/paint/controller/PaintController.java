@@ -15,12 +15,6 @@ public class PaintController {
 
     private final PaintService paintService;
 
-    // 전체 그림 조회
-    @GetMapping
-    public ResponseEntity<List<PaintEntity>> getAllPaints() {
-        return ResponseEntity.ok(paintService.getAllPaints());
-    }
-
     // ID로 그림 조회
     @GetMapping("/{id}")
     public ResponseEntity<PaintEntity> getPaintById(@PathVariable Long id) {

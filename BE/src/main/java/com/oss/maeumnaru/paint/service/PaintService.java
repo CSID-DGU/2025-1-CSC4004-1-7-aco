@@ -17,11 +17,6 @@ public class PaintService {
     //의존성 주입 대상인 paintRepository를 선언, DB 작업을 위한 인터페이스임
     private final PaintRepository paintRepository;
 
-    // 전체 그림 조회 - 모든 그림 데이터를 조회하여 리스트로 반환 <제네릭: 무슨 타입의 데이터인지>
-    public List<PaintEntity> getAllPaints() {
-        return paintRepository.findAll();
-    }
-
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
     public Optional<PaintEntity> getPaintById(Long id) {
         return paintRepository.findById(id);
