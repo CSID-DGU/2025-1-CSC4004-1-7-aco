@@ -1,3 +1,19 @@
+package com.oss.maeumnaru.medical.service;
+
+import com.oss.maeumnaru.medical.entity.MedicalEntity;
+import com.oss.maeumnaru.medical.repository.MedicalRepository;
+import com.oss.maeumnaru.user.entity.DoctorEntity;
+import com.oss.maeumnaru.user.entity.PatientEntity;
+import com.oss.maeumnaru.user.repository.DoctorRepository;
+import com.oss.maeumnaru.user.repository.PatientRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+
+import java.util.Date;
+import java.util.List;
+
+
 @Service
 @RequiredArgsConstructor
 public class MedicalService {
@@ -16,7 +32,7 @@ public class MedicalService {
     }
 
     // ✅ 환자 추가 (중복 방지 로직 추가)
-    public MedicalEntity addPatientToDoctor(String licenseNumber, Long patientCode) {
+    public MedicalEntity addPatientToDoctor(String licenseNumber, String patientCode) {
         DoctorEntity doctor = doctorRepository.findById(licenseNumber)
                 .orElseThrow(() -> new IllegalArgumentException("의사를 찾을 수 없습니다."));
         PatientEntity patient = patientRepository.findById(patientCode)

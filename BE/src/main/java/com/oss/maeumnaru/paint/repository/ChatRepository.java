@@ -1,4 +1,4 @@
-package com.oss.maeumnaru.diary.repostiory;
+package com.oss.maeumnaru.paint.repository;
 
 import com.oss.maeumnaru.paint.entity.ChatEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

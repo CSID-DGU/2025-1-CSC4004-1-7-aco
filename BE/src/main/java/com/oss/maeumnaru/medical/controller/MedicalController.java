@@ -25,7 +25,7 @@ public class MedicalController {
     @PostMapping("/doctor/{licenseNumber}/patient/{patientCode}")
     public ResponseEntity<MedicalEntity> addPatient(
             @PathVariable String licenseNumber,
-            @PathVariable Long patientCode) {
+            @PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.addPatientToDoctor(licenseNumber, patientCode));
     }
 

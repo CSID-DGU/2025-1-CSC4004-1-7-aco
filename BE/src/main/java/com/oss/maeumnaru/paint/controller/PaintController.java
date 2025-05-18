@@ -5,6 +5,8 @@ import com.oss.maeumnaru.paint.service.PaintService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.oss.maeumnaru.paint.entity.ChatEntity;
+import com.oss.maeumnaru.paint.repository.ChatRepository;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class PaintController {
 
     private final PaintService paintService;
+    private final ChatRepository chatRepository;
 
     // ID로 그림 조회
     @GetMapping("/{id}")
@@ -44,5 +47,10 @@ public class PaintController {
     public ResponseEntity<Void> deletePaint(@PathVariable Long id) {
         paintService.deletePaint(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/chats")
+    public ResponseEntity<List<ChatEntity>> getChatsByPaintId(@PathVariable Long id) {
+        return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id));
     }
 }
