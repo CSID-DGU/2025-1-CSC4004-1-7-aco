@@ -19,6 +19,7 @@ const MypageDoctor = () => {
         address: "",
         hospital: "",
         certification: "",
+        code: "",
     });
 
     const handleOnChange = (e) => {
@@ -41,21 +42,22 @@ const MypageDoctor = () => {
                     <div className="formcolumn">
 
                         <div className="row">
-                            <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"} value={state.name} onChange={handleOnChange} />
-                            <Input name="gender" label={"성별"} placeholder={"남 또는 여"} value={state.gender} onChange={handleOnChange} />
+                            <Input name="name" label={"이름"} value={state.name} onChange={handleOnChange} />
+                            <Input name="gender" label={"성별"} value={state.gender} onChange={handleOnChange} />
 
                         </div>
 
-                        <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"} value={state.id} onChange={handleOnChange} />
+                        <Input name="id" label={"아이디"} value={state.id} onChange={handleOnChange} />
 
-                        <Input name="pw" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"} value={state.pw} onChange={handleOnChange} />
+                        <Input name="pw" label={"비밀번호"} value={state.pw} onChange={handleOnChange} />
+                        <Input name="code" label={"의사 코드"} vlaue={state.code} onChange={handleOnChange} />
                     </div>
 
                     <div className="formcolumn">
 
-                        <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"} value={state.email} onChange={handleOnChange} />
-                        <Input name="address" label={"주소"} placeholder={"주소를 입력해주세요"} value={state.address} onChange={handleOnChange} />
-                        <Input name="hospital" label={"근무 병원"} placeholder={"근무 병원을 입력해주세요"} value={state.hospital} onChange={handleOnChange} />
+                        <Input name="email" label={"이메일"} value={state.email} onChange={handleOnChange} />
+                        <Input name="address" label={"주소"} value={state.address} onChange={handleOnChange} />
+                        <Input name="hospital" label={"근무 병원"} value={state.hospital} onChange={handleOnChange} />
 
                         <div className="editdoctor">
                             <Button text={"수정하기"} />

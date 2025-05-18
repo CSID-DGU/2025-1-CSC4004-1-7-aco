@@ -80,7 +80,6 @@ const SignupDoctor = () => {
                         </label>
                     </div>
 
-
                 </div>
             </div>
 

@@ -41,21 +41,21 @@ const MypagePatient = () => {
                     <div className="formcolumn">
 
                         <div className="row">
-                            <Input name="name" label={"이름"} placeholder={"이름"} value={state.name} onChange={handleOnChange} />
-                            <Input name="gender" label={"성별"} placeholder={"남 또는 여"} value={state.gender} onChange={handleOnChange} />
+                            <Input name="name" label={"이름"} value={state.name} onChange={handleOnChange} />
+                            <Input name="gender" label={"성별"} value={state.gender} onChange={handleOnChange} />
 
                         </div>
 
-                        <Input name="id" label={"아이디"} placeholder={"아이디"} value={state.id} onChange={handleOnChange} />
-                        <Input name="pw" label={"비밀번호"} placeholder={"비밀번호"} value={state.pw} onChange={handleOnChange} />
-                        <Input name="email" label={"이메일"} placeholder={"이메일"} value={state.email} onChange={handleOnChange} />
+                        <Input name="id" label={"아이디"} value={state.id} onChange={handleOnChange} />
+                        <Input name="pw" label={"비밀번호"} value={state.pw} onChange={handleOnChange} />
+                        <Input name="email" label={"이메일"} value={state.email} onChange={handleOnChange} />
                     </div>
 
                     <div className="formcolumn">
 
-                        <Input name="hospital" label={"병원"} placeholder={"진료받는 병원"} value={state.hospital} onChange={handleOnChange} />
-                        <Input name="address" label={"주소"} placeholder={"주소"} value={state.address} onChange={handleOnChange} />
-                        <Input name="worksapce" label={"직장"} placeholder={"직장"} value={state.hospital} onChange={handleOnChange} />
+                        <Input name="hospital" label={"병원"} value={state.hospital} onChange={handleOnChange} />
+                        <Input name="address" label={"주소"} value={state.address} onChange={handleOnChange} />
+                        <Input name="worksapce" label={"직장"} value={state.hospital} onChange={handleOnChange} />
 
                         <div className="editpatient">
                             <Button text={"수정하기"} />
