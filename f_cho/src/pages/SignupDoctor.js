@@ -1,6 +1,7 @@
 import "./SignupDoctor.css";
 import Button from "../component/Button";
 import Input from "../component/Input";
+import { ReactComponent as attach_file } from "../img/attach_file.svg";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -75,7 +76,7 @@ const SignupDoctor = () => {
                         <label htmlFor="certificate-upload" className="file-upload-label">
                             <span className="placeholder-text">{state.certification ? state.certification.name : "의사 면허증을 첨부해주세요"}</span>
                             <input type="file" id="certificate-upload" name="certificate" onChange={handleFileChange} hidden />
-                            <img src="/attach_icon.svg" alt="첨부 아이콘" className="upload-icon" />
+                            <attach_file className="upload-icon" />
                         </label>
                     </div>
 
