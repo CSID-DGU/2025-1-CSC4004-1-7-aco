@@ -212,8 +212,17 @@ export default function MainPage() {
 
     // 달력 날짜 클릭 시 해당 날짜 일기 불러오기
     const handleSelectDate = (date) => {
-        setSelectedDate(date);
-        setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+        const newDate = new Date(date);
+        const dateKey = getKSTDateKey(newDate);
+        
+        // 상태 업데이트를 한 번에 처리
+        setSelectedDate(newDate);
+        setCurrentMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
+        
+        // 디버깅 로그
+        console.log('Selected date:', newDate);
+        console.log('Date key:', dateKey);
+        console.log('Diary exists:', !!diaryMap[dateKey]);
     };
 
     // 월 변경 핸들러

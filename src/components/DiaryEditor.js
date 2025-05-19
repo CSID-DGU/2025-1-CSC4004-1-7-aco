@@ -3,12 +3,12 @@ import styled from "styled-components";
 
 const Tablet = styled.div`
   position: relative;
-  width: ${({ modal }) => (modal ? "820px" : "100%")};
-  height: ${({ modal }) => (modal ? "500px" : "100%")};
+  width: ${({ $modal }) => ($modal ? "820px" : "100%")};
+  height: ${({ $modal }) => ($modal ? "500px" : "100%")};
   background: #f7f3fa;
   border-radius: 24px;
   box-shadow: none;
-  padding: ${({ modal }) => (modal ? "48px 40px 48px 40px" : "40px 32px 80px 32px")};
+  padding: ${({ $modal }) => ($modal ? "48px 40px 48px 40px" : "40px 32px 80px 32px")};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -131,7 +131,7 @@ function DiaryEditor({
   showDelete = false,
 }) {
   return (
-    <Tablet modal={modal}>
+    <Tablet $modal={modal}>
       <TopBar>
         <HomeDot />
         <MagnifierBtn onClick={onExpand} title="확대">

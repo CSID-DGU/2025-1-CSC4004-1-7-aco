@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, ResponsiveContainer } from 'recharts';
-import { startOfWeek, endOfWeek, format, isSameWeek, addDays } from 'date-fns';
-import ConfirmModal from '../components/ConfirmModal';
+import { startOfWeek, format, addDays } from 'date-fns';
+import DoctorCalendar from '../components/DoctorCalendar';
+import Navigation from '../components/Navigation';
 
 // 더미 환자 데이터
 const dummyPatients = [
@@ -26,14 +26,13 @@ const dummyDiaryStats = [
   { date: '2025-04-22', emotion: 0.3, meal: 2, outing: 0, diary: '일요일은 휴식.' },
 ];
 
-const weekDates = dummyDiaryStats.map(d => d.date.slice(5));
-
 const DoctorPageContainer = styled.div`
   width: 100vw;
   min-height: 100vh;
   background: #fff;
   display: flex;
   flex-direction: row;
+  margin-top: 80px;
   @media (max-width: 900px) {
     flex-direction: column;
   }
@@ -138,13 +137,27 @@ const RightPanel = styled.div`
   }
 `;
 
-const CalendarBox = styled.div`
-  width: 420px;
+const CalendarAndChartsRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-start;
   margin-bottom: 32px;
-  @media (max-width: 900px) {
-    width: 100%;
-    margin: 0 auto 24px auto;
-  }
+`;
+
+const ChartCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const ChartBox = styled.div`
+  width: 420px;
+  height: 200px;
+  background: #f7f7fa;
+  border-radius: 16px;
+  padding: 16px 12px 0 12px;
+  margin-bottom: 0;
 `;
 
 const SectionTitle = styled.div`
@@ -153,43 +166,29 @@ const SectionTitle = styled.div`
   margin: 24px 0 12px 0;
 `;
 
-const ChartBox = styled.div`
+const SummaryCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+const OutingTable = styled.table`
   width: 100%;
-  max-width: 600px;
-  height: 220px;
+  border-collapse: collapse;
+  margin: 24px 0 18px 0;
   background: #f7f7fa;
   border-radius: 16px;
-  padding: 16px 12px 0 12px;
-  margin-bottom: 18px;
-  @media (max-width: 600px) {
-    max-width: 98vw;
-    height: 180px;
-    padding: 8px 2px 0 2px;
+  overflow: hidden;
+  font-size: 15px;
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px 0;
+    text-align: center;
   }
-`;
-
-const SummaryRow = styled.div`
-  display: flex;
-  gap: 32px;
-  margin-bottom: 12px;
-  @media (max-width: 600px) {
-    flex-direction: column;
-    gap: 8px;
+  th {
+    background: #e3f1fc;
+    font-weight: 700;
   }
-`;
-
-const PlusBtn = styled.button`
-  background: #fff;
-  border: 2px solid #222;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 22px;
-  font-weight: 700;
-  margin-left: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover { background: #e3f1fc; }
 `;
 
 const DiaryModalBg = styled.div`
@@ -240,30 +239,29 @@ const DiaryModalClose = styled.button`
   cursor: pointer;
 `;
 
-const SummaryCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-`;
+// KST 변환 함수
+function toKST(date) {
+  return new Date(date.getTime() + (9 * 60 * 60 * 1000));
+}
 
-const OutingTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin: 24px 0 18px 0;
-  background: #f7f7fa;
-  border-radius: 16px;
-  overflow: hidden;
-  font-size: 15px;
-  th, td {
-    border: 1px solid #ddd;
-    padding: 10px 0;
-    text-align: center;
-  }
-  th {
-    background: #e3f1fc;
-    font-weight: 700;
-  }
-`;
+// 감정 그래프의 점(dot) 클릭 시 모달 띄우는 커스텀 Dot 컴포넌트
+const CustomDot = (props) => {
+  const { cx, cy, payload, onClick } = props;
+  // emotion이 null이면 dot을 그리지 않음
+  if (payload.emotion === null || payload.emotion === undefined) return null;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={7}
+      stroke="#0089ED"
+      fill="#fff"
+      strokeWidth={2}
+      style={{ cursor: 'pointer', pointerEvents: 'all' }}
+      onClick={() => onClick(payload)}
+    />
+  );
+};
 
 export default function DoctorPage() {
   const [patients] = useState(dummyPatients);
@@ -271,16 +269,28 @@ export default function DoctorPage() {
   const [selectedPatient, setSelectedPatient] = useState(dummyPatients[0]);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
   const [modalDiary, setModalDiary] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date('2025-04-15'));
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [patientEmotionMap, setPatientEmotionMap] = useState({});
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [addPatientId, setAddPatientId] = useState('');
+
+  // selectedDate를 항상 KST로 변환해서 사용
+  const kstSelectedDate = toKST(selectedDate);
 
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
 
-  // 선택된 주의 데이터만 필터링 (7일 모두 표시, 월요일~일요일)
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-  // 한 주의 7일 날짜 배열 생성
+  // 월 변경 핸들러
+  const handleChangeMonth = (date) => {
+    setCurrentMonth(date);
+  };
+
+  // 주간 시작일 계산 (KST 기준)
+  const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
+  // 한 주의 7일 날짜 배열 생성 (KST 기준)
   const weekDatesArr = [];
   for (let i = 0; i < 7; i++) {
     const d = addDays(weekStart, i);
@@ -291,14 +301,13 @@ export default function DoctorPage() {
     const found = dummyDiaryStats.find(d => d.date === dateStr);
     return found || { date: dateStr, emotion: null, meal: null, outing: null, diary: null };
   });
-  const dayStat = dummyDiaryStats.find(d => d.date === format(selectedDate, 'yyyy-MM-dd'));
+  // 선택된 날짜의 데이터도 KST 기준으로 찾기
+  const dayStat = dummyDiaryStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
 
   // 그래프에서 일자 클릭 시 모달 오픈
   const handleChartClick = (data) => {
-    if (data && data.diary) {
-      setModalDiary(data);
-      setShowDiaryModal(true);
-    }
+    setModalDiary(data);
+    setShowDiaryModal(true);
   };
 
   // 환자 검색 필터링
@@ -321,114 +330,194 @@ export default function DoctorPage() {
     }
   }
 
+  // 환자의 감정 데이터를 가져오는 함수 (실제 구현 필요)
+  useEffect(() => {
+    // TODO: API 호출하여 환자의 감정 데이터 가져오기
+    const fetchPatientEmotions = async () => {
+      try {
+        // 임시 데이터
+        const mockData = {
+          '2024-03-20': 'happy',
+          '2024-03-21': 'sad',
+          '2024-03-22': 'normal',
+          '2024-03-23': 'very_happy',
+          '2024-03-24': 'slightly_sad',
+          '2024-03-25': 'very_sad',
+        };
+        setPatientEmotionMap(mockData);
+      } catch (error) {
+        console.error('Failed to fetch patient emotions:', error);
+      }
+    };
+
+    fetchPatientEmotions();
+  }, []);
+
+  const handleMyPage = () => {
+    alert('마이페이지로 이동');
+  };
+  const handleLogout = () => {
+    alert('로그아웃');
+  };
+
+  // 환자 추가 모달 확인
+  const handleAddPatientConfirm = () => {
+    alert(`검색어: ${addPatientId}`);
+    setShowAddPatientModal(false);
+    setAddPatientId('');
+  };
+  // 환자 추가 모달 취소
+  const handleAddPatientCancel = () => {
+    setShowAddPatientModal(false);
+    setAddPatientId('');
+  };
+
   return (
-    <DoctorPageContainer>
-      <LeftPanel>
-        <SearchRow>
-          <SearchInput
-            placeholder="환자 검색하기"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <AddBtn title="환자 추가">+</AddBtn>
-        </SearchRow>
-        {filteredPatients.map(p => (
-          <PatientCard
-            key={p.id}
-            onClick={() => setSelectedPatient(p)}
-            style={{ borderColor: selectedPatient.id === p.id ? '#0089ED' : '#222' }}
-          >
-            <PatientInfo>
-              <PatientName>{p.name}</PatientName>
-              <PatientDesc>{p.info}</PatientDesc>
-            </PatientInfo>
-            <PatientAvatar>👤</PatientAvatar>
-          </PatientCard>
-        ))}
-      </LeftPanel>
-      <RightPanel>
-        <CalendarBox>
-          <div style={{ fontWeight: 900, fontSize: 24, marginBottom: 8 }}>주 선택</div>
-          <Calendar
-            onChange={handleDateChange}
-            value={selectedDate}
-            locale="ko-KR"
-            showNeighboringMonth={true}
-            tileClassName={({ date }) => isSameWeek(date, selectedDate, { weekStartsOn: 1 }) ? 'react-calendar__tile--active' : ''}
-          />
-        </CalendarBox>
-        <SummaryCol>
-          <SectionTitle>감정 수치 (주간)</SectionTitle>
-          <ChartBox>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                <YAxis domain={[-1, 1]} ticks={[-1, -0.5, 0, 0.5, 1]} />
-                <Tooltip formatter={(v) => v === null ? '-' : v} />
-                <Line
-                  type="monotone"
-                  dataKey="emotion"
-                  stroke="#0089ED"
-                  strokeWidth={3}
-                  dot={{ r: 7, stroke: '#0089ED', fill: '#fff', strokeWidth: 2, cursor: 'pointer' }}
-                  activeDot={{ r: 10 }}
-                  connectNulls={false}
-                  onClick={handleChartClick}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartBox>
-          <SectionTitle>식사 횟수 (일별)</SectionTitle>
-          <ChartBox>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                <YAxis allowDecimals={false} />
-                <Tooltip formatter={(v) => v === null ? '-' : v} />
-                <Bar dataKey="meal" fill="#00C49F" radius={[8,8,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartBox>
-          <SectionTitle>외출 여부 (요일별)</SectionTitle>
-          <OutingTable>
-            <thead>
-              <tr>
-                {weekStats.map((d, idx) => (
-                  <th key={d.date}>{['월','화','수','목','금','토','일'][idx]}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {weekStats.map((d, idx) => (
-                  <td key={d.date}>{d.outing === 1 ? 'O' : d.outing === 0 ? 'X' : '-'}</td>
-                ))}
-              </tr>
-            </tbody>
-          </OutingTable>
-          <SectionTitle>그림으로 분석된 내용 (일별)</SectionTitle>
-          <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
-            {dayStat && dayStat.diary ? (
-              <>
-                <b>{format(selectedDate, 'yyyy-MM-dd')}</b> : {dayStat.diary}
-              </>
-            ) : (
-              <>해당 일자의 그림 분석 데이터가 없습니다.</>
-            )}
-          </div>
-        </SummaryCol>
-      </RightPanel>
+    <>
+      <Navigation
+        userName="홍길동"
+        showWelcome={true}
+        showMyPage={true}
+        showLogout={true}
+        onMyPage={handleMyPage}
+        onLogout={handleLogout}
+      />
+      <DoctorPageContainer>
+        <LeftPanel>
+          <SearchRow>
+            <SearchInput
+              placeholder="환자 검색하기"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            <AddBtn title="환자 추가" onClick={() => setShowAddPatientModal(true)}>+</AddBtn>
+          </SearchRow>
+          {filteredPatients.map(p => (
+            <PatientCard
+              key={p.id}
+              onClick={() => setSelectedPatient(p)}
+              style={{ borderColor: selectedPatient.id === p.id ? '#0089ED' : '#222' }}
+            >
+              <PatientInfo>
+                <PatientName>{p.name}</PatientName>
+                <PatientDesc>{p.info}</PatientDesc>
+              </PatientInfo>
+              <PatientAvatar>👤</PatientAvatar>
+            </PatientCard>
+          ))}
+        </LeftPanel>
+        <RightPanel>
+          <CalendarAndChartsRow>
+            <DoctorCalendar
+              selectedDate={selectedDate}
+              onSelectDate={handleDateChange}
+              patientEmotionMap={patientEmotionMap}
+              currentMonth={currentMonth}
+              onChangeMonth={handleChangeMonth}
+            />
+            <ChartCol>
+              <div>
+                <SectionTitle>감정 수치 (주간)</SectionTitle>
+                <ChartBox>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
+                      <YAxis domain={[-1, 1]} ticks={[-1, -0.5, 0, 0.5, 1]} />
+                      <Tooltip formatter={(v) => v === null ? '-' : v} />
+                      <Line
+                        type="monotone"
+                        dataKey="emotion"
+                        stroke="#0089ED"
+                        strokeWidth={3}
+                        dot={<CustomDot onClick={handleChartClick} />}
+                        activeDot={<CustomDot onClick={handleChartClick} />}
+                        connectNulls={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartBox>
+              </div>
+              <div>
+                <SectionTitle>식사 횟수 (일별)</SectionTitle>
+                <ChartBox>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip formatter={(v) => v === null ? '-' : v} />
+                      <Bar dataKey="meal" fill="#00C49F" radius={[8,8,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartBox>
+              </div>
+            </ChartCol>
+          </CalendarAndChartsRow>
+          <SummaryCol>
+            <SectionTitle>외출 여부 (요일별)</SectionTitle>
+            <OutingTable>
+              <thead>
+                <tr>
+                  {weekStats.map((d, idx) => (
+                    <th key={d.date}>{['월','화','수','목','금','토','일'][idx]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {weekStats.map((d, idx) => (
+                    <td key={d.date}>{d.outing === 1 ? 'O' : d.outing === 0 ? 'X' : '-'}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </OutingTable>
+            <SectionTitle>그림으로 분석된 내용 (일별)</SectionTitle>
+            <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
+              {dayStat && dayStat.diary ? (
+                <>
+                  <b>{format(selectedDate, 'yyyy-MM-dd')}</b> : {dayStat.diary}
+                </>
+              ) : (
+                <>해당 일자의 그림 분석 데이터가 없습니다.</>
+              )}
+            </div>
+          </SummaryCol>
+        </RightPanel>
+      </DoctorPageContainer>
       {showDiaryModal && (
         <DiaryModalBg>
           <DiaryModalBox>
             <DiaryModalTitle>일기 기록 ({modalDiary.date})</DiaryModalTitle>
-            <DiaryModalText>{modalDiary.diary}</DiaryModalText>
+            <DiaryModalText>
+              {modalDiary && modalDiary.diary
+                ? modalDiary.diary
+                : "일기 기록이 없습니다."}
+            </DiaryModalText>
             <DiaryModalClose onClick={() => setShowDiaryModal(false)}>닫기</DiaryModalClose>
           </DiaryModalBox>
         </DiaryModalBg>
       )}
-    </DoctorPageContainer>
+      {showAddPatientModal && (
+        <DiaryModalBg>
+          <DiaryModalBox>
+            <DiaryModalTitle>환자 추가</DiaryModalTitle>
+            <div style={{ width: '100%', marginBottom: 16 }}>
+              <input
+                type="text"
+                placeholder="환자 고유 ID 입력"
+                value={addPatientId}
+                onChange={e => setAddPatientId(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1.5px solid #bbb', fontSize: 15 }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <DiaryModalClose onClick={handleAddPatientConfirm}>확인</DiaryModalClose>
+              <DiaryModalClose style={{ background: '#bbb' }} onClick={handleAddPatientCancel}>취소</DiaryModalClose>
+            </div>
+          </DiaryModalBox>
+        </DiaryModalBg>
+      )}
+    </>
   );
 } 

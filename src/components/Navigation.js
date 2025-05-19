@@ -38,7 +38,7 @@ const Left = styled.div`
     font-size: 20px;
     font-weight: 700;
     margin-left: 12px;
-    color: #fff;
+    color: ${props => props.$color};
     @media (max-width: 700px) {
         font-size: 15px;
         margin-left: 4px;
@@ -68,11 +68,11 @@ const Center = styled.ul`
 const NavItem = styled.li`
     a {
         color: #fff;
-        background: ${({ active }) => (active ? "#0089ED" : "none")};
+        background: ${({ $active }) => ($active ? "#0089ED" : "none")};
         border-radius: 20px;
         padding: 8px 24px;
         text-decoration: none;
-        font-weight: ${({ active }) => (active ? 700 : 500)};
+        font-weight: ${({ $active }) => ($active ? 700 : 500)};
         font-size: 16px;
         transition: background 0.2s, color 0.2s;
         @media (max-width: 900px) {
@@ -134,18 +134,22 @@ const Navigation = () => {
         // 실제 로그아웃 로직 추가 가능
     };
 
+    // 경로에 따라 폰트 색상 결정
+    const isDoctorPage = location.pathname.startsWith('/doctor');
+    const leftColor = isDoctorPage ? '#000' : '#fff';
+
     return (
         <NavBar>
             <NavInner>
-                <Left>OOO님 환영합니다!</Left>
+                <Left $color={leftColor}>OOO님 환영합니다!</Left>
                 <Center>
-                    <NavItem active={location.pathname === '/'}>
+                    <NavItem $active={location.pathname === '/'}>
                         <Link to="/">일기 작성</Link>
                     </NavItem>
-                    <NavItem active={location.pathname === '/drawing'}>
+                    <NavItem $active={location.pathname === '/drawing'}>
                         <Link to="/drawing">그림 그리기</Link>
                     </NavItem>
-                    <NavItem active={location.pathname === '/meditation'}>
+                    <NavItem $active={location.pathname === '/meditation'}>
                         <Link to="/meditation">명상</Link>
                     </NavItem>
                 </Center>
