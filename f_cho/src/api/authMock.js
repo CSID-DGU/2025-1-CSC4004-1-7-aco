@@ -1,26 +1,47 @@
-// src/api/authMock.js
+const mockUsers = [
+    {
+        email: "test@test.com",
+        password: "1234",
+        name: "fender",
+    },
+    {
+        email: "abc@gmail.com",
+        password: "aaaa",
+        name: "dame",
+    },
+    {
+        email: "qwer@naver.com",
+        password: "qwer",
+        name: "fodera",
+    },
+]
 
-export const mockLogin = ({ email, password }) => {
-    const mockUsers = [
-        { email: 'test@naver.com', password: '1234', name: '홍길동' },
-        { email: 'doctor@hospital.com', password: 'abcd', name: '의사쌤' },
-        { email: 'hong@example.com', password: '1234', name: '홍'}
-    ];
+export const login = (email, password) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+        const user = mockUsers.find(
+            (u) => u.email===email && u.password === password
+        );
 
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-
-    if (user) {
-        return Promise.resolve({
-            status: 200,
+      if (user) {
+        resolve({
+          data: {
+            token: "mock-token-1234",
+            user: {
+              name: user.name,
+              email: user.email,
+            },
+          },
+        });
+      } else {
+        reject({
+          response: {
             data: {
-                message: '로그인 성공',
-                user: { name: user.name, email: user.email }
-            }
+              message: "이메일 또는 비밀번호가 틀렸습니다.",
+            },
+          },
         });
-    } else {
-        return Promise.reject({
-            status: 401,
-            data: { message: '이메일 또는 비밀번호가 올바르지 않습니다' }
-        });
-    }
+      }
+    }, 500); // 응답 지연 시뮬레이션
+  });
 };

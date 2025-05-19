@@ -3,29 +3,57 @@ import Button from "../component/Button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { mockLogin } from '../api/authMock';
-// import { login } from '../api/auth'; // 나중에 백엔드 연결할 때 이걸로 교체
+// import { login } from '../api/login';
+import { login } from '../api/authMock';
 
 const Signin = () => {
-    const [email, setEmail] = useState();
-    const [pw, setPw] = useState();
-
-    const handleSetEmail = (e) => { setEmail(e.target.value); };
-    const handleSetPw = (e) => { setPw(e.target.value); };
-
     const navigate = useNavigate();
 
+    const [errMsg, setErrMsg] = useState();
+    const [state, setState] = useState({
+        email: "",
+        password: "",
+    })
 
-    const handleLogin = async () => {
-        try {
-            const res = await mockLogin({ email, password: pw });
-            alert(`${res.data.user.name}님, 환영합니다!`);
-            navigate("/"); // 성공 시 이동할 페이지
-        } catch (err) {
-            alert(err.data.message);
-        }
+    const handleOnChange = (e) => {
+        setState({
+            ...state,
+            [e.target.name]: e.target.value,
+        });
     };
 
+    const isEmailValid=(email)=>{
+        const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    const handleLogin = async () => {
+        setErrMsg("");
+
+        // 이메일 형식이 올바른지 먼저 확인
+        if(!isEmailValid(state.email)) {
+            setErrMsg("올바른 이메일 형식이 아닙니다.");
+            return;
+        }
+
+        try {
+            const response = await login(state.email, state.password);
+
+            // 로그인 성공하면 토큰 저장
+            localStorage.setItem("token", response.data.token);
+            navigate("/");
+        }
+
+        catch (error) {
+            if (error.response?.data?.message) {
+                setErrMsg(error.response.data.message);
+            }
+
+            else {
+                setErrMsg("로그인 중 오류가 발생했습니다.");
+            }
+        }
+    }
 
     return (
         <div className='signinPage'>
@@ -48,18 +76,22 @@ const Signin = () => {
 
                 <div className="inputTitle id">이메일</div>
                 <div className="inputWrap">
-                    <input value={email} onChange={handleSetEmail} className="input" placeholder="이메일을 입력해주세요"></input>
+                    <input name="email" value={state.email} onChange={handleOnChange} className="input" placeholder="이메일을 입력해주세요"></input>
                 </div>
 
                 <div className="inputTitle pw">비밀번호</div>
                 <div className="inputWrap">
-                    <input value={pw} onChange={handleSetPw} className="input" placeholder="비밀번호를 입력해주세요"></input>
+                    <input name="password" value={state.password} onChange={handleOnChange} className="input" type="password" autoComplete='off' placeholder="비밀번호를 입력해주세요"></input>
+                </div>
+
+                {/* 에러 메세지 출력 */}
+                <div className='signinError'>
+                    {errMsg && <span>{errMsg}</span>}
                 </div>
 
                 {/* 이메일과 비밀번호 미작성 시 버튼 비활성화 */}
                 <div className='btn'>
-                    {/* <Button text={"로그인"} onClick={() => navigate("/")} disabled={!email || !pw} /> */}
-                    <Button text={"로그인"} onClick={handleLogin} disabled={!email || !pw} />
+                    <Button text={"로그인"} onClick={handleLogin} disabled={!state.email || !state.password} />
                 </div>
 
                 {/* 계정 없으면 회원가입 페이지로 이동 */}
