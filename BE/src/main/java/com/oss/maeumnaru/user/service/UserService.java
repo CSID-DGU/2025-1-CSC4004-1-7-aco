@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,19 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRedisRepository tokenRedisRepository;
+
+    private String generatePatientCode(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            code.append(characters.charAt(random.nextInt(characters.length())));
+        }
+
+        return code.toString();
+    }
+
 
     public void signUp(SignUpRequestDTO dto) {
         try {
@@ -65,9 +79,14 @@ public class UserService {
 
             } else {
                 System.out.println("PATIENT 처리 중");
+                String randomPatientCode;
+                do {
+                    randomPatientCode = generatePatientCode(6);
+                } while (patientRepository.existsById(randomPatientCode));
+
 
                 PatientEntity patient = PatientEntity.builder()
-                        .patientCode(dto.patientCode())
+                        .patientCode(randomPatientCode)
                         .patientHospital(dto.hospital())
                         .member(member)
                         .build();

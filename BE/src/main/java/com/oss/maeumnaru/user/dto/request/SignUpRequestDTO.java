@@ -17,6 +17,6 @@ public record SignUpRequestDTO(
         @NotNull MemberEntity.MemberType memberType,
         String hospital,               // 공통: 병원명
         String certificationPath,      // 의사 전용 필드
-        String licenseNumber,           // 의사 전용: 면허번호
-        String patientCode             // 환자 전용 필드
+        String licenseNumber           // 의사 전용: 면허번호
+        //String patientCode             // 환자 전용 필드
 ) {}
