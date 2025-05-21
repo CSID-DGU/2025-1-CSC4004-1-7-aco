@@ -49,6 +49,7 @@ public class UserService {
             MemberEntity member = MemberEntity.builder()
                     .name(dto.name())
                     .email(dto.email())
+                    .loginId(dto.loginId())
                     .password(dto.password())
                     .phone(dto.phone())
                     .birthDate(dto.birthDate())
@@ -104,10 +105,11 @@ public class UserService {
 
     public TokenResponseDTO login(LoginRequestDTO dto, HttpServletResponse response) {
         try {
-            System.out.println("로그인 요청: " + dto.email());
+            System.out.println("로그인 요청: " + dto.loginId());
 
-            MemberEntity member = memberRepository.findByEmail(dto.email())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 회원이 존재하지 않습니다."));
+            MemberEntity member = memberRepository.findByLoginId(dto.loginId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 회원이 존재하지 않습니다."));
+
 
             System.out.println("DB에서 찾은 사용자: " + member.getEmail());
 

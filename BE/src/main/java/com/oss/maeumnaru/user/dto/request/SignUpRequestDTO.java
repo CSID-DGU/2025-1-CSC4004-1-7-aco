@@ -9,6 +9,7 @@ import java.util.Date;
 
 public record SignUpRequestDTO(
         @NotBlank String name,
+        @NotBlank String loginId,
         @NotBlank String password,
         @NotBlank @Email String email,
         @NotBlank String phone,
