@@ -8,6 +8,8 @@ import com.oss.maeumnaru.user.repository.DoctorRepository;
 import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.oss.maeumnaru.medical.dto.MedicalResponseDto;
+
 
 
 import java.util.Date;
@@ -23,13 +25,22 @@ public class MedicalService {
     private final PatientRepository patientRepository;
 
     // ✅ 특정 의사의 환자 목록 조회
-    public List<MedicalEntity> getPatientsByDoctor(String licenseNumber) {
+    public List<MedicalResponseDto> getPatientsByDoctor(String licenseNumber) {
         DoctorEntity doctor = doctorRepository.findById(licenseNumber)
                 .orElseThrow(() -> new IllegalArgumentException("의사를 찾을 수 없습니다."));
 
-        // Repository에서 doctor로 직접 조회
-        return medicalRepository.findByDoctor(doctor);
+        return medicalRepository.findByDoctor(doctor).stream()
+                .map(medical -> {
+                    PatientEntity patient = medical.getPatient();
+                    return MedicalResponseDto.builder()
+                            .name(patient.getMember().getName())
+                            .birthDate(patient.getMember().getBirthDate())
+                            .patientCode(patient.getPatientCode())
+                            .build();
+                })
+                .toList();
     }
+
 
     // ✅ 환자 추가 (중복 방지 로직 추가)
     public MedicalEntity addPatientToDoctor(String licenseNumber, String patientCode) {

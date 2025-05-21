@@ -5,6 +5,7 @@ import com.oss.maeumnaru.medical.service.MedicalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.oss.maeumnaru.medical.dto.MedicalResponseDto;
 
 import java.util.List;
 
@@ -17,9 +18,10 @@ public class MedicalController {
 
     // 특정 의사의 환자 목록 조회
     @GetMapping("/doctor/{licenseNumber}/patients")
-    public ResponseEntity<List<MedicalEntity>> getPatientsByDoctor(@PathVariable String licenseNumber) {
+    public ResponseEntity<List<MedicalResponseDto>> getPatientsByDoctor(@PathVariable String licenseNumber) {
         return ResponseEntity.ok(medicalService.getPatientsByDoctor(licenseNumber));
     }
+
 
     // 환자 추가
     @PostMapping("/doctor/{licenseNumber}/patient/{patientCode}")
