@@ -29,4 +29,8 @@ public class PaintEntity {
 
     private Long patientCode;
 
+    @Column(nullable = false)
+    private String title;
+
+
 }
