@@ -28,7 +28,7 @@ public class PaintService {
     private final PaintRepository paintRepository;
     private final ChatRepository chatRepository;
     private final OpenAiService openAiService;
-    private final S3Uploader s3Uploader;
+    //private final S3Uploader s3Uploader;
 
 
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
@@ -38,7 +38,8 @@ public class PaintService {
 
     // 그림 임시 저장
     public PaintEntity savePaintDraft(MultipartFile file, PaintRequestDto dto) throws IOException {
-        String fileUrl = s3Uploader.uploadImage(file, "paint");
+        //String fileUrl = s3Uploader.uploadImage(file, "paint");
+        String fileUrl = null; //추후 삭제!!
 
         PaintEntity paint = PaintEntity.builder()
                 .fileUrl(fileUrl)
@@ -60,7 +61,8 @@ public class PaintService {
         boolean hasChat = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id).size() > 0;
         if (hasChat) throw new IllegalStateException("이미 대화가 시작된 그림입니다.");
 
-        String fileUrl = s3Uploader.uploadImage(file, "paint");
+        //String fileUrl = s3Uploader.uploadImage(file, "paint");
+        String fileUrl = null;//추후 삭제!!
 
         paint.setFileUrl(fileUrl);
         paint.setWriterType(ChatEntity.WriterType.PATIENT);
@@ -93,6 +95,31 @@ public class PaintService {
                 .build());
     }
 
+    public String saveReplyAndGetNextQuestion(Long paintId, String patientReply) {
+        PaintEntity paint = paintRepository.findById(paintId)
+                .orElseThrow(() -> new RuntimeException("그림을 찾을 수 없습니다."));
+
+        // 1. 환자 응답 저장
+        chatRepository.save(ChatEntity.builder()
+                .paint(paint)
+                .writerType(ChatEntity.WriterType.PATIENT)
+                .chatDate(new Date())
+                .comment(patientReply)
+                .build());
+
+        // 2. GPT 질문 생성
+        String nextQuestion = openAiService.generateFollowUpQuestion(patientReply);
+
+        // 3. GPT 질문 저장
+        chatRepository.save(ChatEntity.builder()
+                .paint(paint)
+                .writerType(ChatEntity.WriterType.CHATBOT)
+                .chatDate(new Date())
+                .comment(nextQuestion)
+                .build());
+
+        return nextQuestion;
+    }
 
     // 그림 수정 - 특정 ID에 해당하는 그림을 수정하는 메서드
     public PaintEntity updatePaint(Long id, PaintEntity updatedPaint) {

@@ -70,6 +70,17 @@ public class PaintController {
         return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id));
     }
 
+    // 응답과 다음 질문
+    @PostMapping("/{id}/chat/reply")
+    public ResponseEntity<String> saveReplyAndGetNextQuestion(
+            @PathVariable Long id,
+            @RequestBody String patientReply) {
+
+        String nextQuestion = paintService.saveReplyAndGetNextQuestion(id, patientReply);
+        return ResponseEntity.ok(nextQuestion);
+    }
+
+
     //채팅 완료 -> 대화 전체 리스트 받음
     @PostMapping("/{id}/chat/complete")
     public ResponseEntity<Void> completeChat(
