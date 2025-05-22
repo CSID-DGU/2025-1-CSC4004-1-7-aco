@@ -5,26 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, R
 import { startOfWeek, format, addDays } from 'date-fns';
 import DoctorCalendar from '../components/DoctorCalendar';
 import Navigation from '../components/Navigation';
-
-// 더미 환자 데이터
-const dummyPatients = [
-  { id: 1, name: '환자 1', info: '성별, 나이, 병명, 상태, 치료 주차 등을 기록' },
-  { id: 2, name: '환자 2', info: '성별, 나이, 병명, 상태, 치료 주차 등을 기록' },
-  { id: 3, name: '환자 3', info: '성별, 나이, 병명, 상태, 치료 주차 등을 기록' },
-  { id: 4, name: '환자 4', info: '성별, 나이, 병명, 상태, 치료 주차 등을 기록' },
-];
-
-// 더미 감정/식사/외출 데이터 (1주일)
-const dummyDiaryStats = [
-  { date: '2025-04-15', emotion: 0.2, meal: 2, outing: 1, diary: '오늘은 기분이 괜찮았다.' },
-  { date: '2025-04-16', emotion: -0.5, meal: 1, outing: 0, diary: '조금 우울했다.' },
-  { date: '2025-04-17', emotion: 0.7, meal: 3, outing: 1, diary: '행복한 하루!' },
-  { date: '2025-04-18', emotion: 0.0, meal: 2, outing: 0, diary: '평범했다.' },
-  { date: '2025-04-19', emotion: null, meal: null, outing: null, diary: null }, // 일기 없음
-  { date: '2025-04-20', emotion: -0.2, meal: 1, outing: 1, diary: '조금 힘들었다.' },
-  { date: '2025-04-21', emotion: 0.4, meal: 2, outing: 1, diary: '좋은 하루였다.' },
-  { date: '2025-04-22', emotion: 0.3, meal: 2, outing: 0, diary: '일요일은 휴식.' },
-];
+import { doctorService } from '../services/doctorService';
 
 const DoctorPageContainer = styled.div`
   width: 100vw;
@@ -98,6 +79,32 @@ const PatientCard = styled.div`
   cursor: pointer;
   transition: box-shadow 0.2s;
   &:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  position: relative;
+`;
+
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  ${PatientCard}:hover & {
+    opacity: 1;
+  }
+  &:hover {
+    background: #cc0000;
+  }
 `;
 
 const PatientInfo = styled.div`
@@ -239,6 +246,39 @@ const DiaryModalClose = styled.button`
   cursor: pointer;
 `;
 
+const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #0089ED;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const LoadingText = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  color: #ff4444;
+  padding: 12px;
+  margin: 8px 0;
+  background: #fff5f5;
+  border-radius: 8px;
+  border: 1px solid #ffdddd;
+`;
+
 // KST 변환 함수
 function toKST(date) {
   return new Date(date.getTime() + (9 * 60 * 60 * 1000));
@@ -264,9 +304,9 @@ const CustomDot = (props) => {
 };
 
 export default function DoctorPage() {
-  const [patients] = useState(dummyPatients);
+  const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState(dummyPatients[0]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
   const [modalDiary, setModalDiary] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -274,6 +314,11 @@ export default function DoctorPage() {
   const [patientEmotionMap, setPatientEmotionMap] = useState({});
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [addPatientId, setAddPatientId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [weekStats, setWeekStats] = useState([]);
 
   // selectedDate를 항상 KST로 변환해서 사용
   const kstSelectedDate = toKST(selectedDate);
@@ -288,63 +333,69 @@ export default function DoctorPage() {
     setCurrentMonth(date);
   };
 
-  // 주간 시작일 계산 (KST 기준)
-  const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
-  // 한 주의 7일 날짜 배열 생성 (KST 기준)
-  const weekDatesArr = [];
-  for (let i = 0; i < 7; i++) {
-    const d = addDays(weekStart, i);
-    weekDatesArr.push(format(d, 'yyyy-MM-dd'));
-  }
-  // 각 날짜별로 데이터 매칭
-  const weekStats = weekDatesArr.map(dateStr => {
-    const found = dummyDiaryStats.find(d => d.date === dateStr);
-    return found || { date: dateStr, emotion: null, meal: null, outing: null, diary: null };
-  });
-  // 선택된 날짜의 데이터도 KST 기준으로 찾기
-  const dayStat = dummyDiaryStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
-
   // 그래프에서 일자 클릭 시 모달 오픈
   const handleChartClick = (data) => {
-    setModalDiary(data);
-    setShowDiaryModal(true);
+    if (data && data.diary) {
+      setModalDiary(data);
+      setShowDiaryModal(true);
+    }
   };
 
-  // 환자 검색 필터링
-  const filteredPatients = patients.filter(p =>
-    p.name.includes(search) || p.info.includes(search)
-  );
-
-  // 점선 데이터: null 구간의 앞뒤 값만 점선으로 연결
-  let dashedLineData = [];
-  for (let i = 1; i < weekStats.length - 1; i++) {
-    if (
-      weekStats[i].emotion === null &&
-      weekStats[i - 1].emotion !== null &&
-      weekStats[i + 1].emotion !== null
-    ) {
-      dashedLineData.push(
-        { ...weekStats[i - 1] },
-        { ...weekStats[i + 1] }
-      );
-    }
-  }
-
-  // 환자의 감정 데이터를 가져오는 함수 (실제 구현 필요)
+  // 주간 데이터 계산
   useEffect(() => {
-    // TODO: API 호출하여 환자의 감정 데이터 가져오기
+    // 주간 시작일 계산 (KST 기준)
+    const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
+    // 한 주의 7일 날짜 배열 생성 (KST 기준)
+    const weekDatesArr = [];
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(weekStart, i);
+      weekDatesArr.push(format(d, 'yyyy-MM-dd'));
+    }
+    // 각 날짜별로 데이터 매칭 (실제 API 연동 필요)
+    setWeekStats(weekDatesArr.map(dateStr => ({
+      date: dateStr,
+      emotion: null,
+      meal: null,
+      outing: null,
+      diary: null
+    })));
+  }, [kstSelectedDate]);
+
+  // 환자 목록 조회
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setLoading(true);
+        const data = await doctorService.getPatients('D001'); // 실제 라이센스 번호로 변경 필요
+        setPatients(data.map(patient => ({
+          id: patient.patientCode,
+          name: patient.name,
+          info: `생년월일: ${patient.birthDate}`
+        })));
+        if (data.length > 0) {
+          setSelectedPatient({
+            id: data[0].patientCode,
+            name: data[0].name,
+            info: `생년월일: ${data[0].birthDate}`
+          });
+        }
+      } catch (error) {
+        setError('환자 목록을 불러오는데 실패했습니다.');
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  // 환자의 감정 데이터를 가져오는 함수 (실제 API 연동 필요)
+  useEffect(() => {
     const fetchPatientEmotions = async () => {
       try {
-        // 임시 데이터
-        const mockData = {
-          '2024-03-20': 'happy',
-          '2024-03-21': 'sad',
-          '2024-03-22': 'normal',
-          '2024-03-23': 'very_happy',
-          '2024-03-24': 'slightly_sad',
-          '2024-03-25': 'very_sad',
-        };
-        setPatientEmotionMap(mockData);
+        // TODO: API 호출하여 환자의 감정 데이터 가져오기
+        setPatientEmotionMap({});
       } catch (error) {
         console.error('Failed to fetch patient emotions:', error);
       }
@@ -353,29 +404,81 @@ export default function DoctorPage() {
     fetchPatientEmotions();
   }, []);
 
-  const handleMyPage = () => {
-    alert('마이페이지로 이동');
-  };
-  const handleLogout = () => {
-    alert('로그아웃');
+  // 환자 삭제 핸들러
+  const handleDeletePatient = async (patientId, e) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
+    if (!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
+
+    try {
+      setDeleteLoading(true);
+      setDeleteError(null);
+      await doctorService.removePatient(patientId);
+      // 환자 목록 새로고침
+      const data = await doctorService.getPatients('D001');
+      setPatients(data.map(patient => ({
+        id: patient.patientCode,
+        name: patient.name,
+        info: `생년월일: ${patient.birthDate}`
+      })));
+      if (selectedPatient?.id === patientId) {
+        setSelectedPatient(null);
+      }
+    } catch (error) {
+      setDeleteError(error.response?.data?.message || '환자 삭제에 실패했습니다.');
+      console.error(error);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
-  // 환자 추가 모달 확인
-  const handleAddPatientConfirm = () => {
-    alert(`검색어: ${addPatientId}`);
-    setShowAddPatientModal(false);
-    setAddPatientId('');
+  // 환자 추가 핸들러
+  const handleAddPatientConfirm = async () => {
+    try {
+      setLoading(true);
+      await doctorService.addPatient('D001', addPatientId); // 실제 라이센스 번호로 변경 필요
+      // 환자 목록 새로고침
+      const data = await doctorService.getPatients('D001');
+      setPatients(data.map(patient => ({
+        id: patient.patientCode,
+        name: patient.name,
+        info: `생년월일: ${patient.birthDate}`
+      })));
+      setShowAddPatientModal(false);
+      setAddPatientId('');
+    } catch (error) {
+      setError('환자 등록에 실패했습니다.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
+
   // 환자 추가 모달 취소
   const handleAddPatientCancel = () => {
     setShowAddPatientModal(false);
     setAddPatientId('');
   };
 
+  const handleMyPage = () => {
+    alert('마이페이지로 이동');
+  };
+
+  const handleLogout = () => {
+    alert('로그아웃');
+  };
+
+  // 환자 검색 필터링
+  const filteredPatients = patients.filter(p =>
+    p.name.includes(search) || p.info.includes(search)
+  );
+
+  // 선택된 날짜의 데이터
+  const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
+
   return (
     <>
       <Navigation
-        userName="홍길동"
+        userName="김의사"
         showWelcome={true}
         showMyPage={true}
         showLogout={true}
@@ -392,19 +495,36 @@ export default function DoctorPage() {
             />
             <AddBtn title="환자 추가" onClick={() => setShowAddPatientModal(true)}>+</AddBtn>
           </SearchRow>
-          {filteredPatients.map(p => (
-            <PatientCard
-              key={p.id}
-              onClick={() => setSelectedPatient(p)}
-              style={{ borderColor: selectedPatient.id === p.id ? '#0089ED' : '#222' }}
-            >
-              <PatientInfo>
-                <PatientName>{p.name}</PatientName>
-                <PatientDesc>{p.info}</PatientDesc>
-              </PatientInfo>
-              <PatientAvatar>👤</PatientAvatar>
-            </PatientCard>
-          ))}
+          {loading ? (
+            <LoadingText>
+              <LoadingSpinner />
+              환자 목록을 불러오는 중...
+            </LoadingText>
+          ) : error ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : (
+            filteredPatients.map(p => (
+              <PatientCard
+                key={p.id}
+                onClick={() => setSelectedPatient(p)}
+                style={{ borderColor: selectedPatient?.id === p.id ? '#0089ED' : '#222' }}
+              >
+                <PatientInfo>
+                  <PatientName>{p.name}</PatientName>
+                  <PatientDesc>{p.info}</PatientDesc>
+                </PatientInfo>
+                <PatientAvatar>👤</PatientAvatar>
+                <DeleteButton
+                  onClick={(e) => handleDeletePatient(p.id, e)}
+                  disabled={deleteLoading}
+                  title="환자 삭제"
+                >
+                  ×
+                </DeleteButton>
+              </PatientCard>
+            ))
+          )}
+          {deleteError && <ErrorMessage>{deleteError}</ErrorMessage>}
         </LeftPanel>
         <RightPanel>
           <CalendarAndChartsRow>
