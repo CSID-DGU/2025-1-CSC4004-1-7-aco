@@ -61,6 +61,12 @@ const TitleInput = styled.input`
   background: transparent;
   margin-bottom: 12px;
   outline: none;
+  font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+  color: #333;
+  &::placeholder {
+    font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+    color: #888;
+  }
 `;
 
 const DiaryLines = styled.textarea`
@@ -80,6 +86,12 @@ const DiaryLines = styled.textarea`
   background-color: transparent;
   margin-bottom: 24px;
   padding: 0;
+  font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+  color: #333;
+  &::placeholder {
+    font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+    color: #888;
+  }
 `;
 
 const ButtonGroup = styled.div`

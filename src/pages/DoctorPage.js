@@ -423,13 +423,17 @@ export default function DoctorPage() {
                     <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis domain={[-1, 1]} ticks={[-1, -0.5, 0, 0.5, 1]} />
+                      <YAxis 
+                        domain={[-1, 1]} 
+                        tickCount={5}
+                        label={{ value: '감정 수치', angle: -90, position: 'insideLeft' }}
+                      />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
                       <Line
                         type="monotone"
                         dataKey="emotion"
                         stroke="#0089ED"
-                        strokeWidth={3}
+                        strokeWidth={2}
                         dot={<CustomDot onClick={handleChartClick} />}
                         activeDot={<CustomDot onClick={handleChartClick} />}
                         connectNulls={false}

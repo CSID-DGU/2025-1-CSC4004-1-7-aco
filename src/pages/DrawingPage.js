@@ -23,6 +23,8 @@ const DrawingPage = () => {
     const [showChatModal, setShowChatModal] = useState(false);
     const [drawingRecords, setDrawingRecords] = useState({});
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [isFinalSaved, setIsFinalSaved] = useState(false);
+    const [isPastDrawing, setIsPastDrawing] = useState(false);
 
     const colors = [
         '#000000', // 검정
@@ -73,6 +75,11 @@ const DrawingPage = () => {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             };
             img.src = drawingRecords[dateKey].image;
+            setIsFinalSaved(true);
+            setIsPastDrawing(!isToday(selectedDate));
+        } else {
+            setIsFinalSaved(false);
+            setIsPastDrawing(!isToday(selectedDate));
         }
     }, [selectedDate, drawingRecords]);
 
@@ -127,6 +134,22 @@ const DrawingPage = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
+    const handleTempSave = () => {
+        const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
+        const dataUrl = canvas.toDataURL('image/png');
+        setSavedImage(dataUrl);
+        alert('임시저장되었습니다.');
+    };
+
+    const handleFinalSave = () => {
+        setShowTitleModal(true);
+    };
+
+    const handleCompleteChat = () => {
+        setShowChatModal(false);
+        alert('대화가 완료되었습니다.');
+    };
+
     const saveDrawing = (isModal = false) => {
         setShowTitleModal(true);
     };
@@ -143,13 +166,41 @@ const DrawingPage = () => {
         setSavedImage(dataUrl);
         setShowTitleModal(false);
         setShowChatModal(true);
+        setIsFinalSaved(true);
         const dateKey = format(selectedDate, 'yyyy-MM-dd');
         saveRecord(dateKey, { title: drawingTitle, image: dataUrl, chats: [] });
+        if (showModal) setShowModal(false);
+    };
+
+    const handleDelete = () => {
+        setShowConfirmModal(true);
     };
 
     const handleConfirmAction = () => {
-        clearCanvas();
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
+        const newRecords = { ...drawingRecords };
+        delete newRecords[dateKey];
+        setDrawingRecords(newRecords);
+        localStorage.setItem(DRAWING_STORAGE_KEY, JSON.stringify(newRecords));
+        
+        if (isToday(selectedDate)) {
+            // 오늘 그림 삭제 시
+            setIsFinalSaved(false);
+            setIsPastDrawing(false);
+            clearCanvas();
+        } else {
+            // 과거 그림 삭제 시
+            setIsFinalSaved(true);
+            setIsPastDrawing(true);
+        }
         setShowConfirmModal(false);
+    };
+
+    const isToday = (date) => {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
     };
 
     const renderDayContents = (day, date) => {
@@ -171,8 +222,12 @@ const DrawingPage = () => {
         const dateKey = format(date, 'yyyy-MM-dd');
         if (drawingRecords[dateKey]) {
             setSelectedRecord(drawingRecords[dateKey]);
+            setIsFinalSaved(true);
+            setIsPastDrawing(!isToday(date));
         } else {
             setSelectedRecord(null);
+            setIsFinalSaved(false);
+            setIsPastDrawing(!isToday(date));
         }
     };
 
@@ -227,9 +282,9 @@ const DrawingPage = () => {
                 </CalendarWrapper>
                 <DrawingArea>
                     <ColorPalette>
-                        <ZoomButton onClick={openModal}>
+                        <ZoomButton onClick={openModal} disabled={isFinalSaved || isPastDrawing}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="#000000" />
+                                <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill={(isFinalSaved || isPastDrawing) ? "#ccc" : "#000000"} />
                             </svg>
                         </ZoomButton>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px' }}>
@@ -238,8 +293,9 @@ const DrawingPage = () => {
                                 min={1}
                                 max={20}
                                 value={lineWidth}
-                                onChange={e => setLineWidth(Number(e.target.value))}
-                                style={{ width: 80 }}
+                                onChange={e => !isPastDrawing && setLineWidth(Number(e.target.value))}
+                                style={{ width: 80, opacity: isPastDrawing ? 0.5 : 1 }}
+                                disabled={isPastDrawing}
                             />
                             <span style={{ fontSize: 13, color: '#333', marginTop: 4 }}>
                                 {lineWidth}px
@@ -250,8 +306,9 @@ const DrawingPage = () => {
                                 <ColorButton
                                     key={color}
                                     active={currentColor === color}
-                                    onClick={() => setCurrentColor(color)}
+                                    onClick={() => !isPastDrawing && setCurrentColor(color)}
                                     style={color === 'eraser' ? { border: '2px dashed #888', background: '#fff' } : { background: color }}
+                                    disabled={isPastDrawing}
                                 >
                                     {color === 'eraser' ? '' : ''}
                                 </ColorButton>
@@ -260,14 +317,22 @@ const DrawingPage = () => {
                     </ColorPalette>
                     <Canvas
                         ref={canvasRef}
-                        onMouseDown={(e) => startDrawing(e, false)}
-                        onMouseMove={(e) => draw(e, false)}
+                        onMouseDown={(e) => !isFinalSaved && !isPastDrawing && startDrawing(e, false)}
+                        onMouseMove={(e) => !isFinalSaved && !isPastDrawing && draw(e, false)}
                         onMouseUp={stopDrawing}
                         onMouseOut={stopDrawing}
+                        style={{ cursor: isFinalSaved || isPastDrawing ? 'not-allowed' : 'crosshair' }}
                     />
                     <ButtonGroup>
-                        <Button onClick={() => clearCanvas(false)}>지우기</Button>
-                        <Button onClick={() => saveDrawing(false)}>저장</Button>
+                        {isFinalSaved ? (
+                            <DeleteButton onClick={handleDelete}>삭제하기</DeleteButton>
+                        ) : !isPastDrawing ? (
+                            <>
+                                <Button onClick={() => clearCanvas(false)}>지우기</Button>
+                                <TempSaveButton onClick={handleTempSave}>임시저장</TempSaveButton>
+                                <SaveButton onClick={handleFinalSave}>최종저장</SaveButton>
+                            </>
+                        ) : null}
                     </ButtonGroup>
                 </DrawingArea>
             </MainContent>
@@ -280,30 +345,46 @@ const DrawingPage = () => {
                             <CloseButton onClick={closeModal}>×</CloseButton>
                         </ModalHeader>
                         <ModalBody>
-                            <ModalColorPalette>
-                                {colors.map((color) => (
-                                    <ModalColorButton
-                                        key={color}
-                                        active={currentColor === color}
-                                        onClick={() => setCurrentColor(color)}
-                                        style={color === 'eraser' ? { border: '2px dashed #888', background: '#fff' } : { background: color }}
-                                    >
-                                        {color === 'eraser' ? '' : ''}
-                                    </ModalColorButton>
-                                ))}
-                            </ModalColorPalette>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: '32px', minWidth: '90px' }}>
+                                <input
+                                    type="range"
+                                    min={1}
+                                    max={20}
+                                    value={lineWidth}
+                                    onChange={e => !isPastDrawing && setLineWidth(Number(e.target.value))}
+                                    style={{ width: 80, opacity: isPastDrawing ? 0.5 : 1 }}
+                                    disabled={isPastDrawing}
+                                />
+                                <span style={{ fontSize: 13, color: '#333', marginTop: 4 }}>
+                                    {lineWidth}px
+                                </span>
+                                <ModalColorPalette>
+                                    {colors.map((color) => (
+                                        <ModalColorButton
+                                            key={color}
+                                            active={currentColor === color}
+                                            onClick={() => !isPastDrawing && setCurrentColor(color)}
+                                            style={color === 'eraser' ? { border: '2px dashed #888', background: '#fff' } : { background: color }}
+                                            disabled={isPastDrawing}
+                                        >
+                                            {color === 'eraser' ? '' : ''}
+                                        </ModalColorButton>
+                                    ))}
+                                </ModalColorPalette>
+                            </div>
                             <ModalCanvas
                                 ref={modalCanvasRef}
-                                onMouseDown={(e) => startDrawing(e, true)}
-                                onMouseMove={(e) => draw(e, true)}
+                                onMouseDown={(e) => !isPastDrawing && startDrawing(e, true)}
+                                onMouseMove={(e) => !isPastDrawing && draw(e, true)}
                                 onMouseUp={stopDrawing}
                                 onMouseOut={stopDrawing}
+                                style={{ cursor: isPastDrawing ? 'not-allowed' : 'crosshair' }}
                             />
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={() => clearCanvas(true)}>지우기</Button>
-                            <Button onClick={() => saveDrawing(true)}>저장</Button>
-                            <Button onClick={closeModal}>닫기</Button>
+                            <Button onClick={() => clearCanvas(true)} disabled={isPastDrawing}>지우기</Button>
+                            <TempSaveButton onClick={handleTempSave} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                            <SaveButton onClick={() => saveDrawing(true)} disabled={isPastDrawing}>최종저장</SaveButton>
                         </ModalFooter>
                     </ModalContent>
                 </ModalOverlay>
@@ -338,7 +419,7 @@ const DrawingPage = () => {
                             />
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={handleTitleSave} disabled={!drawingTitle.trim()}>저장</Button>
+                            <Button onClick={() => handleTitleSave()} disabled={!drawingTitle.trim()}>저장</Button>
                             <Button onClick={() => setShowTitleModal(false)}>취소</Button>
                         </ModalFooter>
                     </ModalContent>
@@ -350,7 +431,6 @@ const DrawingPage = () => {
                     <ModalContent style={{ width: '900px', minHeight: '600px', maxWidth: '98%' }}>
                         <ModalHeader>
                             <h2>{drawingTitle}</h2>
-                            <CloseButton onClick={() => setShowChatModal(false)}>×</CloseButton>
                         </ModalHeader>
                         <ModalBody style={{ gap: '40px' }}>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -361,11 +441,36 @@ const DrawingPage = () => {
                                     <div style={{ color: '#888', textAlign: 'center', marginTop: '40%' }}>AI 챗봇과의 대화가 여기에 표시됩니다.</div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <input type="text" style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px' }} placeholder="메시지를 입력하세요" />
-                                    <Button style={{ minWidth: '60px' }}>전송</Button>
+                                    <input 
+                                        type="text" 
+                                        style={{ 
+                                            flex: 1, 
+                                            padding: '10px', 
+                                            borderRadius: '8px', 
+                                            border: '1px solid #ccc', 
+                                            fontSize: '16px',
+                                            backgroundColor: isFinalSaved ? '#f5f5f5' : '#fff',
+                                            cursor: isFinalSaved ? 'not-allowed' : 'text'
+                                        }} 
+                                        placeholder="메시지를 입력하세요" 
+                                        disabled={isFinalSaved}
+                                    />
+                                    <Button 
+                                        style={{ 
+                                            minWidth: '60px',
+                                            backgroundColor: isFinalSaved ? '#ccc' : '#fff',
+                                            cursor: isFinalSaved ? 'not-allowed' : 'pointer'
+                                        }}
+                                        disabled={isFinalSaved}
+                                    >
+                                        전송
+                                    </Button>
                                 </div>
                             </div>
                         </ModalBody>
+                        <ModalFooter>
+                            <CompleteButton onClick={handleCompleteChat}>대화 완료</CompleteButton>
+                        </ModalFooter>
                     </ModalContent>
                 </ModalOverlay>
             )}
@@ -460,11 +565,12 @@ const ColorButton = styled.button`
     background: ${props => props.color};
     border-radius: 8px;
     border: none;
-    cursor: pointer;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
     transform: ${props => props.active ? 'scale(1.1)' : 'scale(1)'};
     transition: transform 0.2s;
+    opacity: ${props => props.disabled ? 0.5 : 1};
     &:hover {
-        transform: scale(1.1);
+        transform: ${props => props.disabled ? 'scale(1)' : 'scale(1.1)'};
     }
 `;
 
@@ -502,6 +608,34 @@ const Button = styled.button`
     &:hover {
         background: #f5f5f5;
         transform: scale(1.1);
+    }
+`;
+
+const SaveButton = styled(Button)`
+    background: #0089ED;
+    color: #FFFFFF;
+    border: none;
+`;
+
+const TempSaveButton = styled(Button)`
+    background: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+`;
+
+const CompleteButton = styled(Button)`
+    background: #0089ED;
+    color: #FFFFFF;
+    border: none;
+    width: 120px;
+`;
+
+const DeleteButton = styled(Button)`
+    background: #FF4444;
+    color: #FFFFFF;
+    border: none;
+    &:hover {
+        background: #FF0000;
     }
 `;
 
@@ -599,14 +733,15 @@ const ZoomButton = styled.button`
     background: #FFFFFF;
     border: 1px solid #000000;
     border-radius: 10px;
-    cursor: pointer;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
     transition: transform 0.2s;
+    opacity: ${props => props.disabled ? 0.5 : 1};
     &:hover {
-        transform: scale(1.1);
+        transform: ${props => props.disabled ? 'scale(1)' : 'scale(1.1)'};
     }
 `;
 
