@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Navigation from "../components/Navigation";
 import Calendar from "../components/Calendar";
 import DiaryEditor from "../components/DiaryEditor";
@@ -111,7 +111,7 @@ function getKSTDateKey(date) {
 }
 
 export default function MainPage() {
-    const today = new Date();
+    const today = useMemo(() => new Date(), []);
     const [selectedDate, setSelectedDate] = useState(today);
     const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
     const [diaryMap, setDiaryMap] = useState({});
@@ -127,7 +127,7 @@ export default function MainPage() {
     // 오늘 날짜 자동 선택
     useEffect(() => {
         setSelectedDate(today);
-    }, []);
+    }, [today]);
 
     useEffect(() => {
         // body에 스크롤바가 보이지 않도록 설정
