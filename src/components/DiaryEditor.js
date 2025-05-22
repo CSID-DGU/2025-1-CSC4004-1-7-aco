@@ -3,12 +3,12 @@ import styled from "styled-components";
 
 const Tablet = styled.div`
   position: relative;
-  width: ${({ modal }) => (modal ? "820px" : "100%")};
-  height: ${({ modal }) => (modal ? "500px" : "100%")};
+  width: ${({ $modal }) => ($modal ? "820px" : "100%")};
+  height: ${({ $modal }) => ($modal ? "500px" : "100%")};
   background: #f7f3fa;
   border-radius: 24px;
   box-shadow: none;
-  padding: ${({ modal }) => (modal ? "48px 40px 48px 40px" : "40px 32px 80px 32px")};
+  padding: ${({ $modal }) => ($modal ? "48px 40px 48px 40px" : "40px 32px 80px 32px")};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,6 +61,12 @@ const TitleInput = styled.input`
   background: transparent;
   margin-bottom: 12px;
   outline: none;
+  font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+  color: #333;
+  &::placeholder {
+    font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+    color: #888;
+  }
 `;
 
 const DiaryLines = styled.textarea`
@@ -80,6 +86,12 @@ const DiaryLines = styled.textarea`
   background-color: transparent;
   margin-bottom: 24px;
   padding: 0;
+  font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+  color: #333;
+  &::placeholder {
+    font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+    color: #888;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -131,7 +143,7 @@ function DiaryEditor({
   showDelete = false,
 }) {
   return (
-    <Tablet modal={modal}>
+    <Tablet $modal={modal}>
       <TopBar>
         <HomeDot />
         <MagnifierBtn onClick={onExpand} title="확대">

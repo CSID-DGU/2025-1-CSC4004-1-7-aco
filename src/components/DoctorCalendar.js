@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
-const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, onChangeMonth }) => {
+const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, currentMonth, onChangeMonth }) => {
     const today = new Date();
     // 한국 시간으로 변환
     const koreaTime = new Date(today.getTime() + (9 * 60 * 60 * 1000));
@@ -67,6 +67,16 @@ const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, o
         );
     };
 
+    // 날짜 클릭 핸들러
+    const handleDateClick = (date) => {
+        if (!date) return;
+        const newDate = new Date(year, month, date);
+        console.log('DoctorCalendar: Date clicked:', newDate); // 디버깅용
+        if (onSelectDate) {
+            onSelectDate(newDate);
+        }
+    };
+
     // 감정 분석 결과에 따른 날짜 키 생성
     const getDateKey = (date) => {
         if (!date) return null;
@@ -77,17 +87,6 @@ const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, o
         const dateMonth = String(newDate.getMonth() + 1).padStart(2, '0');
         const dateDay = String(newDate.getDate()).padStart(2, '0');
         return `${dateYear}-${dateMonth}-${dateDay}`;
-    };
-
-    // 날짜 클릭 핸들러
-    const handleDateClick = (date) => {
-        if (!date) return;
-        const newDate = new Date(year, month, date);
-        console.log('Calendar: Date clicked:', newDate); // 디버깅용
-        console.log('Calendar: Date key:', getDateKey(date)); // 디버깅용
-        if (onSelectDate) {
-            onSelectDate(newDate);
-        }
     };
 
     return (
@@ -113,7 +112,7 @@ const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, o
                             const isToday = isTodayCell(date);
                             const isSelected = isSelectedCell(date);
                             const dateKey = getDateKey(date);
-                            const emotion = dateKey ? (emotionMap[dateKey] || null) : null;
+                            const emotion = dateKey ? (patientEmotionMap[dateKey] || null) : null;
                             
                             return (
                                 <DateCell
@@ -344,4 +343,4 @@ const DateText = styled.div`
   transition: all 0.2s ease;
 `;
 
-export default Calendar;
+export default DoctorCalendar; 
