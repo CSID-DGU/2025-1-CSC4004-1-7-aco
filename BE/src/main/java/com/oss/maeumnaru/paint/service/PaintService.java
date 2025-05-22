@@ -2,20 +2,18 @@ package com.oss.maeumnaru.paint.service;
 
 import com.oss.maeumnaru.paint.entity.ChatEntity;
 import java.util.Random;
-import com.oss.maeumnaru.paint.entity.ChatEntity.WriterType;
 import com.oss.maeumnaru.paint.repository.ChatRepository;
-import com.oss.maeumnaru.paint.service.OpenAiService;
 import java.util.Date;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import com.oss.maeumnaru.paint.dto.PaintRequestDto;
+import com.oss.maeumnaru.global.s3.S3Uploader;
+import com.oss.maeumnaru.paint.dto.ChatRequestDto;
 
 import com.oss.maeumnaru.paint.entity.PaintEntity; //DB 매핑되는 그림 엔티티 클래스
 import com.oss.maeumnaru.paint.repository.PaintRepository; //DB 접근을 담당하는 리포지토리 인터페이스
 import lombok.RequiredArgsConstructor; //final 필드를 자동으로 생성자에 주입하도록 설정
 import org.springframework.stereotype.Service; //이 클래스가 서비스 계층임을 나타내는 Spring 애너테이션
-import com.oss.maeumnaru.global.s3.S3Uploader; // 실제 경로에 맞게 수정
-import java.io.IOException;
-import java.util.UUID;
-
-
 
 //Java 컬렉션과 null 처리용 객체
 import java.util.List;
@@ -28,9 +26,8 @@ public class PaintService {
 
     //의존성 주입 대상인 paintRepository를 선언, DB 작업을 위한 인터페이스임
     private final PaintRepository paintRepository;
-    private final ChatRepository chatRepository;       // ✅ 새로 추가
+    private final ChatRepository chatRepository;
     private final OpenAiService openAiService;
-
     private final S3Uploader s3Uploader;
 
 
@@ -39,38 +36,61 @@ public class PaintService {
         return paintRepository.findById(id);
     }
 
-    // 그림 저장 - 전달받은 그림 데이터를 데이터베이스에 저장, 저장된 객체를 반환
-    public PaintEntity savePaint(PaintEntity paint) {
-        PaintEntity saved = paintRepository.save(paint);
+    // 그림 임시 저장
+    public PaintEntity savePaintDraft(MultipartFile file, PaintRequestDto dto) throws IOException {
+        String fileUrl = s3Uploader.uploadImage(file, "paint");
 
-        // 그림 저장 직후 대화 시작
-        startChatWithPaint(saved);
+        PaintEntity paint = PaintEntity.builder()
+                .fileUrl(fileUrl)
+                .writerType(ChatEntity.WriterType.PATIENT)
+                .patientCode(dto.getPatientCode())
+                .title(dto.getTitle())
+                .createDate(new Date())
+                .updateDate(new Date())
+                .build();
 
-        return saved;
+        return paintRepository.save(paint);
     }
 
+    //그림 최종 저장
+    public void finalizePaint(Long id, MultipartFile file, PaintRequestDto dto) throws IOException {
+        PaintEntity paint = paintRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("그림을 찾을 수 없습니다."));
+
+        boolean hasChat = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id).size() > 0;
+        if (hasChat) throw new IllegalStateException("이미 대화가 시작된 그림입니다.");
+
+        String fileUrl = s3Uploader.uploadImage(file, "paint");
+
+        paint.setFileUrl(fileUrl);
+        paint.setWriterType(ChatEntity.WriterType.PATIENT);
+        paint.setPatientCode(dto.getPatientCode());
+        paint.setTitle(dto.getTitle());
+        paint.setUpdateDate(new Date());
+
+        paintRepository.save(paint);
+        startChatWithPaint(paint);
+    }
+    // 대화 시작 질문
     private static final List<String> PREDEFINED_QUESTIONS = List.of(
-            "이 그림을 보고 느껴지는 감정은 무엇인가요?",
-            "이 그림은 어떤 분위기를 담고 있나요?",
+            "이 그림을 그릴 때 어떤 감정이었나요?",
+            "이 그림은 무엇을 표현한 건가요?",
             "이 그림은 어떤 이야기를 들려주는 것 같나요?",
             "이 그림 속 인물이나 사물의 감정은 어떤가요?",
-            "이 그림을 보면 어떤 기억이 떠오르나요?"
+            "이 그림을 보면 어떤 기억이나 감정이 떠오르나요?"
     );
-
+    //
     private void startChatWithPaint(PaintEntity paint) {
-        // ✅ 1. 질문 무작위 선택
+        // 랜덤 질문
         String question = PREDEFINED_QUESTIONS.get(new Random().nextInt(PREDEFINED_QUESTIONS.size()));
 
-        // ✅ 2. GPT가 사용자에게 묻는 형태로 저장
+        // GPT가 사용자에게 묻는 형태로 저장
         chatRepository.save(ChatEntity.builder()
                 .paint(paint)
                 .writerType(ChatEntity.WriterType.CHATBOT) // GPT가 질문자
                 .chatDate(new Date())
-                .comment(question) // 질문 자체를 저장
+                .comment(question) // 질문 저장
                 .build());
-
-        // ✅ 3. GPT가 대답하지 않도록 한다 (응답 없음)
-        // 이후 사용자가 답변하면 PATIENT로 새로운 ChatEntity 추가
     }
 
 
@@ -96,46 +116,30 @@ public class PaintService {
         paintRepository.deleteById(id);
     }
 
-    public ChatEntity saveUserReply(Long paintId, String userReply) throws IOException {
+    //대화 완료 저장
+    public void saveCompleteChat(Long paintId, List<ChatRequestDto> chatList) {
         PaintEntity paint = paintRepository.findById(paintId)
-                .orElseThrow(() -> new RuntimeException("해당 그림이 없습니다."));
+                .orElseThrow(() -> new RuntimeException("그림을 찾을 수 없습니다."));
 
-        String fileName = "reply_" + UUID.randomUUID() + ".txt";
-        String fileUrl = s3Uploader.uploadTextAsFile(userReply, fileName, "replies");
+        for (ChatRequestDto dto : chatList) {
+            // GPT 질문은 무조건 저장
+            chatRepository.save(ChatEntity.builder()
+                    .paint(paint)
+                    .writerType(ChatEntity.WriterType.CHATBOT)
+                    .chatDate(new Date())
+                    .comment(dto.getChatbotComment())
+                    .build());
 
-        ChatEntity chat = ChatEntity.builder()
-                .paint(paint)
-                .writerType(ChatEntity.WriterType.PATIENT)
-                .chatDate(new Date())
-                .comment(fileUrl)  // 실제 답변 내용 대신 URL 저장
-                .build();
-
-        return chatRepository.save(chat);
-    }
-
-    public List<ChatEntity> getChatsByPaintId(Long paintId) {
-        return chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId);
-    }
-
-    public String summarizeAndSaveChats(Long paintId) throws IOException {
-        List<ChatEntity> chats = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId);
-
-        StringBuilder fullDialogue = new StringBuilder();
-        for (ChatEntity chat : chats) {
-            String prefix = chat.getWriterType() == WriterType.CHATBOT ? "[GPT]" : "[USER]";
-            fullDialogue.append(prefix)
-                    .append(" ")
-                    .append(chat.getComment())
-                    .append("\n");
+            // 환자 응답이 null 또는 빈 값이 아니면 저장
+            if (dto.getPatientComment() != null && !dto.getPatientComment().isBlank()) {
+                chatRepository.save(ChatEntity.builder()
+                        .paint(paint)
+                        .writerType(ChatEntity.WriterType.PATIENT)
+                        .chatDate(new Date())
+                        .comment(dto.getPatientComment())
+                        .build());
+            }
         }
-
-        String prompt = "다음은 사용자와 GPT의 대화입니다:\n" + fullDialogue + "\n이 대화를 간결하게 요약해줘.";
-        String summary = openAiService.sendChatPrompt(prompt); // GPT 요약 결과
-
-        String fileName = "summary_" + paintId + "_" + UUID.randomUUID() + ".txt";
-        String summaryUrl = s3Uploader.uploadTextAsFile(summary, fileName, "summaries");
-
-        return summaryUrl;
     }
 
 
