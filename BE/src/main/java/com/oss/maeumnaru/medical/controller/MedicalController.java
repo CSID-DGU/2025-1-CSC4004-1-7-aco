@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.oss.maeumnaru.medical.dto.MedicalResponseDto;
+import com.oss.maeumnaru.medical.dto.PatientResponseDto;
 
 import java.util.List;
 
@@ -37,4 +38,11 @@ public class MedicalController {
         medicalService.removePatient(medicId);
         return ResponseEntity.noContent().build();
     }
+
+    // 환자 상세 페이지
+    @GetMapping("/patient/{patientCode}")
+    public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
+        return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
+    }
+
 }
