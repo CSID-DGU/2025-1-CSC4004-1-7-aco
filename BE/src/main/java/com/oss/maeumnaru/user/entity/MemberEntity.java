@@ -17,11 +17,20 @@ public class MemberEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
+
     private String name;
+
+    @Column(unique = true, nullable = false)
     private String password;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String phone;
-    private String membrId;
+
+    @Column(unique = true, nullable = false)
+    private String userId;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
@@ -43,5 +52,8 @@ public class MemberEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private DoctorEntity doctor;
-}
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private PatientEntity patient;
+}

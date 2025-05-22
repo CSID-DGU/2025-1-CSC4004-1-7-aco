@@ -13,12 +13,12 @@ import com.oss.maeumnaru.medical.entity.MedicalEntity;
 public class PatientEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String patientCode;
 
     private String patientHospital;
 
-    private String memberType;
+    private String job;
+
     @OneToOne
     @JoinColumn(name = "member_id")
     private MemberEntity member;
