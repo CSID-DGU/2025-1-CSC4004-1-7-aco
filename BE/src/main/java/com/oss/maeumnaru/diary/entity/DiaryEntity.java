@@ -1,8 +1,6 @@
 // DiaryEntity.java
 package com.oss.maeumnaru.diary.entity;
 
-import com.oss.maeumnaru.paint.entity.PaintEntity;
-import com.oss.maeumnaru.user.entity.MemberEntity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
 import jakarta.persistence.*;
 import lombok.*;

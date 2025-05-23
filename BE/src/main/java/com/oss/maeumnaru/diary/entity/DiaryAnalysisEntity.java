@@ -1,7 +1,6 @@
 // DiaryAnalysisEntity.java
 package com.oss.maeumnaru.diary.entity;
 
-import com.oss.maeumnaru.user.entity.PatientEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalTime;

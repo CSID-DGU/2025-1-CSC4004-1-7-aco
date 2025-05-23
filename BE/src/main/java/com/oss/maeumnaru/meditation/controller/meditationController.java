@@ -25,46 +25,50 @@ public class meditationController {
                 .stream()
                 .map(meditationResponseDto::fromEntity)
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(result);
     }
 
     // 단건 조회
     @GetMapping("/{id}")
     public ResponseEntity<meditationResponseDto> getMeditationById(@PathVariable Long id) {
-        return meditationService.getMeditationById(id)
-                .map(meditationResponseDto::fromEntity)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        MeditationEntity entity = meditationService.getMeditationById(id);  // 예외 발생 시 GlobalExceptionHandler에서 처리됨
+        return ResponseEntity.ok(meditationResponseDto.fromEntity(entity));
     }
 
     // 저장
     @PostMapping
     public ResponseEntity<meditationResponseDto> saveMeditation(@RequestBody meditationRequestDto dto) {
-        MeditationEntity saved = meditationService.saveMeditation(
-                MeditationEntity.builder()
-                        .meditationTitle(dto.getMeditationTitle())
-                        .durationTime(dto.getDurationTime())
-                        .filePath(dto.getFilePath())
-                        .build()
-        );
+        MeditationEntity entity = MeditationEntity.builder()
+                .meditationTitle(dto.getMeditationTitle())
+                .durationTime(dto.getDurationTime())
+                .filePath(dto.getFilePath())
+                .build();
+
+        MeditationEntity saved = meditationService.saveMeditation(entity); // 내부에서 예외 발생 가능
+
         return ResponseEntity.ok(meditationResponseDto.fromEntity(saved));
     }
 
     // 수정
     @PutMapping("/{id}")
-    public ResponseEntity<meditationResponseDto> updateMeditation(@PathVariable Long id,
-                                                                  @RequestBody meditationRequestDto dto) {
-        MeditationEntity updated = meditationService.updateMeditation(id,
+    public ResponseEntity<meditationResponseDto> updateMeditation(
+            @PathVariable Long id,
+            @RequestBody meditationRequestDto dto) {
+
+        MeditationEntity updated = meditationService.updateMeditation(
+                id,
                 MeditationEntity.builder()
                         .meditationTitle(dto.getMeditationTitle())
                         .durationTime(dto.getDurationTime())
                         .filePath(dto.getFilePath())
                         .build()
         );
+
         return ResponseEntity.ok(meditationResponseDto.fromEntity(updated));
     }
 
-    // 삭제
+    //삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMeditation(@PathVariable Long id) {
         meditationService.deleteMeditation(id);

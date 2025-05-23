@@ -3,7 +3,7 @@
 //import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
 //
 //import com.oss.maeumnaru.global.error.exception.ApiException;
-//import com.oss.maeumnaru.global.exception.ExceptionEnum;
+//import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 //import com.oss.maeumnaru.user.redis.RefreshTokenInfo;
 //import com.oss.maeumnaru.user.redis.RefreshTokenInfoRedisRepository;
 //
@@ -47,12 +47,18 @@
 //        long now = (new Date()).getTime();
 //        Date issuedAt = new Date();
 //
+//        // 🔽 사용자 정보 꺼내기 (CustomUserDetails로 캐스팅)
+//        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+//        Long memberId = userDetails.getMemberId();
+//        String loginId = userDetails.getUsername();
+//
 //        String accessToken = Jwts.builder()
 //                .setHeader(createHeaders())
 //                .setSubject("accessToken")
 //                .claim("iss", "off")
-//                .claim("aud", authentication.getName())
+//                .claim("aud", loginId)
 //                .claim("auth", authorities)
+//                .claim("memberId", memberId)  // ✅ 여기에 추가
 //                .setExpiration(new Date(now + 1800000)) // 30분
 //                .setIssuedAt(issuedAt)
 //                .signWith(key, SignatureAlgorithm.HS256)
@@ -62,8 +68,9 @@
 //                .setHeader(createHeaders())
 //                .setSubject("refreshToken")
 //                .claim("iss", "off")
-//                .claim("aud", authentication.getName())
+//                .claim("aud", loginId)
 //                .claim("auth", authorities)
+//                .claim("memberId", memberId)  // ✅ 여기도 같이 넣기 (권장)
 //                .claim("add", "ref")
 //                .setExpiration(new Date(now + 604800000)) // 7일
 //                .setIssuedAt(issuedAt)
@@ -72,6 +79,7 @@
 //
 //        return TokenResponseDTO.of(accessToken, refreshToken);
 //    }
+//
 //
 //    public Authentication getAuthentication(String token) {
 //        Claims claims = parseClaims(token);
@@ -85,7 +93,11 @@
 //                        .map(SimpleGrantedAuthority::new)
 //                        .collect(Collectors.toList());
 //
-//        UserDetails principal = new User((String) claims.get("aud"), "", authorities);
+//        String loginId = claims.get("aud", String.class);     // JWT의 aud 필드 → loginId
+//        Long memberId = claims.get("memberId", Long.class);   // ✅ 커스텀 클레임으로 memberId도 넣어야 함
+//
+//        // CustomUserDetails 사용
+//        UserDetails principal = new CustomUserDetails(memberId, loginId, null, authorities);
 //
 //        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
 //    }

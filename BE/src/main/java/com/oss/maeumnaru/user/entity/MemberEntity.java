@@ -2,7 +2,6 @@ package com.oss.maeumnaru.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.oss.maeumnaru.user.entity.DoctorEntity;
 import java.util.Date;
 
 @Entity
