@@ -11,7 +11,7 @@ const Signin = () => {
 
     const [errMsg, setErrMsg] = useState();
     const [state, setState] = useState({
-        email: "",
+        id: "",
         password: "",
     })
 
@@ -74,9 +74,9 @@ const Signin = () => {
             {/* 사용자로부터 입력받기 + 버튼 */}
             <div className='contentwrap'>
 
-                <div className="inputTitle id">이메일</div>
+                <div className="inputTitle id">아이디</div>
                 <div className="inputWrap">
-                    <input name="email" value={state.email} onChange={handleOnChange} className="input" placeholder="이메일을 입력해주세요"></input>
+                    <input name="id" value={state.id} onChange={handleOnChange} className="input" placeholder="아이디를 입력해주세요"></input>
                 </div>
 
                 <div className="inputTitle pw">비밀번호</div>

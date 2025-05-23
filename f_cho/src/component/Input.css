@@ -10,7 +10,7 @@
     display: flex;
     border-radius: 8px;
     padding: 16px;
-    margin-top: 8px;
+    margin-top: 5px;
     background-color: white;
     border: 1px solid #ADADAD;
 }
@@ -24,6 +24,7 @@
     border: none;
     height: 12px;
     font-size: 14px;
+    line-height: 1.5;
 }
 
 .inputField::placeholder {
@@ -36,4 +37,8 @@
 
 .inputBlock.long .inputField {
     width: 100%;
+}
+
+.input-error {
+    border: 1px solid red;
 }
