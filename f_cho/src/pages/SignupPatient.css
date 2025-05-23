@@ -81,7 +81,7 @@
 .gender-buttons-pp {
     display: flex;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 5px;
 }
 
 .signupbtnpt {
@@ -89,4 +89,18 @@
     width: 100%;
     display: flex;
     justify-content: center;
+}
+
+.signupPatientError {
+    min-height: 20px;
+    color: red;
+    font-size: 13px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.error-text {
+    color: #ff0000;
+    font-size: 13px;
 }

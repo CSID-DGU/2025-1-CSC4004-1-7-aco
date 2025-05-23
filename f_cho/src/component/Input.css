@@ -28,7 +28,7 @@
 }
 
 .inputField::placeholder {
-    color: #adb5bd;;
+    color: #adb5bd;
 }
 
 .inputBlock.short .inputField {
@@ -40,5 +40,21 @@
 }
 
 .input-error {
-    border: 1px solid red;
+    border: 1.5px solid red;
+}
+
+.input-error .inputField::placeholder {
+    color: #ff0000;
+}
+
+.file-upload-label {
+    transition: all 0.2s ease;
+}
+
+.file-upload-label.input-error {
+    border: 1.5px solid red;
+}
+
+.file-upload-label.input-error .placeholder-text {
+    color: #ff0000;
 }

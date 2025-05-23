@@ -1,13 +1,14 @@
 import "./Button.css";
 
-const Button = ({ text, type, onClick, disabled, size = "default", isSelected }) => {
-    const btnType = ["man", "woman"].includes(type) ? type : "basic";
+const Button = ({ text, type, onClick, disabled, size = "default", isSelected, className = "" }) => {
+    const btnType = ["MAIL", "FEMAIL"].includes(type) ? type : "basic";
     const classNames = [
         "Button",
         `Button_${size}`,
         `Button_${btnType}`,
         disabled ? "Button_disabled" : "",
         isSelected ? "Button_selected" : "",
+        className
     ].join(" ");
 
     return (

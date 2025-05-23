@@ -22,19 +22,8 @@ const Signin = () => {
         });
     };
 
-    const isEmailValid=(email)=>{
-        const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
     const handleLogin = async () => {
         setErrMsg("");
-
-        // 이메일 형식이 올바른지 먼저 확인
-        if(!isEmailValid(state.email)) {
-            setErrMsg("올바른 이메일 형식이 아닙니다.");
-            return;
-        }
 
         try {
             const response = await login(state.email, state.password);
