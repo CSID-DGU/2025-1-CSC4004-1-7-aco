@@ -1,5 +1,8 @@
 package com.oss.maeumnaru.global.error.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ExceptionEnum {
     DIARY_NOT_FOUND(404, "해당 일기를 찾을 수 없습니다."),
     ANALYSIS_NOT_FOUND(404, "해당 분석 결과가 존재하지 않습니다."),
