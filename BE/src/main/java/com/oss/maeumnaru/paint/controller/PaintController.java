@@ -11,6 +11,8 @@ import com.oss.maeumnaru.paint.dto.ChatRequestDto;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import com.oss.maeumnaru.paint.dto.PaintRequestDto;
+import org.springframework.http.MediaType;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class PaintController {
     }
 
     // 임시저장
-    @PostMapping("/draft")
+    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PaintEntity> savePaintDraft(
             @RequestPart MultipartFile file,
             @RequestPart PaintRequestDto dto) throws IOException {

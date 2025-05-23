@@ -39,7 +39,7 @@ public class PaintService {
     // 그림 임시 저장
     public PaintEntity savePaintDraft(MultipartFile file, PaintRequestDto dto) throws IOException {
         //String fileUrl = s3Uploader.uploadImage(file, "paint");
-        String fileUrl = null; //추후 삭제!!
+        String fileUrl = "https://dummy-s3-url.com/" + file.getOriginalFilename();
 
         PaintEntity paint = PaintEntity.builder()
                 .fileUrl(fileUrl)
