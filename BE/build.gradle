@@ -25,6 +25,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-config'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.1.RELEASE'
@@ -41,6 +42,16 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.session:spring-session-data-redis'
+
+	//Aws s3
+	implementation 'software.amazon.awssdk:s3:2.20.50'
+	implementation 'software.amazon.awssdk:auth:2.20.50'
+	implementation 'software.amazon.awssdk:regions:2.20.50'
+
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.698'
+
 }
 
 
