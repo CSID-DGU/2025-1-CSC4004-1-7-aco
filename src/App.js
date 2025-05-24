@@ -5,7 +5,15 @@ import DrawingPage from "./pages/DrawingPage";
 import MeditationPage from './pages/MeditationPage';
 import DoctorPage from './pages/DoctorPage';
 import LoginPage from './pages/LoginPage';
+import SignIn from "./pages/Signin";
+import SignupChoice from "./pages/SignupChoice";
+import SignupDoctor from "./pages/SignupDoctor";
+import SignupPatient from "./pages/SignupPatient";
+import SignupFinish from "./pages/SignupFinish";
+import MypageDoctor from "./pages/MypageDoctor";
+import MypagePatient from "./pages/MypagePatient";
 import styled from 'styled-components';
+import './App.css';
 
 const BACKGROUND_VIDEOS = [
   {
@@ -124,7 +132,13 @@ function AppContent() {
         <Route path="/meditation" element={<MeditationPage />} />
         <Route path="/doctor" element={<DoctorPage />} />
         <Route path="/login" element={<LoginPage />} />
-        {/* 추후 명상, 마이페이지 라우트 추가 */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignupChoice />} />
+        <Route path="/signup/doctor" element={<SignupDoctor />} />
+        <Route path="/signup/patient" element={<SignupPatient />} />
+        <Route path="/signup/finish" element={<SignupFinish />} />
+        <Route path="/mypage/doctor" element={<MypageDoctor />} />
+        <Route path="/mypage/patient" element={<MypagePatient />} />
       </Routes>
     </>
   );
