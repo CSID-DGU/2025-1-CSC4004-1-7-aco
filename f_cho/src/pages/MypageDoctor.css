@@ -1,11 +1,11 @@
-.doctorpage {}
+.md_doctorpage {}
 
-.editordoctor {
+.md_editordoctor {
     position: absolute;
     width: 100%;
     max-width: 900px;
     height: 100%;
-    max-height: 600px;
+    max-height: 700px;
     padding: 0 20px;
     margin-top: 90px;
     left: 50%;
@@ -24,7 +24,7 @@
     align-items: center;
 }
 
-.titlemp {
+.md_titlemp {
     margin-top: 30px;
     align-self: flex-start;
     padding-left: 45px;
@@ -32,7 +32,7 @@
     font-weight: 600;
 }
 
-.formgrid {
+.md_formgrid {
     display: flex;
     gap: 40px;
     justify-content: center;
@@ -44,20 +44,52 @@
     max-height: 450px;
 }
 
-.formcolumn {
+.md_formcolumn {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 20px;
-
     margin-bottom: 15px;
 }
 
-.row {
+.md_row {
     display: flex;
     gap: 20px;
 }
 
-.editdoctor {
-    margin-top: 42px;
+.md_button_container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.md_edit_button {
+    padding: 10px 30px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.md_edit_button:hover {
+    background-color: #45a049;
+}
+
+.md_delete_button {
+    padding: 10px 30px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.md_delete_button:hover {
+    background-color: #da190b;
 }
