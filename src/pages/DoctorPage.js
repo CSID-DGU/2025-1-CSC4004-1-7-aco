@@ -307,6 +307,7 @@ export default function DoctorPage() {
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [patientDetail, setPatientDetail] = useState(null);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
   const [modalDiary, setModalDiary] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -403,6 +404,18 @@ export default function DoctorPage() {
 
     fetchPatientEmotions();
   }, []);
+
+  // 환자 선택 시 상세 정보 조회
+  const handlePatientSelect = async (patient) => {
+    setSelectedPatient(patient);
+    try {
+      const detail = await doctorService.getPatientDetail(patient.id);
+      setPatientDetail(detail);
+    } catch (error) {
+      console.error('환자 상세 정보 조회 실패:', error);
+      setError('환자 상세 정보를 불러오는데 실패했습니다.');
+    }
+  };
 
   // 환자 삭제 핸들러
   const handleDeletePatient = async (patientId, e) => {
@@ -506,7 +519,7 @@ export default function DoctorPage() {
             filteredPatients.map(p => (
               <PatientCard
                 key={p.id}
-                onClick={() => setSelectedPatient(p)}
+                onClick={() => handlePatientSelect(p)}
                 style={{ borderColor: selectedPatient?.id === p.id ? '#0089ED' : '#222' }}
               >
                 <PatientInfo>
@@ -527,6 +540,26 @@ export default function DoctorPage() {
           {deleteError && <ErrorMessage>{deleteError}</ErrorMessage>}
         </LeftPanel>
         <RightPanel>
+          {patientDetail && (
+            <div style={{ marginBottom: '24px' }}>
+              <SectionTitle>환자 정보</SectionTitle>
+              <div style={{ 
+                background: '#f7f7fa', 
+                padding: '16px', 
+                borderRadius: '12px',
+                fontSize: '15px',
+                lineHeight: '1.6'
+              }}>
+                <p><strong>이름:</strong> {patientDetail.name}</p>
+                <p><strong>생년월일:</strong> {patientDetail.birthDate}</p>
+                <p><strong>성별:</strong> {patientDetail.gender === 'FEMALE' ? '여성' : '남성'}</p>
+                <p><strong>이메일:</strong> {patientDetail.email}</p>
+                <p><strong>전화번호:</strong> {patientDetail.phone}</p>
+                <p><strong>환자 코드:</strong> {patientDetail.patientCode}</p>
+                <p><strong>병원:</strong> {patientDetail.hospital}</p>
+              </div>
+            </div>
+          )}
           <CalendarAndChartsRow>
             <DoctorCalendar
               selectedDate={selectedDate}
