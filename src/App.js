@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import DrawingPage from "./pages/DrawingPage";
 import MeditationPage from './pages/MeditationPage';
 import DoctorPage from './pages/DoctorPage';
+import LoginPage from './pages/LoginPage';
 import styled from 'styled-components';
 
 const BACKGROUND_VIDEOS = [
@@ -117,10 +118,12 @@ function AppContent() {
         </>
       )}
       <Routes>
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<Navigate to="/mainpage" replace />} />
+        <Route path="/mainpage" element={<MainPage />} />
         <Route path="/drawing" element={<DrawingPage />} />
         <Route path="/meditation" element={<MeditationPage />} />
         <Route path="/doctor" element={<DoctorPage />} />
+        <Route path="/login" element={<LoginPage />} />
         {/* 추후 명상, 마이페이지 라우트 추가 */}
       </Routes>
     </>

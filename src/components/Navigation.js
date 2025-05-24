@@ -143,11 +143,11 @@ const Navigation = () => {
             <NavInner>
                 <Left $color={leftColor}>OOO님 환영합니다!</Left>
                 <Center>
-                    <NavItem $active={location.pathname === '/'}>
-                        <Link to="/">일기 작성</Link>
+                    <NavItem $active={location.pathname === '/mainpage'}>
+                        <Link to="/mainpage">일기</Link>
                     </NavItem>
                     <NavItem $active={location.pathname === '/drawing'}>
-                        <Link to="/drawing">그림 그리기</Link>
+                        <Link to="/drawing">그림</Link>
                     </NavItem>
                     <NavItem $active={location.pathname === '/meditation'}>
                         <Link to="/meditation">명상</Link>
