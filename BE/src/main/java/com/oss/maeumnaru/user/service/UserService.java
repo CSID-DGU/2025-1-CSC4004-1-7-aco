@@ -102,11 +102,6 @@ public class UserService {
 
                 patientRepository.save(patient);
 
-                // 2. S3 업로드 (선택적 확장 예시)
-                if (file != null && !file.isEmpty()) {
-                    String contentPath = s3Service.uploadFile(file, "doctor/" + patient.getPatientCode());
-                    System.out.println("환자 관련 파일 업로드 완료: " + contentPath);
-                }
             }
 
             System.out.println("회원가입 처리 완료");
@@ -138,23 +133,28 @@ public class UserService {
             System.out.println("Authentication 객체 생성 완료: " + authentication.getName());
 
             // JWT 토큰 생성
-            TokenResponseDTO tokenInfo = jwtTokenProvider.generateToken(authentication);
+            // ✅ 토큰 생성
+            JwtTokenProvider.TokenPair tokenPair = jwtTokenProvider.generateTokenPair(authentication);
 
-            System.out.println("토큰 생성 완료: access = " + tokenInfo.accessToken());
+            System.out.println("토큰 생성 완료: access = " + tokenPair.accessToken());
 
             // Redis 저장
             tokenRedisRepository.save(new TokenRedis(
                     authentication.getName(),
-                    tokenInfo.accessToken(),
-                    tokenInfo.refreshToken()
+                    tokenPair.accessToken(),
+                    tokenPair.refreshToken()
             ));
 
             System.out.println("Redis 저장 완료");
 
             // 쿠키 저장
-            jwtTokenProvider.saveCookie(response, tokenInfo.accessToken());
+            jwtTokenProvider.saveCookie(response, tokenPair.accessToken());
 
-            return tokenInfo;
+            return TokenResponseDTO.of(
+                    tokenPair.accessToken(),
+                    tokenPair.refreshToken(),
+                    member.getMemberType()
+            );
 
         } catch (Exception e) {
             e.printStackTrace();

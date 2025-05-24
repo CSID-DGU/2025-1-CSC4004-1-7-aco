@@ -18,7 +18,7 @@ public record SignUpRequestDTO(
         @NotNull MemberEntity.Gender gender,
         @NotNull MemberEntity.MemberType memberType,
         String hospital,               // 공통: 병원명
-        MultipartFile certificationFile, // 🔹 의사 전용: 면허증 이미지 파일
+        //MultipartFile certificationFile, // 🔹 의사 전용: 면허증 이미지 파일
         String licenseNumber           // 의사 전용: 면허번호
         //String patientCode             // 환자 전용 필드
 ) {}

@@ -2,6 +2,7 @@ package com.oss.maeumnaru.user.controller;
 
 import com.oss.maeumnaru.global.jwt.JwtTokenProvider;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
+import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.global.util.CookieUtils;
 import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
@@ -42,6 +43,8 @@ public class UserController {
     private final MemberRepository memberRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final S3Service s3Service;
+
 
 
     //회원가입
@@ -142,6 +145,12 @@ public class UserController {
         if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
             DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
                     .orElseThrow(() -> new RuntimeException("해당 의사를 찾을 수 없습니다."));
+
+            // 면허증 S3 이미지 삭제
+            if (doctor.getCertificationPath() != null) {
+                s3Service.deleteFile(doctor.getCertificationPath());
+            }
+
             doctorRepository.delete(doctor);
         } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
             PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
