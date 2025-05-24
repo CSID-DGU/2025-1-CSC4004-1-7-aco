@@ -3,6 +3,7 @@ package com.oss.maeumnaru.user.service;
 import com.oss.maeumnaru.global.jwt.JwtTokenProvider;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
+import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
@@ -14,7 +15,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Random;
 
@@ -28,6 +31,8 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRedisRepository tokenRedisRepository;
+    private final S3Service s3Service;
+
 
     private String generatePatientCode(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -42,7 +47,7 @@ public class UserService {
     }
 
 
-    public void signUp(SignUpRequestDTO dto) {
+    public void signUp(SignUpRequestDTO dto, MultipartFile file) throws IOException {
         try {
             System.out.println("회원가입 요청 들어옴: " + dto);
 
@@ -69,10 +74,14 @@ public class UserService {
                     throw new IllegalArgumentException("의사의 licenseNumber는 필수입니다.");
                 }
 
+                String fileUrl = (file != null && !file.isEmpty())
+                        ? s3Service.uploadFile(file, "doctor-license")
+                        : null;
+
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())
                         .hospital(dto.hospital())
-                        .certificationPath(dto.certificationPath())
+                        .certificationPath(fileUrl)
                         .member(member)
                         .build();
 
@@ -85,7 +94,6 @@ public class UserService {
                     randomPatientCode = generatePatientCode(6);
                 } while (patientRepository.existsById(randomPatientCode));
 
-
                 PatientEntity patient = PatientEntity.builder()
                         .patientCode(randomPatientCode)
                         .patientHospital(dto.hospital())
@@ -93,6 +101,12 @@ public class UserService {
                         .build();
 
                 patientRepository.save(patient);
+
+                // 2. S3 업로드 (선택적 확장 예시)
+                if (file != null && !file.isEmpty()) {
+                    String contentPath = s3Service.uploadFile(file, "doctor/" + patient.getPatientCode());
+                    System.out.println("환자 관련 파일 업로드 완료: " + contentPath);
+                }
             }
 
             System.out.println("회원가입 처리 완료");
@@ -102,7 +116,6 @@ public class UserService {
             throw new RuntimeException("회원가입 중 오류 발생: " + e.getMessage());
         }
     }
-
     public TokenResponseDTO login(LoginRequestDTO dto, HttpServletResponse response) {
         try {
             System.out.println("로그인 요청: " + dto.loginId());

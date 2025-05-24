@@ -19,13 +19,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -42,11 +45,15 @@ public class UserController {
 
 
     //회원가입
-    @PostMapping("/signup")
-    public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequestDTO dto) {
-        userService.signUp(dto);
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> signUp(
+            @ModelAttribute SignUpRequestDTO dto,
+            @RequestPart(required = false) MultipartFile file // 의사 면허증 이미지
+    ) throws IOException {
+        userService.signUp(dto, file);
         return ResponseEntity.ok().build();
     }
+
 
     // 로그인 (JWT + Redis + Cookie)
     @PostMapping("/login")
