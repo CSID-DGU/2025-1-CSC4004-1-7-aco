@@ -129,6 +129,8 @@ const Navigation = () => {
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleLogout = () => {
         setShowLogoutModal(false);
         alert('로그아웃 되었습니다!');

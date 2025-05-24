@@ -3,6 +3,7 @@ import Button from "../component/Button";
 import Input from "../component/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signUpPatient } from "../api/auth";
 
 const SignupPatient = () => {
     const navigate = useNavigate();
@@ -127,7 +128,7 @@ const SignupPatient = () => {
         }
     };
 
-    const handleSignup = () => {
+    const handleSignUpPatient = async () => {
         // 에러 상태 초기화
         setError("");
         
@@ -210,7 +211,25 @@ const SignupPatient = () => {
             hospital: false
         });
 
-        navigate("/signup/finish");
+        // 유효성 검사 후 API 호출
+        const formData = new FormData();
+        formData.append("name", state.name);
+        formData.append("loginId", state.id);
+        formData.append("password", state.password);
+        formData.append("email", state.email);
+        formData.append("phone", state.phone);
+        formData.append("birthDate", state.birthDate);
+        formData.append("gender", state.gender);
+        formData.append("memberType", "PATIENT");        
+        formData.append("hospital", state.hospital);
+
+        try {
+            const response = await signUpPatient(formData);
+            console.log(response);
+            navigate("/signup/finish");
+        } catch (error) {
+            console.error("환자 회원가입 실패:", error);
+        }
     };
 
     const handlePasswordChange = (e) => {
@@ -282,27 +301,27 @@ const SignupPatient = () => {
                             <div className="gender-buttons-pp">
                                 <Button 
                                     text={"남자"} 
-                                    type={"MAIL"} 
+                                    type={"MALE"} 
                                     onClick={() => {
-                                        setState(prev => ({ ...prev, gender: "MAIL" }));
+                                        setState(prev => ({ ...prev, gender: "MALE" }));
                                         if (errors.gender) {
                                             setErrors(prev => ({ ...prev, gender: false }));
                                             setError("");
                                         }
                                     }} 
-                                    isSelected={state.gender === "MAIL"}
+                                    isSelected={state.gender === "MALE"}
                                     className={errors.gender ? "Button_error" : ""} />
                                 <Button 
                                     text={"여자"} 
-                                    type={"FEMAIL"} 
+                                    type={"FEMALE"} 
                                     onClick={() => {
-                                        setState(prev => ({ ...prev, gender: "FEMAIL" }));
+                                        setState(prev => ({ ...prev, gender: "FEMALE" }));
                                         if (errors.gender) {
                                             setErrors(prev => ({ ...prev, gender: false }));
                                             setError("");
                                         }
-                                    }} 
-                                    isSelected={state.gender === "FEMAIL"}
+                                    }}
+                                    isSelected={state.gender === "FEMALE"}
                                     className={errors.gender ? "Button_error" : ""} />
                             </div>
                         </div>
@@ -333,7 +352,7 @@ const SignupPatient = () => {
             </div>
 
             <div className="signupbtnpt">
-                <Button text={"회원가입"} size="large" onClick={handleSignup} />
+                <Button text={"회원가입"} size="large" onClick={handleSignUpPatient} />
             </div>
         </div>
     );

@@ -2,9 +2,7 @@ import './Signin.css';
 import Button from "../component/Button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-// import { login } from '../api/login';
-import { login } from '../api/authMock';
+import { signIn } from '../api/auth';
 
 const Signin = () => {
     const navigate = useNavigate();
@@ -26,7 +24,7 @@ const Signin = () => {
         setErrMsg("");
 
         try {
-            const response = await login(state.email, state.password);
+            const response = await signIn(state.id, state.password);
 
             // 로그인 성공하면 토큰 저장
             localStorage.setItem("token", response.data.token);
@@ -37,9 +35,7 @@ const Signin = () => {
         catch (error) {
             if (error.response?.data?.message) {
                 setErrMsg(error.response.data.message);
-            }
-
-            else {
+            } else {
                 setErrMsg("로그인 중 오류가 발생했습니다.");
             }
         }
