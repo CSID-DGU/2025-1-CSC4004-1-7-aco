@@ -5,7 +5,7 @@
     width: 100%;
     max-width: 350px;
     height: 100%;
-    max-height: 500px;
+    max-height: 520px;
     padding: 0 20px;
     margin-top: 50px;
     left: 50%;
@@ -67,6 +67,7 @@
     height: 12px;
     font-size: 14px;
     font-weight: 400;
+    padding: 1.5px;
 }
 
 .input::placeholder {
@@ -81,8 +82,16 @@
     margin-top: 25px;
 }
 
+.signinError {
+    min-height: 20px;
+    color: red;
+    font-size: 13px;
+    margin-top: 20px;
+    text-align: center;
+}
+
 .btn {
-    margin-top: 40px;
+    margin-top: 10px;
 }
 
 .signup {
