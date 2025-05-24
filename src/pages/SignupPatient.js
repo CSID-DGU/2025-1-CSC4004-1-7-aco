@@ -292,7 +292,6 @@ const SignupPatient = () => {
                                     }} 
                                     isSelected={state.gender === "MAIL"}
                                     className={errors.gender ? "Button_error" : ""} />
-
                                 <Button 
                                     text={"여자"} 
                                     type={"FEMAIL"} 
@@ -311,10 +310,8 @@ const SignupPatient = () => {
 
                     <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"}
                         value={state.id} onChange={handleOnChange} isError={errors.id} />
-
                     <Input name="password" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"}
                         value={state.password} onChange={handlePasswordChange} type="password" isError={errors.password} />
-
                     <Input name="confirmPw" label={"비밀번호 확인"} placeholder={"비밀번호를 다시 입력해주세요"}
                         value={state.confirmPw} onChange={handlePasswordChange} type="password" isError={errors.confirmPw} />
                 </div>
@@ -322,13 +319,10 @@ const SignupPatient = () => {
                 <div className="formcolumnpp">
                     <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"}
                         value={state.email} onChange={handleEmailChange} isError={errors.email} />
-
                     <Input name="birth" label={"생년월일"} placeholder={"YYYY-MM-DD"}
                         value={state.birth} onChange={handleBirthChange} isError={errors.birth} />
-
                     <Input name="phone" label={"연락처"} placeholder={"01000000000"}
                         value={state.phone} onChange={handleOnChange} isError={errors.phone} />
-                        
                     <Input name="hospital" label={"병원"} placeholder={"진료받는 병원을 입력해주세요"}
                         value={state.hospital} onChange={handleOnChange} isError={errors.hospital} />
                 </div>
