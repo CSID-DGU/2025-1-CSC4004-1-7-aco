@@ -22,7 +22,9 @@ public class MemberEntity {
     private String password;
     private String email;
     private String phone;
-    private String membrId;
+
+    @Column(nullable = false, unique = true)
+    private String loginId;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;

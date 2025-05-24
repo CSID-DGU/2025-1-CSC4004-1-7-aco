@@ -3,6 +3,7 @@ package com.oss.maeumnaru.user.service;
 import com.oss.maeumnaru.global.jwt.JwtTokenProvider;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
+import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
@@ -14,8 +15,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +31,30 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRedisRepository tokenRedisRepository;
+    private final S3Service s3Service;
 
-    public void signUp(SignUpRequestDTO dto) {
+
+    private String generatePatientCode(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            code.append(characters.charAt(random.nextInt(characters.length())));
+        }
+
+        return code.toString();
+    }
+
+
+    public void signUp(SignUpRequestDTO dto, MultipartFile file) throws IOException {
         try {
             System.out.println("회원가입 요청 들어옴: " + dto);
 
             MemberEntity member = MemberEntity.builder()
                     .name(dto.name())
                     .email(dto.email())
+                    .loginId(dto.loginId())
                     .password(dto.password())
                     .phone(dto.phone())
                     .birthDate(dto.birthDate())
@@ -54,10 +74,14 @@ public class UserService {
                     throw new IllegalArgumentException("의사의 licenseNumber는 필수입니다.");
                 }
 
+                String fileUrl = (file != null && !file.isEmpty())
+                        ? s3Service.uploadFile(file, "doctor-license")
+                        : null;
+
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())
                         .hospital(dto.hospital())
-                        .certificationPath(dto.certificationPath())
+                        .certificationPath(fileUrl)
                         .member(member)
                         .build();
 
@@ -65,14 +89,24 @@ public class UserService {
 
             } else {
                 System.out.println("PATIENT 처리 중");
+                String randomPatientCode;
+                do {
+                    randomPatientCode = generatePatientCode(6);
+                } while (patientRepository.existsById(randomPatientCode));
 
                 PatientEntity patient = PatientEntity.builder()
-                        .patientCode(dto.patientCode())
+                        .patientCode(randomPatientCode)
                         .patientHospital(dto.hospital())
                         .member(member)
                         .build();
 
                 patientRepository.save(patient);
+
+                // 2. S3 업로드 (선택적 확장 예시)
+                if (file != null && !file.isEmpty()) {
+                    String contentPath = s3Service.uploadFile(file, "doctor/" + patient.getPatientCode());
+                    System.out.println("환자 관련 파일 업로드 완료: " + contentPath);
+                }
             }
 
             System.out.println("회원가입 처리 완료");
@@ -82,13 +116,13 @@ public class UserService {
             throw new RuntimeException("회원가입 중 오류 발생: " + e.getMessage());
         }
     }
-
     public TokenResponseDTO login(LoginRequestDTO dto, HttpServletResponse response) {
         try {
-            System.out.println("로그인 요청: " + dto.email());
+            System.out.println("로그인 요청: " + dto.loginId());
 
-            MemberEntity member = memberRepository.findByEmail(dto.email())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 회원이 존재하지 않습니다."));
+            MemberEntity member = memberRepository.findByLoginId(dto.loginId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 회원이 존재하지 않습니다."));
+
 
             System.out.println("DB에서 찾은 사용자: " + member.getEmail());
 
