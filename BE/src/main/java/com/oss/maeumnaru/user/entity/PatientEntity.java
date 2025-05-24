@@ -17,7 +17,6 @@ public class PatientEntity {
     private String patientCode; // 직접 받는 값
 
     private String patientHospital;
-    private String memberType;
 
     @OneToOne
     @JoinColumn(name = "member_id", nullable = false)

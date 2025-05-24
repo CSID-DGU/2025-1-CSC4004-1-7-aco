@@ -2,7 +2,6 @@ package com.oss.maeumnaru.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.Date;
 
 @Entity
@@ -19,11 +18,16 @@ public class MemberEntity {
     private Long memberId;
 
     private String name;
+
+    @Column(unique = true, nullable = false)
     private String password;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String phone;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String loginId;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -41,10 +45,14 @@ public class MemberEntity {
     public enum Gender {
         MALE, FEMALE
     }
-
     public enum MemberType {
         PATIENT, DOCTOR
     }
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private DoctorEntity doctor;
 
-
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private PatientEntity patient;
 }

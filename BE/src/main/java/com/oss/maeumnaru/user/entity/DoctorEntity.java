@@ -13,7 +13,7 @@ import lombok.*;
 public class DoctorEntity {
 
     @Id
-    private String licenseNumber; // 직접 받는 값
+    private String licenseNumber;
 
     private String hospital;
     private String certificationPath;
