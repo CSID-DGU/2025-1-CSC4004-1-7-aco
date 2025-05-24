@@ -29,7 +29,7 @@ const MypagePatient = () => {
     };
 
     return (
-        <div className="patientpage">
+        <div className="patientpage" style={{ background: 'none', backgroundColor: 'white' }}>
             <Navigation />
 
             <div className="editorpatient">

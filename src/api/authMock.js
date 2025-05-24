@@ -24,12 +24,15 @@ export const login = (email, password) => {
         );
 
       if (user) {
+        // role 판별: 이메일에 doctor가 포함되어 있으면 doctor, 아니면 patient
+        const role = user.email.includes('doctor') ? 'doctor' : 'patient';
         resolve({
           data: {
             token: "mock-token-1234",
             user: {
               name: user.name,
               email: user.email,
+              role: role,
             },
           },
         });

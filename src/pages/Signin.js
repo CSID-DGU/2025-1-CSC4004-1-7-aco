@@ -26,8 +26,10 @@ const Signin = () => {
         try {
             const response = await signIn(state.id, state.password);
 
-            localStorage.setItem("token", response.token);
-            navigate("/");
+            // 로그인 성공하면 토큰 저장
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("role", response.data.user.role);
+            navigate("/mainpage");
         }
 
         catch (error) {

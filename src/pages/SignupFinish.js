@@ -15,7 +15,7 @@ const SignupFinish = () =>{
 
             <img src={flower} alt="flower" className="image" />
 
-            <Button text={"메인페이지로 이동"} onClick={() => navigate("/")} />
+            <Button text={"메인페이지로 이동"} onClick={() => navigate("/mainpage")} />
         </div>
     );
 };

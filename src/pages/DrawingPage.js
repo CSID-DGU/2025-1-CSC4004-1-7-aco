@@ -7,6 +7,15 @@ import { format } from 'date-fns';
 
 const DRAWING_STORAGE_KEY = 'drawing_records_v1';
 
+const DrawingPageContainer = styled.div`
+    width: 100vw;
+    min-height: 100vh;
+    background: transparent;
+    position: relative;
+    margin: 0 auto;
+    top: -15.9px;
+`;
+
 const DrawingPage = () => {
     const canvasRef = useRef(null);
     const modalCanvasRef = useRef(null);
@@ -268,7 +277,7 @@ const DrawingPage = () => {
     };
 
     return (
-        <Container>
+        <DrawingPageContainer>
             <Navigation />
             <MainContent>
                 <CalendarWrapper>
@@ -495,17 +504,9 @@ const DrawingPage = () => {
                     </ModalContent>
                 </ModalOverlay>
             )}
-        </Container>
+        </DrawingPageContainer>
     );
 };
-
-const Container = styled.div`
-    width: 100vw;
-    min-height: 100vh;
-    background: transparent;
-    position: relative;
-    margin: 0 auto;
-`;
 
 const MainContent = styled.main`
     width: 100vw;

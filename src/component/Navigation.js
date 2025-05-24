@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NavBar = styled.nav`
     width: 100vw;
@@ -24,6 +24,7 @@ const Left = styled.div`
     font-size: 20px;
     font-weight: 700;
     margin-left: 12px;
+    cursor: pointer;
 `;
 
 const Center = styled.ul`
@@ -64,24 +65,46 @@ const ProfileBtn = styled.button`
 
 const Navigation = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const isDoctorPage = location.pathname.startsWith('/doctor') || location.pathname.startsWith('/mypage/doctor');
+    const leftColor = isDoctorPage ? '#000' : '#fff';
 
     return (
         <NavBar>
             <NavInner>
-                <Left>OOO님 환영합니다!</Left>
+                <Left $color={leftColor} style={{ cursor: 'pointer' }} onClick={() => {
+                    const role = localStorage.getItem('role');
+                    if (role === 'doctor') {
+                        navigate('/doctor');
+                    } else {
+                        navigate('/mainpage');
+                    }
+                }}>OOO님 환영합니다!</Left>
                 <Center>
-                    <NavItem active={location.pathname === '/'}>
-                        <Link to="/">일기 작성</Link>
-                    </NavItem>
-                    <NavItem active={location.pathname === '/drawing'}>
-                        <Link to="/drawing">그림 그리기</Link>
-                    </NavItem>
-                    <NavItem active={location.pathname === '/meditation'}>
-                        <Link to="/meditation">명상</Link>
-                    </NavItem>
+                    { !isDoctorPage && (
+                        <>
+                            <NavItem active={location.pathname === '/'}>
+                                <Link to="/">일기 작성</Link>
+                            </NavItem>
+                            <NavItem active={location.pathname === '/drawing'}>
+                                <Link to="/drawing">그림 그리기</Link>
+                            </NavItem>
+                            <NavItem active={location.pathname === '/meditation'}>
+                                <Link to="/meditation">명상</Link>
+                            </NavItem>
+                        </>
+                    )}
                 </Center>
                 <Right>
-                    <ProfileBtn>
+                    <ProfileBtn onClick={() => {
+                        const role = localStorage.getItem('role');
+                        if (role === 'doctor') {
+                            navigate('/mypage/doctor');
+                        } else {
+                            navigate('/mypage/patient');
+                        }
+                    }}>
                         <span role="img" aria-label="profile">👤</span>
                     </ProfileBtn>
                 </Right>
