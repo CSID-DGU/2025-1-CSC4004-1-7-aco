@@ -1,7 +1,7 @@
 import "./Button.css";
 
 const Button = ({ text, type, onClick, disabled, size = "default", isSelected, className = "" }) => {
-    const btnType = ["MAIL", "FEMAIL"].includes(type) ? type : "basic";
+    const btnType = ["MALE", "FEMALE"].includes(type) ? type : "basic";
     const classNames = [
         "Button",
         `Button_${size}`,

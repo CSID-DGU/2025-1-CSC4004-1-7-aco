@@ -28,7 +28,7 @@
     max-width: 800px;
 }
 
-.Button_MAIL {
+.Button_MALE {
     max-width: 80px;
     height: 47.6px;
     background-color: white;
@@ -37,7 +37,7 @@
     transition: all 0.2s ease;
 }
 
-.Button_FEMAIL {
+.Button_FEMALE {
     max-width: 80px;
     height: 47.6px;
     background-color: white;
@@ -46,24 +46,24 @@
     transition: all 0.2s ease;
 }
 
-.Button_selected.Button_MAIL {
+.Button_selected.Button_MALE {
     background-color: #2fabed;
     color: white;
     border: 1px solid #2fabed;
 }
 
-.Button_selected.Button_FEMAIL {
+.Button_selected.Button_FEMALE {
     background-color: #fc83ce;
     color: white;
     border: 1px solid #fc83ce;
 }
 
-.Button_error.Button_MAIL,
-.Button_error.Button_FEMAIL {
+.Button_error.Button_MALE,
+.Button_error.Button_FEMALE {
     border: 1.5px solid #ff0000;
 }
 
-.Button_error.Button_MAIL:not(.Button_selected),
-.Button_error.Button_FEMAIL:not(.Button_selected) {
+.Button_error.Button_MALE:not(.Button_selected),
+.Button_error.Button_FEMALE:not(.Button_selected) {
     color: #ff0000;
 }

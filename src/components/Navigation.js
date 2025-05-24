@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from './ConfirmModal';
 
 const NavBar = styled.nav`
@@ -127,6 +127,8 @@ const LogoutBtn = styled.button`
 const Navigation = () => {
     const location = useLocation();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         setShowLogoutModal(false);

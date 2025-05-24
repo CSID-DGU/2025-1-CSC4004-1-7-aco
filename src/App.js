@@ -131,7 +131,7 @@ function AppContent() {
         <Route path="/drawing" element={<DrawingPage />} />
         <Route path="/meditation" element={<MeditationPage />} />
         <Route path="/doctor" element={<DoctorPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        {/* <Route path="/login" element={<LoginPage />} /> */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignupChoice />} />
         <Route path="/signup/doctor" element={<SignupDoctor />} />

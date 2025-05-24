@@ -4,6 +4,7 @@ import Input from "../component/Input";
 import attach_file from "../img/attach-file.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signUpDoctor } from "../api/auth";
 
 const SignupDoctor = () => {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ const SignupDoctor = () => {
         birthDate: "",
         gender: "",
         hospital: "",
-        certification: "", // file name or File object
+        certification: null,
         licenseNumber: "",
     });
 
@@ -129,7 +130,7 @@ const SignupDoctor = () => {
     };
 
     // 회원가입 버튼 클릭 시
-    const handleSignupDoctor = () => {
+    const handleSignUpDoctor = async () => {
         // 에러 상태 초기화
         setError("");
         
@@ -194,7 +195,27 @@ const SignupDoctor = () => {
             licenseNumber: false
         });
 
-        navigate("/signup/finish");
+        // 유효성 검사 후 API 호출
+        const formData = new FormData();
+        formData.append("name", state.name);
+        formData.append("loginId", state.id);
+        formData.append("password", state.password);
+        formData.append("email", state.email);
+        formData.append("phone", state.phone);
+        formData.append("memberType", "DOCTOR");
+        formData.append("birthDate", state.birthDate);
+        formData.append("gender", state.gender);
+        formData.append("hospital", state.hospital);
+        formData.append("licenseNumber", state.licenseNumber);
+        formData.append("certificationFile", state.certification);
+
+        try {
+            const response = await signUpDoctor(formData);
+            console.log(response);
+            navigate("/signup/finish");
+        } catch (error) {
+            console.error("의사 회원가입 실패:", error);
+        }
     };
 
     return (
@@ -214,27 +235,27 @@ const SignupDoctor = () => {
                             <div className="gender-buttons-dp">
                                 <Button 
                                     text={"남자"} 
-                                    type={"MAIL"} 
+                                    type={"MALE"} 
                                     onClick={() => {
-                                        setState(prev => ({...prev, gender:"MAIL"}));
+                                        setState(prev => ({...prev, gender:"MALE"}));
                                         if (errors.gender) {
                                             setErrors(prev => ({...prev, gender: false}));
                                             setError("");
                                         }
                                     }} 
-                                    isSelected={state.gender === "MAIL"}
+                                    isSelected={state.gender === "MALE"}
                                     className={errors.gender ? "Button_error" : ""} />
                                 <Button 
                                     text={"여자"} 
-                                    type={"FEMAIL"} 
+                                    type={"FEMALE"} 
                                     onClick={() => {
-                                        setState(prev => ({...prev, gender:"FEMAIL"}));
+                                        setState(prev => ({...prev, gender:"FEMALE"}));
                                         if (errors.gender) {
                                             setErrors(prev => ({...prev, gender: false}));
                                             setError("");
                                         }
                                     }} 
-                                    isSelected={state.gender === "FEMAIL"}
+                                    isSelected={state.gender === "FEMALE"}
                                     className={errors.gender ? "Button_error" : ""} />
                             </div>
                         </div>
@@ -275,7 +296,7 @@ const SignupDoctor = () => {
             </div>
 
             <div className="signupbtndt">
-                <Button text={"회원가입"} size="large" onClick={handleSignupDoctor} />
+                <Button text={"회원가입"} size="large" onClick={handleSignUpDoctor} />
             </div>
         </div>
     );
