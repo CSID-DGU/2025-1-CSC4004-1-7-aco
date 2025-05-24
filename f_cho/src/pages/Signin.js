@@ -3,14 +3,46 @@ import Button from "../component/Button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// import { login } from '../api/login';
+import { login } from '../api/authMock';
+
 const Signin = () => {
-    const [email, setEmail] = useState();
-    const [pw, setPw] = useState();
-
-    const handleSetEmail = (e) => { setEmail(e.target.value); };
-    const handleSetPw = (e) => { setPw(e.target.value); };
-
     const navigate = useNavigate();
+
+    const [errMsg, setErrMsg] = useState();
+    const [state, setState] = useState({
+        id: "",
+        password: "",
+    })
+
+    const handleOnChange = (e) => {
+        setState({
+            ...state,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleLogin = async () => {
+        setErrMsg("");
+
+        try {
+            const response = await login(state.email, state.password);
+
+            // 로그인 성공하면 토큰 저장
+            localStorage.setItem("token", response.data.token);
+            navigate("/");
+        }
+
+        catch (error) {
+            if (error.response?.data?.message) {
+                setErrMsg(error.response.data.message);
+            }
+
+            else {
+                setErrMsg("로그인 중 오류가 발생했습니다.");
+            }
+        }
+    }
 
     return (
         <div className='signinPage'>
@@ -21,7 +53,7 @@ const Signin = () => {
                     정신 건강 케어 플랫폼
                 </div>
                 <div className="signin">
-                    Sign in to
+                    로그인
                 </div>
                 <div className='name'>
                     마음나루
@@ -31,19 +63,24 @@ const Signin = () => {
             {/* 사용자로부터 입력받기 + 버튼 */}
             <div className='contentwrap'>
 
-                <div className="inputTitle id">이메일</div>
+                <div className="inputTitle id">아이디</div>
                 <div className="inputWrap">
-                    <input value={email} onChange={handleSetEmail} className="input" placeholder="이메일을 입력해주세요"></input>
+                    <input name="id" value={state.id} onChange={handleOnChange} className="input" placeholder="아이디를 입력해주세요"></input>
                 </div>
 
                 <div className="inputTitle pw">비밀번호</div>
                 <div className="inputWrap">
-                    <input value={pw} onChange={handleSetPw} className="input" placeholder="비밀번호를 입력해주세요"></input>
+                    <input name="password" value={state.password} onChange={handleOnChange} className="input" type="password" autoComplete='off' placeholder="비밀번호를 입력해주세요"></input>
+                </div>
+
+                {/* 에러 메세지 출력 */}
+                <div className='signinError'>
+                    {errMsg && <span>{errMsg}</span>}
                 </div>
 
                 {/* 이메일과 비밀번호 미작성 시 버튼 비활성화 */}
                 <div className='btn'>
-                    <Button text={"로그인"} disabled={!email || !pw} />
+                    <Button text={"로그인"} onClick={handleLogin} disabled={!state.email || !state.password} />
                 </div>
 
                 {/* 계정 없으면 회원가입 페이지로 이동 */}

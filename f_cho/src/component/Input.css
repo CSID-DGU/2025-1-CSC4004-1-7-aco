@@ -1,0 +1,60 @@
+.inputBlock {
+    margin-top: 10px;
+}
+
+.inputLabel {
+    font-size: 14px;
+}
+
+.inputWrap {
+    display: flex;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 5px;
+    background-color: white;
+    border: 1px solid #ADADAD;
+}
+
+.inputWrap:focus-within {
+    border: 1px solid #2b9cef;
+}
+
+.inputField {
+    outline: none;
+    border: none;
+    height: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.inputField::placeholder {
+    color: #adb5bd;
+}
+
+.inputBlock.short .inputField {
+    width: 180px;
+}
+
+.inputBlock.long .inputField {
+    width: 100%;
+}
+
+.input-error {
+    border: 1.5px solid red;
+}
+
+.input-error .inputField::placeholder {
+    color: #ff0000;
+}
+
+.file-upload-label {
+    transition: all 0.2s ease;
+}
+
+.file-upload-label.input-error {
+    border: 1.5px solid red;
+}
+
+.file-upload-label.input-error .placeholder-text {
+    color: #ff0000;
+}
