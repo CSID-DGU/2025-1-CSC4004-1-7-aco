@@ -44,7 +44,10 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public TokenResponseDTO generateToken(Authentication authentication) {
+    // JwtTokenProvider.java 내부
+    public record TokenPair(String accessToken, String refreshToken) {}
+
+    public TokenPair generateTokenPair(Authentication authentication) {
         String authorities = authentication.getAuthorities().isEmpty()
                 ? "ROLE_USER"
                 : authentication.getAuthorities().stream()
@@ -68,8 +71,9 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        return new TokenResponseDTO(accessToken, refreshToken);
+        return new TokenPair(accessToken, refreshToken);
     }
+
 
     public void saveCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie("accessToken", accessToken);
