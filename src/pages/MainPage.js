@@ -9,38 +9,39 @@ import styled from "styled-components";
 
 const MainContent = styled.main`
     width: 100vw;
-    max-width: 1400px;
+    max-width: 1600px;
     min-height: 100vh;
     margin: 0 auto;
-    margin-top: 120px;
+    margin-top: 90px;
     display: flex;
-    gap: 100px;
+    gap: 120px;
     justify-content: center;
     align-items: flex-start;
 `;
 
 const CalendarWrapper = styled.div`
-    width: 502px;
-    height: 497px;
+    width: 540px;
+    height: 540px;
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 40px;
-    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+    margin-top: 32px;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18);
 `;
 
 const DiaryArea = styled.div`
     position: relative;
-    width: 600px;
-    height: 575px;
+    width: 700px;
+    height: 600px;
     background: transparent;
-    border-radius: 25px;
+    border-radius: 28px;
     display: flex;
     flex-direction: column;
+    margin-top: 12px;
     align-items: flex-end;
-    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18);
 `;
 
 const AnalyzeButton = styled.button`

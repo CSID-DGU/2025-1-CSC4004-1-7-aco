@@ -47,14 +47,17 @@ const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, o
         dates.push(week);
     }
 
+    // KST 기준 YYYY-MM-DD 문자열 반환 함수
+    const getKSTDateString = (date) => {
+        const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+        return kst.toISOString().slice(0, 10);
+    };
+
     // 오늘 날짜 판별 함수
     const isTodayCell = (date) => {
         if (!date) return false;
-        return (
-            koreaTime.getFullYear() === year &&
-            koreaTime.getMonth() === month &&
-            koreaTime.getDate() === date
-        );
+        const cellDate = new Date(year, month, date);
+        return getKSTDateString(cellDate) === getKSTDateString(new Date());
     };
 
     // 선택된 날짜 판별 함수

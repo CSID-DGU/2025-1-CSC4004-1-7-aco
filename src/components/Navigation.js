@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from './ConfirmModal';
 
 const NavBar = styled.nav`
@@ -126,6 +126,7 @@ const LogoutBtn = styled.button`
 
 const Navigation = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     const handleLogout = () => {
@@ -142,19 +143,28 @@ const Navigation = () => {
         <NavBar>
             <NavInner>
                 <Left $color={leftColor}>OOO님 환영합니다!</Left>
-                <Center>
-                    <NavItem $active={location.pathname === '/mainpage'}>
-                        <Link to="/mainpage">일기</Link>
-                    </NavItem>
-                    <NavItem $active={location.pathname === '/drawing'}>
-                        <Link to="/drawing">그림</Link>
-                    </NavItem>
-                    <NavItem $active={location.pathname === '/meditation'}>
-                        <Link to="/meditation">명상</Link>
-                    </NavItem>
-                </Center>
+                { !isDoctorPage && (
+                  <Center>
+                      <NavItem $active={location.pathname === '/mainpage'}>
+                          <Link to="/mainpage">일기</Link>
+                      </NavItem>
+                      <NavItem $active={location.pathname === '/drawing'}>
+                          <Link to="/drawing">그림</Link>
+                      </NavItem>
+                      <NavItem $active={location.pathname === '/meditation'}>
+                          <Link to="/meditation">명상</Link>
+                      </NavItem>
+                  </Center>
+                )}
                 <Right>
-                    <ProfileBtn>
+                    <ProfileBtn onClick={() => {
+                        const role = localStorage.getItem('role');
+                        if (role === 'doctor') {
+                            navigate('/mypage/doctor');
+                        } else {
+                            navigate('/mypage/patient');
+                        }
+                    }}>
                         <span role="img" aria-label="profile">👤</span>
                     </ProfileBtn>
                     <LogoutBtn onClick={() => setShowLogoutModal(true)}>

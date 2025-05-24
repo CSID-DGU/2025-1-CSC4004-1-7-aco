@@ -48,7 +48,7 @@ const MypageDoctor = () => {
     };
 
     return (
-        <div className="md_doctorpage">
+        <div className="md_doctorpage" style={{ background: 'none', backgroundColor: 'white' }}>
             <Navigation />
 
             <div className="md_editordoctor">

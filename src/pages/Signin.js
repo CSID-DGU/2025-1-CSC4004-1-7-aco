@@ -30,7 +30,8 @@ const Signin = () => {
 
             // 로그인 성공하면 토큰 저장
             localStorage.setItem("token", response.data.token);
-            navigate("/");
+            localStorage.setItem("role", response.data.user.role);
+            navigate("/mainpage");
         }
 
         catch (error) {
@@ -80,7 +81,7 @@ const Signin = () => {
 
                 {/* 이메일과 비밀번호 미작성 시 버튼 비활성화 */}
                 <div className='btn'>
-                    <Button text={"로그인"} onClick={handleLogin} disabled={!state.email || !state.password} />
+                    <Button text={"로그인"} onClick={handleLogin} disabled={!state.id || !state.password} />
                 </div>
 
                 {/* 계정 없으면 회원가입 페이지로 이동 */}
