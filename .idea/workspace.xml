@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a4c5c6a8-a47c-4556-855b-885a3002000a" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/medical/controller/MedicalController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/medical/service/MedicalService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/BE/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/BE/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/Application.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/Application.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryAnalysisEntity$DiaryAnalysisEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryAnalysisEntity$DiaryAnalysisEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryAnalysisEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryAnalysisEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryEntity$DiaryEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryEntity$DiaryEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/entity/DiaryEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/ChatRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/ChatRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/DiaryAnalysisRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/DiaryAnalysisRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/DiaryRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/diary/repostiory/DiaryRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/global/error/exception/ApiException.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/global/error/exception/ApiException.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/entity/MedicalEntity$MedicalEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/entity/MedicalEntity$MedicalEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/entity/MedicalEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/entity/MedicalEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/repository/MedicalRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/medical/repository/MedicalRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/entity/MeditationEntity$MeditationEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/entity/MeditationEntity$MeditationEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/entity/MeditationEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/entity/MeditationEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/repository/MeditationRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/repository/MeditationRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/service/MeditationService.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/meditation/service/MeditationService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity$ChatEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity$ChatEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity$WriterType.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity$WriterType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/ChatEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/PaintEntity$PaintEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/PaintEntity$PaintEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/PaintEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/entity/PaintEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/repository/PaintRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/paint/repository/PaintRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/dto/request/TokenRequestDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/dto/request/TokenRequestDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/dto/response/TokenResponseDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/dto/response/TokenResponseDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/DoctorEntity$DoctorEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/DoctorEntity$DoctorEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/DoctorEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/DoctorEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$Gender.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$Gender.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$MemberEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$MemberEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$MemberType.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity$MemberType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/MemberEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/PatientEntity$PatientEntityBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/PatientEntity$PatientEntityBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/PatientEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/entity/PatientEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/DoctorRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/DoctorRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/MemberRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/MemberRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/PatientRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/classes/java/main/com/oss/maeumnaru/user/repository/PatientRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/reports/problems/problems-report.html" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/reports/problems/problems-report.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/resources/main/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/resources/main/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/tmp/compileJava/compileTransaction/stash-dir/MemberRepository.class.uniqueId0" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/BE/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/global/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/global/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/medical/repository/MedicalRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/medical/repository/MedicalRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/paint/controller/PaintController.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/paint/controller/PaintController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/paint/service/PaintService.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/src/main/java/com/oss/maeumnaru/paint/service/PaintService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BE/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2wvrO0fPoceo97BsL5Q6ZzMxESB" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.C:/Users/user/Desktop/project/BE/build.gradle.executor": "Run",
+    "Gradle.C:/Users/user/Desktop/project/build.gradle.executor": "Run",
+    "Gradle.C:/Users/user/Desktop/project/settings.gradle.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feat/#3-paint-기능-구현",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/user/Desktop/project/src/main/java/com/oss/maeumnaru/diary/repostiory",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDK",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\diary\repostiory" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\user\repository" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\paint\repository" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\paint\entity" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\meditation\entity" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\user\Desktop\project\FE" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\meditation\repository" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\medical\repository" />
+      <recent name="C:\Users\user\Desktop\project\src\main\java\com\oss\maeumnaru\diary\repostiory" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="maeumnaru" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="maeumnaru" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="a4c5c6a8-a47c-4556-855b-885a3002000a" name="변경" comment="" />
+      <created>1746932852568</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1746932852568</updated>
+      <workItem from="1746932854577" duration="9698000" />
+      <workItem from="1747038689065" duration="941000" />
+      <workItem from="1747039663901" duration="87000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
