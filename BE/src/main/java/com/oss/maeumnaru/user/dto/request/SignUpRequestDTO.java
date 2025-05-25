@@ -4,6 +4,7 @@ import com.oss.maeumnaru.user.entity.MemberEntity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ public record SignUpRequestDTO(
         @NotBlank String password,
         @NotBlank @Email String email,
         @NotBlank String phone,
-        @NotNull Date birthDate,
+        @NotNull @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthDate,
         @NotNull MemberEntity.Gender gender,
         @NotNull MemberEntity.MemberType memberType,
         String hospital,               // 공통: 병원명

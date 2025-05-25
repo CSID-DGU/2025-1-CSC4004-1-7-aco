@@ -17,6 +17,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import com.oss.maeumnaru.global.config.CustomUserDetails;
+
 
 import java.io.IOException;
 import java.security.Key;
@@ -56,7 +58,7 @@ public class JwtTokenProvider {
                 .collect(Collectors.joining(","));
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(((CustomUserDetails) authentication.getPrincipal()).getLoginId())  // ✅ loginId 확실히 보장
                 .claim(AUTHORITIES_KEY, authorities)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
