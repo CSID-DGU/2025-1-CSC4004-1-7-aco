@@ -1,13 +1,13 @@
+// DiaryAnalysisEntity.java
 package com.oss.maeumnaru.diary.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
-@Table(name = "diaryAnalysis")
+@Table(name = "diary_analysis")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,10 +18,10 @@ public class DiaryAnalysisEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long diaryAnalysisId;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date diaryReultDate;
+    @Temporal(TemporalType.DATE)
+    private Date resultDate;
 
-    private long emotionRate;
+    private Long emotionRate;
 
     private long mealCount;
 
@@ -30,7 +30,6 @@ public class DiaryAnalysisEntity {
     private boolean wentOutside;
 
     @OneToOne
-    @JoinColumn(name = "diaryId")
+    @JoinColumn(name = "diary_id")
     private DiaryEntity diary;
-
 }

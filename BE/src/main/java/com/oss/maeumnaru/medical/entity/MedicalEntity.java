@@ -19,11 +19,11 @@ public class MedicalEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long medicId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "patient_code")
     private PatientEntity patient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "license_number")
     private DoctorEntity doctor;
 
