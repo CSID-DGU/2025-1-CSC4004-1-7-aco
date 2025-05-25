@@ -1,8 +1,7 @@
 import "./MypageDoctor.css";
-import Button from "../component/Button";
-import Input from "../component/Input";
-import Navigation from "../component/Navigation"
 import { useState, useEffect } from "react";
+import Input from "../components/Input";
+import Navigation from "../components/Navigation"
 import { useNavigate } from "react-router-dom";
 import { getUserInfo, updateUserInfo, deleteUser } from "../api/mypage";
 
@@ -119,7 +118,7 @@ const MypageDoctor = () => {
     };
 
     return (
-        <div className="md_doctorpage">
+        <div className="md_doctorpage" style={{ background: 'none', backgroundColor: 'white' }}>
             <Navigation />
 
             <div className="md_editordoctor">

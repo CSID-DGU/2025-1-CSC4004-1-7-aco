@@ -4,7 +4,6 @@ import MainPage from "./pages/MainPage";
 import DrawingPage from "./pages/DrawingPage";
 import MeditationPage from './pages/MeditationPage';
 import DoctorPage from './pages/DoctorPage';
-import LoginPage from './pages/LoginPage';
 import SignIn from "./pages/Signin";
 import SignupChoice from "./pages/SignupChoice";
 import SignupDoctor from "./pages/SignupDoctor";
@@ -13,7 +12,6 @@ import SignupFinish from "./pages/SignupFinish";
 import MypageDoctor from "./pages/MypageDoctor";
 import MypagePatient from "./pages/MypagePatient";
 import styled from 'styled-components';
-import './App.css';
 
 const BACKGROUND_VIDEOS = [
   {
@@ -74,23 +72,23 @@ const ThumbnailButton = styled.button`
   }
 `;
 
-const ThumbnailLabel = styled.div`
-  font-size: 12px;
-  color: #333;
-  text-align: center;
-  margin-top: 4px;
-`;
-
 function AppContent() {
   const location = useLocation();
-  const isDoctorPage = location.pathname.startsWith('/doctor');
-  const [selectedBackground, setSelectedBackground] = useState('default');
+  const path = location.pathname.toLowerCase();
+  const isNoBgPage =
+    path.startsWith('/doctor') ||
+    path.startsWith('/login') ||
+    path.startsWith('/signin') ||
+    path.startsWith('/signup') ||
+    path.startsWith('/mypage/doctor') ||
+    path.startsWith('/mypage/patient');
 
+  const [selectedBackground, setSelectedBackground] = useState('default');
   const currentBackground = BACKGROUND_VIDEOS.find(video => video.id === selectedBackground);
 
   return (
     <>
-      {!isDoctorPage && (
+      {!isNoBgPage && (
         <>
           <video
             key={currentBackground.id}
@@ -126,12 +124,11 @@ function AppContent() {
         </>
       )}
       <Routes>
-        <Route path="/" element={<Navigate to="/mainpage" replace />} />
+        <Route path="/" element={<Navigate to="/signin" replace />} />
         <Route path="/mainpage" element={<MainPage />} />
         <Route path="/drawing" element={<DrawingPage />} />
         <Route path="/meditation" element={<MeditationPage />} />
         <Route path="/doctor" element={<DoctorPage />} />
-        {/* <Route path="/login" element={<LoginPage />} /> */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignupChoice />} />
         <Route path="/signup/doctor" element={<SignupDoctor />} />

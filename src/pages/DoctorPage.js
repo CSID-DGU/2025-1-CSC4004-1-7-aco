@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import 'react-calendar/dist/Calendar.css';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, ResponsiveContainer } from 'recharts';
@@ -14,24 +14,28 @@ const DoctorPageContainer = styled.div`
   display: flex;
   flex-direction: row;
   margin-top: 80px;
-  @media (max-width: 900px) {
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  @media (max-width: 1200px) {
     flex-direction: column;
+    max-width: 100vw;
   }
 `;
 
 const LeftPanel = styled.div`
-  width: 340px;
-  min-width: 260px;
+  width: 380px;
+  min-width: 280px;
   background: #fff;
   border-right: 1.5px solid #eee;
-  padding: 40px 16px 24px 32px;
+  padding: 48px 24px 32px 40px;
   display: flex;
   flex-direction: column;
-  @media (max-width: 900px) {
+  @media (max-width: 1200px) {
     width: 100vw;
     border-right: none;
     border-bottom: 1.5px solid #eee;
-    padding: 24px 8px 12px 8px;
+    padding: 32px 8px 16px 8px;
   }
 `;
 
@@ -136,10 +140,10 @@ const PatientAvatar = styled.div`
 
 const RightPanel = styled.div`
   flex: 1;
-  padding: 40px 40px 24px 40px;
+  padding: 48px 48px 32px 48px;
   display: flex;
   flex-direction: column;
-  @media (max-width: 900px) {
+  @media (max-width: 1200px) {
     padding: 24px 8px 12px 8px;
   }
 `;
@@ -147,9 +151,9 @@ const RightPanel = styled.div`
 const CalendarAndChartsRow = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 32px;
+  gap: 48px;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 `;
 
 const ChartCol = styled.div`
@@ -159,18 +163,18 @@ const ChartCol = styled.div`
 `;
 
 const ChartBox = styled.div`
-  width: 420px;
-  height: 200px;
+  width: 480px;
+  height: 240px;
   background: #f7f7fa;
-  border-radius: 16px;
-  padding: 16px 12px 0 12px;
+  border-radius: 20px;
+  padding: 20px 16px 0 16px;
   margin-bottom: 0;
 `;
 
 const SectionTitle = styled.div`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  margin: 24px 0 12px 0;
+  margin: 28px 0 16px 0;
 `;
 
 const SummaryCol = styled.div`
@@ -322,7 +326,7 @@ export default function DoctorPage() {
   const [weekStats, setWeekStats] = useState([]);
 
   // selectedDate를 항상 KST로 변환해서 사용
-  const kstSelectedDate = toKST(selectedDate);
+  const kstSelectedDate = useMemo(() => toKST(selectedDate), [selectedDate]);
 
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {

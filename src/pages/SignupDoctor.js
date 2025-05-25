@@ -1,6 +1,6 @@
 import "./SignupDoctor.css";
-import Button from "../component/Button";
-import Input from "../component/Input";
+import Button from "../components/Button";
+import Input from "../components/Input";
 import attach_file from "../img/attach-file.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
