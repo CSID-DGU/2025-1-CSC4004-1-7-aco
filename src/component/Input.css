@@ -58,3 +58,8 @@
 .file-upload-label.input-error .placeholder-text {
     color: #ff0000;
 }
+
+.input-disabled {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+}
