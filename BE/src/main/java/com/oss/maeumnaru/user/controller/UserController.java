@@ -8,6 +8,7 @@ import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
 import com.oss.maeumnaru.user.dto.request.UserUpdateRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
+import com.oss.maeumnaru.user.dto.response.UserProfileResponseDTO;
 import com.oss.maeumnaru.user.entity.MemberEntity;
 import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
@@ -26,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +46,8 @@ public class UserController {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final S3Service s3Service;
+    private final PasswordEncoder passwordEncoder;
+
 
     //회원가입
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -79,12 +83,44 @@ public class UserController {
 
     // 마이페이지 - 내 정보 조회
     @GetMapping("/me")
-    public ResponseEntity<MemberEntity> getMyInfo(Authentication authentication) {
+    public ResponseEntity<UserProfileResponseDTO> getMyInfo(Authentication authentication) {
+        System.out.println("authentication = " + authentication);
+        System.out.println("authentication.getPrincipal() = " + authentication.getPrincipal());
+        System.out.println("authentication.getName() = " + authentication.getName());
+
         String loginId = authentication.getName();
+
         MemberEntity member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
-        return ResponseEntity.ok(member);
+
+        String hospital = null;
+
+        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+            hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
+                    .map(DoctorEntity::getHospital)
+                    .orElse(null);
+        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+            hospital = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientHospital)
+                    .orElse(null);
+        }
+
+        UserProfileResponseDTO response = UserProfileResponseDTO.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .loginId(member.getLoginId())
+                .email(member.getEmail())
+                .phone(member.getPhone())
+                .gender(String.valueOf(member.getGender()))
+                .memberType(member.getMemberType().name())
+                .birthDate(member.getBirthDate() != null ? member.getBirthDate().toString() : null)
+                .createDate(member.getCreateDate() != null ? member.getCreateDate().toString() : null)
+                .hospital(hospital)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
+
 
 
     @PutMapping("/me")
@@ -97,7 +133,12 @@ public class UserController {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
 
         if (dto.getEmail() != null) member.setEmail(dto.getEmail());
-        if (dto.getPassword() != null) member.setPassword(dto.getPassword());
+
+        if (dto.getPassword() != null) {
+            // 🔒 비밀번호 암호화 후 저장
+            member.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
         if (dto.getPhone() != null) member.setPhone(dto.getPhone());
 
         if (dto.getHospital() != null) {
@@ -117,6 +158,7 @@ public class UserController {
         memberRepository.save(member);
         return ResponseEntity.ok().build();
     }
+
 
 
 
