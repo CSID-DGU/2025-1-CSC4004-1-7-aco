@@ -1,13 +1,10 @@
 import "./MypagePatient.css";
-import Button from "../component/Button";
-import Input from "../component/Input";
-import Navigation from "../component/Navigation"
+import Button from "../components/Button";
+import Input from "../components/Input";
+import Navigation from "../components/Navigation"
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const MypagePatient = () => {
-    const navigate = useNavigate();
-
     const [state, setState] = useState({
         name: "",
         gender: "",
