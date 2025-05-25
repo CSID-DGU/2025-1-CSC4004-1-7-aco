@@ -43,4 +43,24 @@ export const getDiariesByDate = async (date) => {
 export const getDiariesForPast7Days = async (baseDate) => {
     const res = await API.get(`/diary/7days`, { params: { baseDate } });
     return res.data;
+};
+
+// 일기 분석 결과 저장 또는 수정
+export const saveOrUpdateAnalysis = async (diaryId, analysisRequest) => {
+    const res = await API.post(`/diary/analysis/${diaryId}`, analysisRequest);
+    return res.data;
+};
+
+// 최근 7일간 분석 결과 조회
+export const getWeeklyAnalysesByMemberId = async (baseDate) => {
+    const res = await API.get(`/diary/analysis/weekly`, {
+        params: { baseDate }
+    });
+    return res.data;
+};
+
+// 단일 일기 분석 결과 조회
+export const getAnalysisByDiaryId = async (diaryId) => {
+    const res = await API.get(`/diary/analysis/${diaryId}`);
+    return res.data;
 }; 

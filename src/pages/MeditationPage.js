@@ -1,35 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import Navigation from '../components/Navigation';
-
-// 음악 리스트 더미 데이터
-const musicList = [
-    {
-        title: 'current favorites',
-        count: 20,
-        img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=facearea&w=80&h=80',
-    },
-    {
-        title: '3:00am vibes',
-        count: 18,
-        img: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=80&h=80',
-    },
-    {
-        title: 'Lofi Loft',
-        count: 43,
-        img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=80&h=80',
-    },
-    {
-        title: 'rain on my window',
-        count: 32,
-        img: 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=facearea&w=80&h=80',
-    },
-    {
-        title: 'Anime OSTs',
-        count: 20,
-        img: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=facearea&w=80&h=80',
-    },
-];
+import { getAllMeditations, getMeditationById } from '../services/meditationService';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -213,6 +185,8 @@ export default function MeditationPage() {
     const [isRunning, setIsRunning] = useState(false);
     const [maxTime, setMaxTime] = useState(INIT_TIME); // 게이지 계산용
     const timerRef = useRef();
+    const [meditationList, setMeditationList] = useState([]);
+    const [selectedMeditation, setSelectedMeditation] = useState(null);
 
     // 시간 조절 함수
     const handleIncrease = () => {
@@ -275,11 +249,44 @@ export default function MeditationPage() {
     const percent = Math.max(0, time / maxTime);
     const offset = CIRCUM * (1 - percent);
 
+    useEffect(() => {
+        // 명상 리스트 API 호출
+        getAllMeditations()
+            .then(data => setMeditationList(data))
+            .catch(err => {
+                console.error('명상 리스트 불러오기 실패:', err);
+                setMeditationList([]);
+            });
+    }, []);
+
+    // 명상 상세 조회 핸들러
+    const handleSelectMeditation = async (id) => {
+        try {
+            const data = await getMeditationById(id);
+            setSelectedMeditation(data);
+            // 명상 시간도 해당 명상에 맞게 자동 세팅
+            setTime(data.durationTime);
+            setMaxTime(data.durationTime);
+            setIsRunning(false);
+        } catch (err) {
+            alert('명상 정보를 불러오지 못했습니다.');
+        }
+    };
+
     return (
         <PageWrapper>
             <Navigation />
             <MainContent>
                 <LeftSection>
+                    {/* 선택된 명상 정보 표시 */}
+                    {selectedMeditation && (
+                        <div style={{ marginBottom: 24, textAlign: 'center' }}>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{selectedMeditation.meditationTitle}</div>
+                            <audio controls src={selectedMeditation.filePath} style={{ width: 220, background: '#fff', borderRadius: 8 }}>
+                                해당 브라우저는 오디오 태그를 지원하지 않습니다.
+                            </audio>
+                        </div>
+                    )}
                     <TimerWrapper>
                         <TimerCircle>
                             <svg width="240" height="240" style={{ position: 'absolute', top: 0, left: 0 }}>
@@ -319,12 +326,13 @@ export default function MeditationPage() {
                 <RightSection>
                     <MusicListTitle>플레이리스트</MusicListTitle>
                     <MusicList>
-                        {musicList.map((music, idx) => (
-                            <MusicItem key={idx}>
-                                <MusicThumb src={music.img} alt={music.title} />
+                        {meditationList.map((meditation) => (
+                            <MusicItem key={meditation.meditationId} onClick={() => handleSelectMeditation(meditation.meditationId)}>
+                                {/* 썸네일 이미지가 없으므로 기본 이미지 사용 */}
+                                <MusicThumb src="/meditation-default.png" alt={meditation.meditationTitle} />
                                 <MusicInfo>
-                                    <MusicTitle>{music.title}</MusicTitle>
-                                    <MusicCount>{music.count} songs</MusicCount>
+                                    <MusicTitle>{meditation.meditationTitle}</MusicTitle>
+                                    <MusicCount>{Math.floor(meditation.durationTime / 60)}분</MusicCount>
                                 </MusicInfo>
                             </MusicItem>
                         ))}
