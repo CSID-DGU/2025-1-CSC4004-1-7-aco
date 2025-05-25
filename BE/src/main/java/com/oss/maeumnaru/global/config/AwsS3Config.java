@@ -11,27 +11,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 
-//@Configuration
-//public class AwsS3Config {
-//
-//    @Value("${cloud.aws.region.static}")
-//    private String region;
-//
-//    @Bean
-//    public S3Client s3Client() {
-//        return S3Client.builder()
-//                .region(Region.of(region)) // 또는 @Value 주입 가능
-//                .build(); // IAM 역할 자동 사용
-//    }
-//}
 @Configuration
 public class AwsS3Config {
-
-    @Value("${cloud.aws.credentials.access-key}")
-    private String accessKey;
-
-    @Value("${cloud.aws.credentials.secret-key}")
-    private String secretKey;
 
     @Value("${cloud.aws.region.static}")
     private String region;
@@ -39,12 +20,7 @@ public class AwsS3Config {
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)
-                        )
-                )
-                .build();
+                .region(Region.of(region)) // 또는 @Value 주입 가능
+                .build(); // IAM 역할 자동 사용
     }
 }
