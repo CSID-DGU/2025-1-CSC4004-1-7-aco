@@ -44,5 +44,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+           echo "export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> ~/.bashrc
+            source ~/.bashrc
             pkill -f 'java -jar' || true
             nohup java -jar ~/app/BE/build/libs/*.jar > ~/app/log.txt 2>&1 &
