@@ -8,6 +8,7 @@ import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
 import com.oss.maeumnaru.user.dto.request.UserUpdateRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
+import com.oss.maeumnaru.user.dto.response.UserProfileResponseDTO;
 import com.oss.maeumnaru.user.entity.MemberEntity;
 import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
@@ -26,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +46,7 @@ public class UserController {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final S3Service s3Service;
-
+    private final PasswordEncoder passwordEncoder;
 
 
     //회원가입
@@ -80,44 +82,73 @@ public class UserController {
     }
 
     // 마이페이지 - 내 정보 조회
-    @GetMapping("/{userId}")
-    public ResponseEntity<MemberEntity> getUserInfo(@PathVariable Long userId, Authentication authentication) {
-        String loginEmail = authentication.getName();
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponseDTO> getMyInfo(Authentication authentication) {
+        System.out.println("authentication = " + authentication);
+        System.out.println("authentication.getPrincipal() = " + authentication.getPrincipal());
+        System.out.println("authentication.getName() = " + authentication.getName());
 
-        MemberEntity member = memberRepository.findByEmail(loginEmail)
+        String loginId = authentication.getName();
+
+        MemberEntity member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
-        return ResponseEntity.ok(member);
+        String hospital = null;
+
+        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+            hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
+                    .map(DoctorEntity::getHospital)
+                    .orElse(null);
+        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+            hospital = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientHospital)
+                    .orElse(null);
+        }
+
+        UserProfileResponseDTO response = UserProfileResponseDTO.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .loginId(member.getLoginId())
+                .email(member.getEmail())
+                .phone(member.getPhone())
+                .gender(String.valueOf(member.getGender()))
+                .memberType(member.getMemberType().name())
+                .birthDate(member.getBirthDate() != null ? member.getBirthDate().toString() : null)
+                .createDate(member.getCreateDate() != null ? member.getCreateDate().toString() : null)
+                .hospital(hospital)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<Void> updateUserInfo(
-            @PathVariable Long userId,
+
+
+    @PutMapping("/me")
+    public ResponseEntity<Void> updateMyInfo(
             @RequestBody UserUpdateRequestDTO dto,
             Authentication authentication) {
 
-        String loginEmail = authentication.getName();
-
-        MemberEntity member = memberRepository.findById(userId)
+        String loginId = authentication.getName();
+        MemberEntity member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
 
-        if (!member.getEmail().equals(loginEmail)) {
-            throw new AccessDeniedException("본인만 수정할 수 있습니다.");
+        if (dto.getEmail() != null) member.setEmail(dto.getEmail());
+
+        if (dto.getPassword() != null) {
+            // 🔒 비밀번호 암호화 후 저장
+            member.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
-        // 필요한 필드만 업데이트
-        if (dto.getEmail() != null) member.setEmail(dto.getEmail());
-        if (dto.getPassword() != null) member.setPassword(dto.getPassword());
         if (dto.getPhone() != null) member.setPhone(dto.getPhone());
 
         if (dto.getHospital() != null) {
             if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
-                doctorRepository.findByMember_MemberId(userId).ifPresent(doctor -> {
+                doctorRepository.findByMember_MemberId(member.getMemberId()).ifPresent(doctor -> {
                     doctor.setHospital(dto.getHospital());
                     doctorRepository.save(doctor);
                 });
             } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
-                patientRepository.findByMember_MemberId(userId).ifPresent(patient -> {
+                patientRepository.findByMember_MemberId(member.getMemberId()).ifPresent(patient -> {
                     patient.setPatientHospital(dto.getHospital());
                     patientRepository.save(patient);
                 });
@@ -129,28 +160,28 @@ public class UserController {
     }
 
 
+
+
     // 회원 탈퇴 (Redis 삭제 + 쿠키 삭제 + DB 삭제)
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> withdraw(@PathVariable Long userId, Authentication authentication, HttpServletResponse response) {
-        MemberEntity member = memberRepository.findById(userId)
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdrawMyAccount(Authentication authentication, HttpServletResponse response) {
+        String loginId = authentication.getName();
+        MemberEntity member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
 
         // Redis 토큰 삭제
-        tokenRedisRepository.deleteById(String.valueOf(userId));
+        tokenRedisRepository.deleteById(String.valueOf(member.getMemberId()));
 
         // 쿠키 삭제
         jwtTokenProvider.clearCookie(response);
 
-        // 연관된 doctor 또는 patient 먼저 삭제 (FK 제약 회피)
+        // 연관된 doctor 또는 patient 먼저 삭제
         if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
             DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
                     .orElseThrow(() -> new RuntimeException("해당 의사를 찾을 수 없습니다."));
-
-            // 면허증 S3 이미지 삭제
             if (doctor.getCertificationPath() != null) {
                 s3Service.deleteFile(doctor.getCertificationPath());
             }
-
             doctorRepository.delete(doctor);
         } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
             PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
@@ -158,11 +189,9 @@ public class UserController {
             patientRepository.delete(patient);
         }
 
-
-        // 최종 member 삭제
         memberRepository.delete(member);
-
         return ResponseEntity.ok().build();
     }
+
 
 }

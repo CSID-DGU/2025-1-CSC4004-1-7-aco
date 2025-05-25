@@ -1,5 +1,6 @@
 package com.oss.maeumnaru.user.service;
 
+import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.jwt.JwtTokenProvider;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
@@ -14,11 +15,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -32,6 +36,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRedisRepository tokenRedisRepository;
     private final S3Service s3Service;
+    private final PasswordEncoder passwordEncoder;
 
 
     private String generatePatientCode(int length) {
@@ -55,7 +60,7 @@ public class UserService {
                     .name(dto.name())
                     .email(dto.email())
                     .loginId(dto.loginId())
-                    .password(dto.password())
+                    .password(passwordEncoder.encode(dto.password()))
                     .phone(dto.phone())
                     .birthDate(dto.birthDate())
                     .gender(dto.gender())
@@ -121,14 +126,24 @@ public class UserService {
 
             System.out.println("DB에서 찾은 사용자: " + member.getEmail());
 
-            if (!member.getPassword().equals(dto.password())) {
+            if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
                 throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
             }
 
             // 인증 객체 생성
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    member.getEmail(), member.getPassword()
+            CustomUserDetails customUserDetails = new CustomUserDetails(
+                    member.getMemberId(),
+                    member.getLoginId(),
+                    member.getPassword(),
+                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
             );
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    customUserDetails,
+                    null,
+                    customUserDetails.getAuthorities()
+            );
+
 
             System.out.println("Authentication 객체 생성 완료: " + authentication.getName());
 
