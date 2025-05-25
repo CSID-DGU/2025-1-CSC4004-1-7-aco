@@ -24,7 +24,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew clean build
+          ./gradlew :BE:clean :BE:build
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
