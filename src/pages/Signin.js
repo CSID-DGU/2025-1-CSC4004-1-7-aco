@@ -1,5 +1,5 @@
 import './Signin.css';
-import Button from "../component/Button";
+import Button from "../components/Button";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn } from '../api/auth';

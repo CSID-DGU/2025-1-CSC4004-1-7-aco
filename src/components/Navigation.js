@@ -67,7 +67,7 @@ const Center = styled.ul`
 
 const NavItem = styled.li`
     a {
-        color: #fff;
+        color: ${({ $color }) => $color || '#fff'};
         background: ${({ $active }) => ($active ? "#0089ED" : "none")};
         border-radius: 20px;
         padding: 8px 24px;
@@ -100,7 +100,7 @@ const ProfileBtn = styled.button`
     border: none;
     font-size: 32px;
     cursor: pointer;
-    color: #fff;
+    color: ${({ $color }) => $color || '#fff'};
     @media (max-width: 700px) {
         font-size: 22px;
     }
@@ -111,7 +111,7 @@ const LogoutBtn = styled.button`
     border: none;
     font-size: 32px;
     cursor: pointer;
-    color: #fff;
+    color: ${({ $color }) => $color || '#fff'};
     margin-left: 12px;
     transition: color 0.2s, transform 0.2s;
     &:hover {
@@ -129,37 +129,47 @@ const Navigation = () => {
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-    const navigate = useNavigate();
-
     const handleLogout = () => {
         setShowLogoutModal(false);
         alert('로그아웃 되었습니다!');
         // 실제 로그아웃 로직 추가 가능
+        navigate('/signin');
     };
 
-    // 경로에 따라 폰트 색상 결정
-    const isDoctorPage = location.pathname.startsWith('/doctor');
-    const leftColor = isDoctorPage ? '#000' : '#fff';
+    // 마이페이지(의사/환자) 경로도 검정색 적용
+    const isDoctorPage = location.pathname.startsWith('/doctor') || location.pathname.startsWith('/mypage/doctor');
+    const isPatientMypage = location.pathname.startsWith('/mypage/patient');
+    const isMypage = location.pathname.startsWith('/mypage/doctor') || location.pathname.startsWith('/mypage/patient');
+    const leftColor = (isDoctorPage || isMypage) ? '#000' : '#fff';
 
     return (
         <NavBar>
             <NavInner>
-                <Left $color={leftColor}>OOO님 환영합니다!</Left>
-                { !isDoctorPage && (
-                  <Center>
-                      <NavItem $active={location.pathname === '/mainpage'}>
-                          <Link to="/mainpage">일기</Link>
-                      </NavItem>
-                      <NavItem $active={location.pathname === '/drawing'}>
-                          <Link to="/drawing">그림</Link>
-                      </NavItem>
-                      <NavItem $active={location.pathname === '/meditation'}>
-                          <Link to="/meditation">명상</Link>
-                      </NavItem>
-                  </Center>
-                )}
+                <Left $color={leftColor} style={{ cursor: 'pointer' }} onClick={() => {
+                    const role = localStorage.getItem('role');
+                    if (role === 'doctor') {
+                        navigate('/doctor');
+                    } else {
+                        navigate('/mainpage');
+                    }
+                }}>OOO님 환영합니다!</Left>
+                <Center>
+                    { (!isDoctorPage && !isMypage) || isPatientMypage ? (
+                        <>
+                            <NavItem $active={location.pathname === '/mainpage'} $color={leftColor}>
+                                <Link to="/mainpage">일기 작성</Link>
+                            </NavItem>
+                            <NavItem $active={location.pathname === '/drawing'} $color={leftColor}>
+                                <Link to="/drawing">그림 그리기</Link>
+                            </NavItem>
+                            <NavItem $active={location.pathname === '/meditation'} $color={leftColor}>
+                                <Link to="/meditation">명상</Link>
+                            </NavItem>
+                        </>
+                    ) : null}
+                </Center>
                 <Right>
-                    <ProfileBtn onClick={() => {
+                    <ProfileBtn $color={leftColor} onClick={() => {
                         const role = localStorage.getItem('role');
                         if (role === 'doctor') {
                             navigate('/mypage/doctor');
@@ -169,7 +179,7 @@ const Navigation = () => {
                     }}>
                         <span role="img" aria-label="profile">👤</span>
                     </ProfileBtn>
-                    <LogoutBtn onClick={() => setShowLogoutModal(true)}>
+                    <LogoutBtn $color={leftColor} onClick={() => setShowLogoutModal(true)}>
                         <span role="img" aria-label="logout">🔓</span>
                     </LogoutBtn>
                 </Right>

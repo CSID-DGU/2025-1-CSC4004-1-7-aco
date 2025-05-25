@@ -1,6 +1,6 @@
 import "./SignupPatient.css";
-import Button from "../component/Button";
-import Input from "../component/Input";
+import Button from "../components/Button";
+import Input from "../components/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpPatient } from "../api/auth";

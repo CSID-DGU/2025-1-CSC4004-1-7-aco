@@ -1,6 +1,6 @@
 import "./SignupFinish.css";
 import flower from "../img/flower-bouquet.png";
-import Button from "../component/Button";
+import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
 
 const SignupFinish = () =>{

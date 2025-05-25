@@ -1,7 +1,6 @@
 import "./MypageDoctor.css";
-import Button from "../component/Button";
-import Input from "../component/Input";
-import Navigation from "../component/Navigation"
+import Input from "../components/Input";
+import Navigation from "../components/Navigation"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

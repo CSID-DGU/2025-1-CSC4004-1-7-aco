@@ -12,7 +12,6 @@ import SignupFinish from "./pages/SignupFinish";
 import MypageDoctor from "./pages/MypageDoctor";
 import MypagePatient from "./pages/MypagePatient";
 import styled from 'styled-components';
-import './App.css';
 
 const BACKGROUND_VIDEOS = [
   {

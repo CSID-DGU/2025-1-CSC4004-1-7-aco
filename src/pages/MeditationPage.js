@@ -145,7 +145,8 @@ const MusicItem = styled.li`
   cursor: pointer;
   transition: background 0.15s;
   &:hover {
-    background: #f5faff;
+    background: rgba(245,250,255,0.5);
+    border-radius:12px;
   }
 `;
 

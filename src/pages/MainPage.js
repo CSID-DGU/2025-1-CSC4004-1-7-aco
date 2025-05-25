@@ -6,6 +6,7 @@ import AnalysisModal from "../components/AnalysisModal";
 import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import styled from "styled-components";
+import { createDiary, updateDiary, deleteDiary, getDiariesByDate } from '../services/diaryService';
 
 const MainContent = styled.main`
     width: 100vw;
@@ -164,23 +165,42 @@ export default function MainPage() {
         setTimeout(() => saveNotification.remove(), 2000);
     };
 
-    // 일기 삭제
-    const handleDeleteDiary = () => {
-        setShowDeleteConfirm(true);
+    // 일기 저장(작성/수정)
+    const handleSaveDiary = async () => {
+        if (!isTodaySelected) return;
+        const diary = diaryMap[dateKey];
+        try {
+            if (diary && diary.id) {
+                await updateDiary(diary.id, diary); // file이 있다면 세 번째 인자에 file 추가
+            } else {
+                await createDiary(diary); // file이 있다면 두 번째 인자에 file 추가
+            }
+            alert('저장되었습니다!');
+            // 저장 후 다시 불러오기(선택)
+            const diaries = await getDiariesByDate(dateKey);
+            if (diaries.length > 0) {
+                setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
+            }
+        } catch (e) {
+            alert('저장 실패: ' + (e.response?.data?.message || e.message));
+        }
     };
 
-    const confirmDelete = () => {
-        setDiaryMap((prev) => {
-            const newMap = { ...prev };
-            delete newMap[dateKey];
-            return newMap;
-        });
-        setEmotionMap((prev) => {
-            const newMap = { ...prev };
-            delete newMap[dateKey];
-            return newMap;
-        });
-        setShowDeleteConfirm(false);
+    // 일기 삭제
+    const confirmDelete = async () => {
+        const diary = diaryMap[dateKey];
+        if (!diary?.id) return;
+        try {
+            await deleteDiary(diary.id);
+            setDiaryMap((prev) => {
+                const newMap = { ...prev };
+                delete newMap[dateKey];
+                return newMap;
+            });
+            setShowDeleteConfirm(false);
+        } catch (e) {
+            alert('삭제 실패: ' + (e.response?.data?.message || e.message));
+        }
     };
 
     // 감정 분석(더미)
@@ -211,29 +231,31 @@ export default function MainPage() {
         }, 1200);
     };
 
-    // 달력 날짜 클릭 시 해당 날짜 일기 불러오기
-    const handleSelectDate = (date) => {
+    // 날짜 선택 시 해당 날짜 일기 불러오기
+    const handleSelectDate = async (date) => {
         const newDate = new Date(date);
         const dateKey = getKSTDateKey(newDate);
-        
-        // 상태 업데이트를 한 번에 처리
         setSelectedDate(newDate);
         setCurrentMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
-        
-        // 디버깅 로그
-        console.log('Selected date:', newDate);
-        console.log('Date key:', dateKey);
-        console.log('Diary exists:', !!diaryMap[dateKey]);
+        try {
+            const diaries = await getDiariesByDate(dateKey);
+            if (diaries.length > 0) {
+                setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
+            } else {
+                setDiaryMap((prev) => {
+                    const newMap = { ...prev };
+                    delete newMap[dateKey];
+                    return newMap;
+                });
+            }
+        } catch (e) {
+            alert('일기 불러오기 실패: ' + (e.response?.data?.message || e.message));
+        }
     };
 
     // 월 변경 핸들러
     const handleChangeMonth = (date) => {
         setCurrentMonth(date);
-    };
-
-    const handleSaveDiary = () => {
-        if (!isTodaySelected) return;
-        alert('저장되었습니다!');
     };
 
     return (
@@ -265,7 +287,7 @@ export default function MainPage() {
                             저장하기
                         </SaveButton>
                         <DeleteButton
-                            onClick={handleDeleteDiary}
+                            onClick={() => setShowDeleteConfirm(true)}
                             disabled={!diaryMap[dateKey]}
                         >
                             삭제하기
@@ -281,7 +303,7 @@ export default function MainPage() {
                     isToday={isTodaySelected}
                     onAnalyze={() => handleAnalyze(selectedDate)}
                     isAnalyzing={isAnalyzing}
-                    onDelete={handleDeleteDiary}
+                    onDelete={() => setShowDeleteConfirm(true)}
                     showDelete={!!diaryMap[dateKey]}
                     onSave={handleSaveDiary}
                 />
