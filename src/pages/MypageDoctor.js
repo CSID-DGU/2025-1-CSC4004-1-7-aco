@@ -97,14 +97,7 @@ const MypageDoctor = () => {
                             onChange={handleOnChange}
                             disabled={!isEditing}
                         />
-                        <Input 
-                            name="confirmPw" 
-                            type="password"
-                            label={"비밀번호 확인"} 
-                            value={state.confirmPw} 
-                            onChange={handleOnChange}
-                            disabled={!isEditing}
-                        />
+                        
                     </div>
 
                     <div className="md_formcolumn">
@@ -130,13 +123,7 @@ const MypageDoctor = () => {
                             onChange={handleOnChange}
                             disabled={!isEditing}
                         />
-                        <Input 
-                            name="certificate" 
-                            label={"의사 면허증"} 
-                            value={state.certificate} 
-                            onChange={handleOnChange}
-                            disabled={!isEditing}
-                        />
+
                         <Input 
                             name="licenseNumber" 
                             label={"의사 면허증 번호"} 
