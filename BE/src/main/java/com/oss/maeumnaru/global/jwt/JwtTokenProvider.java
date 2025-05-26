@@ -3,7 +3,6 @@ package com.oss.maeumnaru.global.jwt;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
-import com.oss.maeumnaru.user.entity.MemberEntity;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -18,6 +17,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import com.oss.maeumnaru.global.config.CustomUserDetails;
+
 
 import java.io.IOException;
 import java.security.Key;
@@ -45,17 +46,20 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
+    // JwtTokenProvider.java 내부
+    public record TokenPair(String accessToken, String refreshToken) {}
 
-
-    public TokenResponseDTO generateToken(Authentication authentication, MemberEntity member) {
-
-        String memberType = String.valueOf(member.getMemberType()); // "DOCTOR" 또는 "PATIENT"
-        String authorities = "ROLE_" + memberType;
+    public TokenPair generateTokenPair(Authentication authentication) {
+        String authorities = authentication.getAuthorities().isEmpty()
+                ? "ROLE_USER"
+                : authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> !a.isBlank())
+                .collect(Collectors.joining(","));
 
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(((CustomUserDetails) authentication.getPrincipal()).getLoginId())  // ✅ loginId 확실히 보장
                 .claim(AUTHORITIES_KEY, authorities)
-                .claim("memberId", member.getMemberId())   // ✅ 추가
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -69,7 +73,7 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        return new TokenResponseDTO(accessToken, refreshToken);
+        return new TokenPair(accessToken, refreshToken);
     }
 
     public void saveCookie(HttpServletResponse response, String accessToken) {
@@ -104,7 +108,7 @@ public class JwtTokenProvider {
     }
 
     public UsernamePasswordAuthenticationToken createAuthenticationFromToken(String token, String memberId) {
-        Authentication authentication = getAuthentication(token);
+        Authentication authentication = getAuthentication(token, memberId);
         return new UsernamePasswordAuthenticationToken(
                 authentication.getPrincipal(),
                 null,
@@ -112,11 +116,10 @@ public class JwtTokenProvider {
         );
     }
 
-    public Authentication getAuthentication(String token) {
+    public Authentication getAuthentication(String token, String memberId) {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
-        String LoginId = claims.getSubject(); // sub
-        Long memberId = claims.get("memberId", Long.class);
+        String subject = "refresh".equals(claims.get("type", String.class)) ? memberId : claims.getSubject();
 
         String authString = claims.get(AUTHORITIES_KEY, String.class);
         if (authString == null || authString.isBlank()) {
@@ -126,14 +129,11 @@ public class JwtTokenProvider {
         Collection<? extends GrantedAuthority> authorities = Arrays.stream(authString.split(","))
                 .filter(a -> !a.isBlank())
                 .map(SimpleGrantedAuthority::new)
-                .toList();
+                .collect(Collectors.toList());
 
-        // ✅ 커스텀 사용자 정보 주입
-        SimpleUserPrincipal principal = new SimpleUserPrincipal(memberId, LoginId);
-
-        return new UsernamePasswordAuthenticationToken(principal, null, authorities);
+        User principal = new User(subject, "", authorities);
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
-
 
     public UsernamePasswordAuthenticationToken replaceAccessToken(HttpServletResponse response, String token) throws IOException {
         TokenRedis tokenRedis = tokenRedisRepository.findByAccessToken(token)
