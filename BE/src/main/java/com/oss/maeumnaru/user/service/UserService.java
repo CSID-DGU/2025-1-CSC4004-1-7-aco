@@ -135,7 +135,7 @@ public class UserService {
                     member.getMemberId(),
                     member.getLoginId(),
                     member.getPassword(),
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    List.of(new SimpleGrantedAuthority("ROLE_" + member.getMemberType()))
             );
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
