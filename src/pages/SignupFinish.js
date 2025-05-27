@@ -10,12 +10,12 @@ const SignupFinish = () =>{
         <div className="finishPage">
 
             <div className="finishTitle">
-                회원가입을 환영합니다!
+                회원가입이 완료되었습니다!
             </div>
 
             <img src={flower} alt="flower" className="image" />
 
-            <Button text={"메인페이지로 이동"} onClick={() => navigate("/mainpage")} />
+            <Button text={"로그인 페이지로 이동"} onClick={() => navigate("/signin")} />
         </div>
     );
 };

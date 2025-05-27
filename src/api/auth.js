@@ -1,5 +1,4 @@
 import API from './API';
-import axios from 'axios';
 
 export const signIn = async (id, password) => {
     const response = await API.post('/user/login', {
@@ -10,7 +9,7 @@ export const signIn = async (id, password) => {
 };
 
 export const signUpDoctor = async (formData) => {
-    const response = await axios.post('/user/singup', formData, {
+    const response = await API.post('/user/signup', formData, {
         headers: {
             'Content-Type': "multipart/form-data",
         }
@@ -19,7 +18,7 @@ export const signUpDoctor = async (formData) => {
 };
 
 export const signUpPatient = async (formData) => {
-    const response = await axios.post('/user/singup', formData, {
+    const response = await API.post('/user/singup', formData, {
         headers: {
             'Content-Type': "multipart/form-data",
         }

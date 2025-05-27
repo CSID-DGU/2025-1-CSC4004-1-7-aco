@@ -6,7 +6,7 @@ import "./index.css";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
 
-if (process.env.NODE_ENV === 'development') {
-  const { worker } = require('./mocks/browser');
-  worker.start();
-}
+// if (process.env.NODE_ENV === 'development') {
+//   const { worker } = require('./mocks/browser');
+//   worker.start();
+// }
