@@ -50,5 +50,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            echo $OPENAI_API_KEY
             pkill -f 'java -jar' || true
             nohup java -DOPENAI_API_KEY=$OPENAI_API_KEY -jar ~/app/BE/build/libs/*.jar > ~/app/log.txt 2>&1 &
