@@ -21,10 +21,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      - name: Build BE module only
         run: |
-          chmod +x gradlew
-          ./gradlew :BE:clean :BE:build
+          cd BE
+          chmod +x ../gradlew
+          ../gradlew clean build
+
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
