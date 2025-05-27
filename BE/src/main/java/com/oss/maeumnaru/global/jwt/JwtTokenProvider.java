@@ -77,13 +77,17 @@ public class JwtTokenProvider {
     }
 
     public void saveCookie(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie("accessToken", accessToken);
-        cookie.setPath("/");
+    Cookie cookie = new Cookie("accessToken", accessToken);
+    cookie.setPath("/");
+    // 로컬에서는 domain 설정 안 함
+    if (cookieResponseDomain != null && !cookieResponseDomain.equals("localhost")) {
         cookie.setDomain(cookieResponseDomain);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(60 * 30); // 30분
-        response.addCookie(cookie);
     }
+    cookie.setHttpOnly(true);
+    cookie.setMaxAge(60 * 30); // 30분
+    response.addCookie(cookie);
+}
+
 
     public void clearCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie("accessToken", null);
