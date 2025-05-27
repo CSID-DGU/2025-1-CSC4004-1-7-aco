@@ -21,29 +21,32 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      - name: Build BE module with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew clean build
+          ./gradlew :BE:clean :BE:build
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Copy JAR to EC2
+      - name: Copy jar to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: build/libs/*.jar         
-          target: ~/app/BE/build/libs/       
+          source: BE/build/libs/*.jar
+          target: ~/app/BE/build/libs/
 
-      - name: Run app on EC2
+      - name: Run Spring Boot app on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            echo "Killing any running Spring Boot apps..."
             pkill -f 'java -jar' || true
+
+            echo "Starting new Spring Boot app..."
             nohup java -DOPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
               -jar ~/app/BE/build/libs/*.jar > ~/app/log.txt 2>&1 &
