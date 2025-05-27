@@ -44,10 +44,11 @@ jobs:
         run: ./gradlew build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: build-artifacts
           path: BE/build/libs/*.jar
+
 
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.4
