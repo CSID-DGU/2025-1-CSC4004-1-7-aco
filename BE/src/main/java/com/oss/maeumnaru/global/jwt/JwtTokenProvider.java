@@ -80,7 +80,7 @@ public class JwtTokenProvider {
         Cookie cookie = new Cookie("accessToken", accessToken);
         cookie.setPath("/");
         cookie.setDomain(cookieResponseDomain);
-        cookie.setHttpOnly(false);
+        cookie.setHttpOnly(true);
         cookie.setMaxAge(60 * 30); // 30분
         response.addCookie(cookie);
     }
