@@ -19,13 +19,13 @@ const MypageDoctor = () => {
         memberType: "",
         createDate: "",
         hospital: "",
-        
+
         password: "",
         confirmPw: "",
     });
 
     const [isEditing, setIsEditing] = useState(false);
-    
+
     const editableFields = ["email", "phone", "hospital"];
 
     const handleOnChange = (e) => {
@@ -38,6 +38,9 @@ const MypageDoctor = () => {
     const handleGetUserInfo = async () => {
         try {
             const userInfo = await getUserInfo();
+
+            
+
             setState(userInfo);
         } catch (error) {
             console.error("사용자 정보를 가져오는데 실패했습니다.", error);
@@ -56,7 +59,7 @@ const MypageDoctor = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
-    
+
     // 전화번호 형식 확인
     const isPhoneValid = (phone) => {
         const phoneRegex = /^\d{11}$/;
@@ -66,7 +69,7 @@ const MypageDoctor = () => {
     // 마이페이지 수정
     const handleEdit = async () => {
         if (isEditing) {
-            
+
             // 이메일 형식 확인
             if (!isEmailValid(state.email)) {
                 alert("이메일 형식이 올바르지 않습니다.");
@@ -129,36 +132,36 @@ const MypageDoctor = () => {
                 <div className="md_formgrid">
                     <div className="md_formcolumn">
                         <div className="md_row">
-                            <Input 
-                                name="name" 
-                                label={"이름"} 
-                                value={state.name} 
+                            <Input
+                                name="name"
+                                label={"이름"}
+                                value={state.name}
                                 onChange={handleOnChange}
                                 disabled={true}
                                 className="input-readonly"
                             />
-                            <Input 
-                                name="gender" 
-                                label={"성별"} 
-                                value={state.gender} 
+                            <Input
+                                name="gender"
+                                label={"성별"}
+                                value={state.gender}
                                 onChange={handleOnChange}
                                 disabled={true}
                                 className="input-readonly"
                             />
                         </div>
 
-                        <Input 
-                            name="email" 
-                            label={"이메일"} 
-                            value={state.email} 
+                        <Input
+                            name="email"
+                            label={"이메일"}
+                            value={state.email}
                             onChange={handleOnChange}
                             disabled={!isEditing || !editableFields.includes("email")}
                             className={!isEditing || !editableFields.includes("email") ? "input-readonly" : ""}
                         />
-                        <Input 
-                            name="loginId" 
-                            label={"아이디"} 
-                            value={state.loginId} 
+                        <Input
+                            name="loginId"
+                            label={"아이디"}
+                            value={state.loginId}
                             onChange={handleOnChange}
                             disabled={true}
                             className="input-readonly"
@@ -166,38 +169,38 @@ const MypageDoctor = () => {
 
                         {/* 정보 수정 시 비밀번호 변경 가능 */}
                         {isEditing && (
-                            <Input 
-                                name="password" 
-                                label={"새 비밀번호"} 
-                                value={state.password} 
+                            <Input
+                                name="password"
+                                label={"새 비밀번호"}
+                                value={state.password}
                                 onChange={handleOnChange}
                             />
                         )}
-                        
+
                     </div>
 
                     <div className="md_formcolumn">
-                        <Input 
-                            name="birthDate" 
-                            label={"생년월일"} 
-                            value={state.birthDate} 
+                        <Input
+                            name="birthDate"
+                            label={"생년월일"}
+                            value={state.birthDate}
                             onChange={handleOnChange}
                             disabled={true}
                             className="input-readonly"
                         />
-                        <Input 
-                            name="phone" 
-                            label={"전화번호"} 
-                            value={state.phone} 
+                        <Input
+                            name="phone"
+                            label={"전화번호"}
+                            value={state.phone}
                             onChange={handleOnChange}
                             disabled={!isEditing || !editableFields.includes("phone")}
                             className={!isEditing || !editableFields.includes("phone") ? "input-readonly" : ""}
                         />
-                        
-                        <Input 
-                            name="hospital" 
-                            label={"근무 병원"} 
-                            value={state.hospital} 
+
+                        <Input
+                            name="hospital"
+                            label={"근무 병원"}
+                            value={state.hospital}
                             onChange={handleOnChange}
                             disabled={!isEditing || !editableFields.includes("hospital")}
                             className={!isEditing || !editableFields.includes("hospital") ? "input-readonly" : ""}
@@ -205,10 +208,10 @@ const MypageDoctor = () => {
 
                         {/* 정보 수정 시 비밀번호 변경 가능 */}
                         {isEditing && (
-                            <Input 
-                                name="confirmPw" 
-                                label={"비밀번호 확인"} 
-                                value={state.confirmPw} 
+                            <Input
+                                name="confirmPw"
+                                label={"비밀번호 확인"}
+                                value={state.confirmPw}
                                 onChange={handleOnChange}
                             />
                         )}

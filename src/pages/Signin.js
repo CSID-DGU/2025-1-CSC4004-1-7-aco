@@ -26,10 +26,27 @@ const Signin = () => {
         try {
             const response = await signIn(state.id, state.password);
 
+            console.log("response", response);
+
             // 로그인 성공하면 토큰 저장
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("role", response.data.user.role);
-            navigate("/mainpage");
+            localStorage.setItem("accessToken", response.accessToken);
+
+            console.log("로그인 직후 저장된 accessToken:", localStorage.getItem("accessToken"));
+
+            // refreshToken도 저장하기
+            localStorage.setItem("refreshToken", response.refreshToken);
+
+            localStorage.setItem("role", response.memberType);
+
+            // 어느 페이지로 넘어갈지 구분
+            if (response.memberType === "DOCTOR") {
+                navigate("/doctor");
+            }
+            else {
+                navigate("/mainpage");
+            }
+
+
         }
 
         catch (error) {

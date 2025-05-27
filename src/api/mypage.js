@@ -2,6 +2,11 @@ import API from './API';
 
 export const getUserInfo = async () => {
     const response = await API.get('/user/me');
+
+    console.log("getUserInfo");
+    console.log("response: ", response);
+    console.log("response.data: ", response.data);
+
     return response.data;
 };
 

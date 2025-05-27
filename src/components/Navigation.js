@@ -147,14 +147,14 @@ const Navigation = () => {
             <NavInner>
                 <Left $color={leftColor} style={{ cursor: 'pointer' }} onClick={() => {
                     const role = localStorage.getItem('role');
-                    if (role === 'doctor') {
+                    if (role === 'DOCTOR') {
                         navigate('/doctor');
                     } else {
                         navigate('/mainpage');
                     }
                 }}>OOO님 환영합니다!</Left>
                 <Center>
-                    { (!isDoctorPage && !isMypage) || isPatientMypage ? (
+                    {(!isDoctorPage && !isMypage) || isPatientMypage ? (
                         <>
                             <NavItem $active={location.pathname === '/mainpage'} $color={leftColor}>
                                 <Link to="/mainpage">일기 작성</Link>
@@ -171,7 +171,14 @@ const Navigation = () => {
                 <Right>
                     <ProfileBtn $color={leftColor} onClick={() => {
                         const role = localStorage.getItem('role');
-                        if (role === 'doctor') {
+
+                        console.log("role", role);
+                        console.log("accessToken", localStorage.getItem("accessToken"));
+                        console.log("refreshToken", localStorage.getItem("refreshToken"));
+
+                        
+
+                        if (role === 'DOCTOR') {
                             navigate('/mypage/doctor');
                         } else {
                             navigate('/mypage/patient');
