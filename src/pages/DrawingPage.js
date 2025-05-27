@@ -4,7 +4,7 @@ import Calendar from '../components/Calendar';
 import './DrawingPage.css';
 import Navigation from "../components/Navigation";
 import { format } from 'date-fns';
-import { savePaintDraft, finalizePaint, getPaintById, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat } from '../services/paintService';
+import { savePaintDraft, finalizePaint, getPaintById, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat, deletePaint } from '../api/paintApi';
 
 const DRAWING_STORAGE_KEY = 'drawing_records_v1';
 
@@ -109,9 +109,15 @@ const DrawingPage = () => {
         if (showChatModal && paintId) {
             (async () => {
                 try {
+                    // 그림 정보 조회
+                    const paint = await getPaintById(paintId);
+                    setPaintInfo(paint);
+
+                    // 대화 목록 조회
                     const chats = await getChatsByPaintId(paintId);
                     setChatList(chats);
                 } catch (e) {
+                    console.error('데이터 조회 실패:', e);
                     setChatList([]);
                 }
             })();
@@ -185,19 +191,22 @@ const DrawingPage = () => {
         const blob = await (await fetch(dataUrl)).blob();
         const patientCode = Number(localStorage.getItem('patientCode'));
         const dto = { patientCode, title: drawingTitle };
+
         try {
             let id = paintId;
-            let paint;
             if (!id) {
+                // 임시 저장이 되어있지 않은 경우, 먼저 임시 저장
                 const res = await savePaintDraft(blob, dto);
                 id = res.paintId;
                 setPaintId(id);
                 setPaintInfo(res);
-                paint = res;
             } else {
-                paint = await getPaintById(id);
+                // 기존 그림 정보 조회
+                const paint = await getPaintById(id);
                 setPaintInfo(paint);
             }
+
+            // 최종 저장
             await finalizePaint(id, blob, dto);
             setSavedImage(dataUrl);
             setIsFinalSaved(true);
@@ -210,12 +219,15 @@ const DrawingPage = () => {
     const handleCompleteChat = async () => {
         if (!paintId) return;
         try {
+            // 채팅 목록에서 대화 쌍을 추출
             const chatRequestList = [];
             let lastBot = null;
+
             chatList.forEach(chat => {
                 if (chat.writerType === 'CHATBOT') {
                     lastBot = chat.comment;
                 } else if (chat.writerType === 'PATIENT' && lastBot) {
+                    // 봇 질문과 사용자 응답 쌍을 생성
                     chatRequestList.push({
                         paintId,
                         chatbotComment: lastBot,
@@ -224,6 +236,8 @@ const DrawingPage = () => {
                     lastBot = null;
                 }
             });
+
+            // 대화 완료 저장
             await completeChat(paintId, chatRequestList);
             alert('대화가 저장되었습니다.');
             setShowChatModal(false);
@@ -258,22 +272,34 @@ const DrawingPage = () => {
         setShowConfirmModal(true);
     };
 
-    const handleConfirmAction = () => {
-        const dateKey = format(selectedDate, 'yyyy-MM-dd');
-        const newRecords = { ...drawingRecords };
-        delete newRecords[dateKey];
-        setDrawingRecords(newRecords);
-        localStorage.setItem(DRAWING_STORAGE_KEY, JSON.stringify(newRecords));
-        
-        if (isToday(selectedDate)) {
-            setIsFinalSaved(false);
-            setIsPastDrawing(false);
-            clearCanvas();
-        } else {
-            setIsFinalSaved(true);
-            setIsPastDrawing(true);
+    const handleConfirmAction = async () => {
+        try {
+            if (paintId) {
+                // 서버에서 그림 삭제
+                await deletePaint(paintId);
+            }
+
+            // 로컬 상태 업데이트
+            const dateKey = format(selectedDate, 'yyyy-MM-dd');
+            const newRecords = { ...drawingRecords };
+            delete newRecords[dateKey];
+            setDrawingRecords(newRecords);
+            localStorage.setItem(DRAWING_STORAGE_KEY, JSON.stringify(newRecords));
+
+            if (isToday(selectedDate)) {
+                setIsFinalSaved(false);
+                setIsPastDrawing(false);
+                clearCanvas();
+            } else {
+                setIsFinalSaved(true);
+                setIsPastDrawing(true);
+            }
+            setShowConfirmModal(false);
+            setPaintId(null);
+            setPaintInfo(null);
+        } catch (e) {
+            alert('삭제 실패: ' + (e.response?.data?.message || e.message));
         }
-        setShowConfirmModal(false);
     };
 
     const isToday = (date) => {
@@ -351,12 +377,25 @@ const DrawingPage = () => {
         if (!chatInput.trim() || !paintId) return;
         setIsChatLoading(true);
         try {
+            // 사용자 응답 저장 및 다음 질문 받기
             const nextQuestion = await saveReplyAndGetNextQuestion(paintId, chatInput);
+
+            // 채팅 목록 업데이트
             setChatList(prev => ([
                 ...prev,
-                { writerType: 'PATIENT', comment: chatInput, chatDate: new Date().toISOString() },
-                { writerType: 'CHATBOT', comment: nextQuestion, chatDate: new Date().toISOString() }
+                {
+                    writerType: 'PATIENT',
+                    comment: chatInput,
+                    chatDate: new Date().toISOString()
+                },
+                {
+                    writerType: 'CHATBOT',
+                    comment: nextQuestion,
+                    chatDate: new Date().toISOString()
+                }
             ]));
+
+            // 입력창 초기화
             setChatInput("");
         } catch (e) {
             alert('메시지 전송 실패: ' + (e.response?.data?.message || e.message));
@@ -532,15 +571,40 @@ const DrawingPage = () => {
                         </ModalHeader>
                         <ModalBody style={{ gap: '40px' }}>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src={paintInfo?.fileUrl || savedImage} alt="그림 미리보기" style={{ maxWidth: '350px', maxHeight: '350px', borderRadius: '16px', background: '#e3e3e3' }} />
+                                <img
+                                    src={paintInfo?.fileUrl || savedImage}
+                                    alt="그림 미리보기"
+                                    style={{
+                                        maxWidth: '350px',
+                                        maxHeight: '350px',
+                                        borderRadius: '16px',
+                                        background: '#e3e3e3'
+                                    }}
+                                />
                             </div>
                             <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                <div style={{ flex: 1, overflowY: 'auto', background: '#f7f7fa', borderRadius: '12px', padding: '16px', marginBottom: '12px', minHeight: '300px' }}>
+                                <div style={{
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    background: '#f7f7fa',
+                                    borderRadius: '12px',
+                                    padding: '16px',
+                                    marginBottom: '12px',
+                                    minHeight: '300px'
+                                }}>
                                     {chatList.length === 0 ? (
-                                        <div style={{ color: '#888', textAlign: 'center', marginTop: '40%' }}>AI 챗봇과의 대화가 여기에 표시됩니다.</div>
+                                        <div style={{ color: '#888', textAlign: 'center', marginTop: '40%' }}>
+                                            AI 챗봇과의 대화가 여기에 표시됩니다.
+                                        </div>
                                     ) : (
-                                        chatList.map((chat, idx) => (
-                                            <div key={idx} style={{ textAlign: chat.writerType === 'PATIENT' ? 'right' : 'left', margin: '8px 0' }}>
+                                        chatList.map((chat) => (
+                                            <div
+                                                key={chat.chatId}
+                                                style={{
+                                                    textAlign: chat.writerType === 'PATIENT' ? 'right' : 'left',
+                                                    margin: '8px 0'
+                                                }}
+                                            >
                                                 <span style={{
                                                     display: 'inline-block',
                                                     background: chat.writerType === 'PATIENT' ? '#dbeafe' : '#fff',
@@ -550,31 +614,39 @@ const DrawingPage = () => {
                                                     maxWidth: '70%',
                                                     wordBreak: 'break-all',
                                                     fontSize: 15
-                                                }}>{chat.comment}</span>
-                                                <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>{new Date(chat.chatDate).toLocaleString()}</span>
+                                                }}>
+                                                    {chat.comment}
+                                                </span>
+                                                <span style={{
+                                                    fontSize: 12,
+                                                    color: '#888',
+                                                    marginLeft: 8
+                                                }}>
+                                                    {new Date(chat.chatDate).toLocaleString()}
+                                                </span>
                                             </div>
                                         ))
                                     )}
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={chatInput}
                                         onChange={e => setChatInput(e.target.value)}
-                                        style={{ 
-                                            flex: 1, 
-                                            padding: '10px', 
-                                            borderRadius: '8px', 
-                                            border: '1px solid #ccc', 
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #ccc',
                                             fontSize: '16px',
                                             backgroundColor: isFinalSaved ? '#f5f5f5' : '#fff',
                                             cursor: isFinalSaved ? 'not-allowed' : 'text'
-                                        }} 
-                                        placeholder="메시지를 입력하세요" 
+                                        }}
+                                        placeholder="메시지를 입력하세요"
                                         disabled={isFinalSaved || isChatLoading}
                                     />
-                                    <Button 
-                                        style={{ 
+                                    <Button
+                                        style={{
                                             minWidth: '60px',
                                             backgroundColor: isFinalSaved ? '#ccc' : '#fff',
                                             cursor: isFinalSaved ? 'not-allowed' : 'pointer'
