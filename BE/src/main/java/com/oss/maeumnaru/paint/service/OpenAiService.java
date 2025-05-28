@@ -1,5 +1,6 @@
 package com.oss.maeumnaru.paint.service;
 
+import jakarta.annotation.PostConstruct;
 import okhttp3.*;
 import org.json.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,52 +13,55 @@ public class OpenAiService {
 
     @Value("${openai.api.key}")
     private String apiKey;
-
+    @PostConstruct
+    public void checkKey() {
+        System.out.println("Injected API Key = " + apiKey);
+    }
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
 
     // GPT에게 follow-up 질문을 생성 요청하는 메서드
     public String generateFollowUpQuestion(String patientReply) {
         // 실제 호출은 주석 처리하고, 테스트용 응답만 반환
 
-//        OkHttpClient client = new OkHttpClient();
-//
-//        JSONObject message1 = new JSONObject()
-//                .put("role", "system")
-//                .put("content", "당신은 감정 분석 상담사입니다. 사용자의 응답에 따라 감정과 그림의 의미를 더 깊이 탐색할 수 있는 질문을 해주세요.");
-//
-//        JSONObject message2 = new JSONObject()
-//                .put("role", "user")
-//                .put("content", patientReply);
-//
-//        JSONArray messages = new JSONArray()
-//                .put(message1)
-//                .put(message2);
-//
-//        JSONObject body = new JSONObject()
-//                .put("model", "gpt-3.5-turbo")
-//                .put("messages", messages)
-//                .put("max_tokens", 100)
-//                .put("temperature", 0.7);
-//
-//        Request request = new Request.Builder()
-//                .url(API_URL)
-//                .addHeader("Authorization", "Bearer " + apiKey)
-//                .addHeader("Content-Type", "application/json")
-//                .post(RequestBody.create(body.toString(), MediaType.parse("application/json")))
-//                .build();
-//
-//        try (Response response = client.newCall(request).execute()) {
-//            String responseBody = response.body().string();
-//            JSONObject result = new JSONObject(responseBody);
-//            return result.getJSONArray("choices")
-//                    .getJSONObject(0)
-//                    .getJSONObject("message")
-//                    .getString("content");
-//        } catch (IOException e) {
-//            return "응답을 바탕으로 어떤 감정이 더 느껴졌는지 알려주세요."; // fallback 질문
-//        }
-//
-//        // ✅ GPT 연결 없이 테스트할 때 반환할 기본 질문
-        return "응답을 바탕으로 어떤 감정이 더 느껴졌는지 알려주세요? (GPT 호출 생략 중)";
+        OkHttpClient client = new OkHttpClient();
+
+        JSONObject message1 = new JSONObject()
+                .put("role", "system")
+                .put("content", "당신은 감정 분석 상담사입니다. 사용자의 응답에 따라 감정과 그림의 의미를 더 깊이 탐색할 수 있는 질문을 해주세요.");
+
+        JSONObject message2 = new JSONObject()
+                .put("role", "user")
+                .put("content", patientReply);
+
+        JSONArray messages = new JSONArray()
+                .put(message1)
+                .put(message2);
+
+        JSONObject body = new JSONObject()
+                .put("model", "gpt-3.5-turbo")
+                .put("messages", messages)
+                .put("max_tokens", 100)
+                .put("temperature", 0.7);
+
+        Request request = new Request.Builder()
+                .url(API_URL)
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .addHeader("Content-Type", "application/json")
+                .post(RequestBody.create(body.toString(), MediaType.parse("application/json")))
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            JSONObject result = new JSONObject(responseBody);
+            return result.getJSONArray("choices")
+                    .getJSONObject(0)
+                    .getJSONObject("message")
+                    .getString("content");
+        } catch (IOException e) {
+            return "응답을 바탕으로 어떤 감정이 더 느껴졌는지 알려주세요."; // fallback 질문
+        }
+
+        // ✅ GPT 연결 없이 테스트할 때 반환할 기본 질문
+        //return "응답을 바탕으로 어떤 감정이 더 느껴졌는지 알려주세요? (GPT 호출 생략 중)";
     }
 }

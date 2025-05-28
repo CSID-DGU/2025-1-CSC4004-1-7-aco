@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000") // React 개발 서버 주소
+                .allowedOrigins("https://maeumnaru-osp7.web.app") // React 개발 서버 주소
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
