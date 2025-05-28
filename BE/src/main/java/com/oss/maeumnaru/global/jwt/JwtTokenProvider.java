@@ -79,7 +79,7 @@ public class JwtTokenProvider {
     public void saveCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie("accessToken", accessToken);
         cookie.setPath("/");
-        cookie.setDomain(cookieResponseDomain);
+        //cookie.setDomain(cookieResponseDomain);
         cookie.setHttpOnly(true);
         cookie.setMaxAge(60 * 30); // 30분
         response.addCookie(cookie);
@@ -88,7 +88,7 @@ public class JwtTokenProvider {
     public void clearCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie("accessToken", null);
         cookie.setPath("/");
-        cookie.setDomain(cookieResponseDomain);
+        //cookie.setDomain(cookieResponseDomain);
         cookie.setMaxAge(0); // 즉시 만료
         response.addCookie(cookie);
     }
