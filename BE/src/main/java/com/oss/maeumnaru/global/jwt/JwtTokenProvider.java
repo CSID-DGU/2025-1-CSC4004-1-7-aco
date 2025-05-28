@@ -77,21 +77,19 @@ public class JwtTokenProvider {
     }
 
     public void saveCookie(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie("accessToken", accessToken);
-        cookie.setPath("/");
-        //cookie.setDomain(cookieResponseDomain);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(60 * 30); // 30분
-        response.addCookie(cookie);
+    String cookie = String.format(
+            "accessToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+            accessToken, 60 * 30
+    );
+    response.setHeader("Set-Cookie", cookie);
     }
 
+
     public void clearCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("accessToken", null);
-        cookie.setPath("/");
-        //cookie.setDomain(cookieResponseDomain);
-        cookie.setMaxAge(0); // 즉시 만료
-        response.addCookie(cookie);
+    String cookie = "accessToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
+    response.setHeader("Set-Cookie", cookie);
     }
+
 
     public boolean validateToken(String token, HttpServletResponse response) throws IOException {
         try {
