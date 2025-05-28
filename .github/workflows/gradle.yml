@@ -41,13 +41,4 @@ jobs:
       - name: List jar files in BE/build/libs
         run: ls -al BE/build/libs/
 
-      - name: Run app on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-           pkill -f 'java -DOPENAI_API_KEY' || true
-           sudo lsof -i :8080
-           nohup java -DOPENAI_API_KEY=$OPENAI_API_KEY -jar ~/app/BE/build/libs/maeumnaru-0.0.1-SNAPSHOT.jar > ~/app/log.txt 2>&1 &
+      
