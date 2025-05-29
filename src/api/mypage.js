@@ -20,12 +20,3 @@ export const updateUserInfo = async (email, password, phone, hospital) => {
     return response.data;
 };
 
-export const deleteUser = async () => {
-    const response = await API.delete('/user/me');
-    return response.data;
-};
-
-export const signOut = async () => {
-    const response = await API.post('/user/logout');
-    return response.data;
-};
