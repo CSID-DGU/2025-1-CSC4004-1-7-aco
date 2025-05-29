@@ -6,7 +6,7 @@ import AnalysisModal from "../components/AnalysisModal";
 import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import styled from "styled-components";
-import { createDiary, updateDiary, deleteDiary, getDiariesByDate } from '../services/diaryService';
+import { createDiary, updateDiary, deleteDiary, getDiariesByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId } from '../services/diaryService';
 
 const MainContent = styled.main`
     width: 100vw;
@@ -203,32 +203,35 @@ export default function MainPage() {
         }
     };
 
-    // 감정 분석(더미)
-    const handleAnalyze = (targetDate) => {
+    // 감정 분석(실제 API 연동)
+    const handleAnalyze = async (targetDate) => {
         const currentDateKey = getKSTDateKey(targetDate);
         setIsAnalyzing(true);
-        setTimeout(() => {
-            // 예시: 우울=진파랑, 행복=연파랑
-            const score = Math.random();
-            let color = "happy";
-            let emotion = "행복";
-            let message = "오늘도 수고했어요!";
-            if (score < 0.33) {
-                color = "sad";
-                emotion = "우울";
-                message = "마음이 힘들 땐 쉬어가요.";
-            } else if (score < 0.66) {
-                color = "normal";
-                emotion = "보통";
-                message = "평범한 하루도 소중해요.";
+        try {
+            // 1. 일기 ID 확인
+            const diary = diaryMap[currentDateKey];
+            if (!diary || !diary.diaryId) {
+                alert('해당 날짜에 저장된 일기가 없습니다.');
+                setIsAnalyzing(false);
+                return;
             }
-            setEmotionMap((prev) => ({
-                ...prev,
-                [currentDateKey]: color,
-            }));
-            setAnalysisResult({ emotion, message });
+            // 2. 분석 요청 DTO 예시 (실제 값으로 대체 필요)
+            const analysisRequest = {
+                emotionRate: 80, // 예시값
+                mealCount: 3,   // 예시값
+                wakeUpTime: "07:30:00", // 예시값
+                wentOutside: true // 예시값
+            };
+            // 3. 분석 결과 저장/수정 요청
+            await saveOrUpdateAnalysis(diary.diaryId, analysisRequest);
+            // 4. 분석 결과 조회
+            const analysis = await getAnalysisByDiaryId(diary.diaryId);
+            setAnalysisResult(analysis);
+        } catch (e) {
+            alert('분석 실패: ' + (e.response?.data?.message || e.message));
+        } finally {
             setIsAnalyzing(false);
-        }, 1200);
+        }
     };
 
     // 날짜 선택 시 해당 날짜 일기 불러오기
