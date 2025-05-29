@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, R
 import { startOfWeek, format, addDays } from 'date-fns';
 import DoctorCalendar from '../components/DoctorCalendar';
 import Navigation from '../components/Navigation';
-import { doctorService } from '../services/doctorService';
+import { doctorApi } from '../api/doctorApi';
 
 const DoctorPageContainer = styled.div`
   width: 100vw;
@@ -371,7 +371,7 @@ export default function DoctorPage() {
     const fetchPatients = async () => {
       try {
         setLoading(true);
-        const data = await doctorService.getPatients('D001'); // 실제 라이센스 번호로 변경 필요
+        const data = await doctorApi.getPatients();
         setPatients(data.map(patient => ({
           id: patient.patientCode,
           name: patient.name,
@@ -391,7 +391,6 @@ export default function DoctorPage() {
         setLoading(false);
       }
     };
-
     fetchPatients();
   }, []);
 
@@ -413,7 +412,7 @@ export default function DoctorPage() {
   const handlePatientSelect = async (patient) => {
     setSelectedPatient(patient);
     try {
-      const detail = await doctorService.getPatientDetail(patient.id);
+      const detail = await doctorApi.getPatientDetail(patient.id);
       setPatientDetail(detail);
     } catch (error) {
       console.error('환자 상세 정보 조회 실패:', error);
@@ -423,15 +422,14 @@ export default function DoctorPage() {
 
   // 환자 삭제 핸들러
   const handleDeletePatient = async (patientId, e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
+    e.stopPropagation();
     if (!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
-
     try {
       setDeleteLoading(true);
       setDeleteError(null);
-      await doctorService.removePatient(patientId);
+      await doctorApi.removePatient(patientId);
       // 환자 목록 새로고침
-      const data = await doctorService.getPatients('D001');
+      const data = await doctorApi.getPatients();
       setPatients(data.map(patient => ({
         id: patient.patientCode,
         name: patient.name,
@@ -452,9 +450,9 @@ export default function DoctorPage() {
   const handleAddPatientConfirm = async () => {
     try {
       setLoading(true);
-      await doctorService.addPatient('D001', addPatientId); // 실제 라이센스 번호로 변경 필요
+      await doctorApi.addPatient(addPatientId);
       // 환자 목록 새로고침
-      const data = await doctorService.getPatients('D001');
+      const data = await doctorApi.getPatients();
       setPatients(data.map(patient => ({
         id: patient.patientCode,
         name: patient.name,

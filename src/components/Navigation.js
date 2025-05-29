@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from './ConfirmModal';
@@ -129,23 +129,24 @@ const Navigation = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [userName, setUserName] = useState('');
+
+    useEffect(() => {
+        const name = localStorage.getItem('userName') || '사용자';
+        setUserName(name);
+    }, []);
 
     const handleLogout = async () => {
         try {
             await signOut();
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            localStorage.removeItem("role");
-            
+        } catch (error) {
+            console.error("로그아웃 실패:", error);
+        } finally {
+            localStorage.clear();
             setShowLogoutModal(false);
             alert('로그아웃 되었습니다!');
             navigate('/signin');
         }
-        catch (error) {
-            console.error("로그아웃 실패:", error);
-        }
-
-        
     };
 
     // 마이페이지(의사/환자) 경로도 검정색 적용
@@ -158,17 +159,15 @@ const Navigation = () => {
         <NavBar>
             <NavInner>
                 <Left $color={leftColor} style={{ cursor: 'pointer' }} onClick={() => {
-
-                    // test
-                    navigate("/doctor");
-
-                    // const role = localStorage.getItem('role');
-                    // if (role === 'DOCTOR') {
-                    //     navigate('/doctor');
-                    // } else {
-                    //     navigate('/mainpage');
-                    // }
-                }}>OOO님 환영합니다!</Left>
+                    const role = localStorage.getItem('role');
+                    if (role === 'DOCTOR') {
+                        navigate('/doctor');
+                    } else {
+                        navigate('/mainpage');
+                    }
+                }}>
+                    {userName}님 환영합니다!
+                </Left>
                 <Center>
                     {(!isDoctorPage && !isMypage) || isPatientMypage ? (
                         <>
@@ -186,22 +185,21 @@ const Navigation = () => {
                 </Center>
                 <Right>
                     <ProfileBtn $color={leftColor} onClick={() => {
-
                         // test
-                        navigate('/mypage/doctor');
-                        // const role = localStorage.getItem('role');
+                        // navigate('/mypage/doctor');
+                        const role = localStorage.getItem('role');
 
-                        // console.log("role", role);
-                        // console.log("accessToken", localStorage.getItem("accessToken"));
-                        // console.log("refreshToken", localStorage.getItem("refreshToken"));
+                        console.log("role", role);
+                        console.log("accessToken", localStorage.getItem("accessToken"));
+                        console.log("refreshToken", localStorage.getItem("refreshToken"));
 
                         
 
-                        // if (role === 'DOCTOR') {
-                        //     navigate('/mypage/doctor');
-                        // } else {
-                        //     navigate('/mypage/patient');
-                        // }
+                        if (role === 'DOCTOR') {
+                            navigate('/mypage/doctor');
+                        } else {
+                            navigate('/mypage/patient');
+                        }
                     }}>
                         <span role="img" aria-label="profile">👤</span>
                     </ProfileBtn>

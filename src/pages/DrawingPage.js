@@ -467,7 +467,7 @@ const DrawingPage = () => {
                             <>
                                 <Button onClick={() => clearCanvas(false)}>지우기</Button>
                                 <TempSaveButton onClick={handleTempSave} disabled={isPastDrawing}>임시저장</TempSaveButton>
-                                <SaveButton onClick={handleFinalSave}>최종저장</SaveButton>
+                                <SaveButton onClick={() => saveDrawing(false)}>최종저장</SaveButton>
                             </>
                         ) : null}
                     </ButtonGroup>
