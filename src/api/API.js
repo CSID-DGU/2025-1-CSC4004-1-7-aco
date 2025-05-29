@@ -1,28 +1,28 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'http://3.36.51.34:8080/api',
+    baseURL: 'https://www.maeumnaru.shop/api',
     withCredentials: true,
 });
 
 // 토큰 추가
-API.interceptors.request.use((config) => {
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
+// API.interceptors.request.use((config) => {
+//     const accessToken = localStorage.getItem("accessToken");
+//     const refreshToken = localStorage.getItem("refreshToken");
 
-    console.log("API.js | accessToken: ", accessToken);
-    console.log("API.js | refreshToken: ", refreshToken);
+//     console.log("API.js | accessToken: ", accessToken);
+//     console.log("API.js | refreshToken: ", refreshToken);
     
-    // 토큰 있으면 헤더에 토큰 추가
-    if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-        console.log("Authorization header set:", config.headers.Authorization);
-    } else {
-        console.warn("No token found, Authorization header not set.");
-    }
+//     // 토큰 있으면 헤더에 토큰 추가
+//     if (accessToken) {
+//         config.headers.Authorization = `Bearer ${accessToken}`;
+//         console.log("Authorization header set:", config.headers.Authorization);
+//     } else {
+//         console.warn("No token found, Authorization header not set.");
+//     }
 
-    return config;
-});
+//     return config;
+// });
 
 // // 토큰 만료 시
 // API.interceptors.response.use(
