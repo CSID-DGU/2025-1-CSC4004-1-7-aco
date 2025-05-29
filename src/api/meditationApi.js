@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = 'https://www.maeumnaru.shop/api';
 
 // 전체 명상 목록 조회
 export const getAllMeditations = async () => {
