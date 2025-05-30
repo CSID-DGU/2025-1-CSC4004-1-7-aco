@@ -112,6 +112,32 @@ function getKSTDateKey(date) {
     return kst.toISOString().slice(0, 10);
 }
 
+// 감정 점수 맵 API 요청 함수
+async function fetchEmotionMap(year, month) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/diary/emotion-map?year=${year}&month=${month}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('감정 점수 불러오기 실패');
+    return await res.json(); // { '2025-05-01': 0.7, ... }
+}
+
+// 감정 점수 → 7단계 색상 매핑 함수
+function getEmotionColor(score) {
+    if (score === null || score === undefined) return '#eee'; // 점수 없음
+    const colors = [
+        '#003366', // 찐한 파랑 (매우 우울)
+        '#336699',
+        '#6699cc',
+        '#99ccff',
+        '#b3e0ff',
+        '#cceeff',
+        '#e6f7ff'  // 연한 파랑 (행복)
+    ];
+    const idx = Math.min(6, Math.max(0, Math.floor(((score + 1) / 2) * 7)));
+    return colors[idx];
+}
+
 export default function MainPage() {
     const today = useMemo(() => new Date(), []);
     const [selectedDate, setSelectedDate] = useState(today);
@@ -124,6 +150,7 @@ export default function MainPage() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [showAnalyzeConfirm, setShowAnalyzeConfirm] = useState(false);
+    const [selectedDiaryId, setSelectedDiaryId] = useState(null);
 
     const dateKey = getKSTDateKey(selectedDate);
     const isTodaySelected = getKSTDateKey(selectedDate) === getKSTDateKey(today);
@@ -197,16 +224,22 @@ export default function MainPage() {
 
     // 일기 삭제
     const confirmDelete = async () => {
-        const diary = diaryMap[dateKey];
-        if (!diary?.id) return;
+        if (!selectedDiaryId) return;
         try {
-            await deleteDiary(diary.id);
+            const token = localStorage.getItem('token');
+            await fetch(`/api/diary/${selectedDiaryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
             setDiaryMap((prev) => {
                 const newMap = { ...prev };
                 delete newMap[dateKey];
                 return newMap;
             });
             setShowDeleteConfirm(false);
+            setSelectedDiaryId(null);
         } catch (e) {
             alert('삭제 실패: ' + (e.response?.data?.message || e.message));
         }
@@ -261,18 +294,22 @@ export default function MainPage() {
         setSelectedDate(newDate);
         setCurrentMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
         try {
-            const diaries = await getDiaryByDate(dateKey);
-            if (diaries.length > 0) {
-                setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
+            // diary는 단일 객체로 온다고 가정
+            const diary = await getDiaryByDate(dateKey);
+            if (diary && diary.diaryId) {
+                setDiaryMap((prev) => ({ ...prev, [dateKey]: diary }));
+                setSelectedDiaryId(diary.diaryId);
             } else {
                 setDiaryMap((prev) => {
                     const newMap = { ...prev };
                     delete newMap[dateKey];
                     return newMap;
                 });
+                setSelectedDiaryId(null);
             }
         } catch (e) {
             alert('일기 불러오기 실패: ' + (e.response?.data?.message || e.message));
+            setSelectedDiaryId(null);
         }
     };
 
@@ -280,6 +317,13 @@ export default function MainPage() {
     const handleChangeMonth = (date) => {
         setCurrentMonth(date);
     };
+
+    // 달 이동/진입 시 emotionMap 요청
+    useEffect(() => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth() + 1;
+        fetchEmotionMap(year, month).then(setEmotionMap).catch(console.error);
+    }, [currentMonth]);
 
     return (
         <div>
@@ -290,6 +334,7 @@ export default function MainPage() {
                         selectedDate={selectedDate}
                         onSelectDate={handleSelectDate}
                         emotionMap={emotionMap}
+                        getEmotionColor={getEmotionColor}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
                     />
