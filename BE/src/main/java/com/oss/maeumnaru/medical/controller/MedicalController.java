@@ -31,7 +31,7 @@ public class MedicalController {
     private final MedicalService medicalService;
     private final DiaryService diaryService;
     // 👨‍⚕️ 로그인한 의사의 환자 목록 조회
-    @GetMapping("/doctor/patients")
+    @GetMapping("/patients")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<List<MedicalResponseDto>> getPatientsForCurrentDoctor(Authentication authentication) {
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
@@ -40,7 +40,7 @@ public class MedicalController {
     }
 
     // 👨‍⚕️ 로그인한 의사가 특정 환자 연결
-    @PostMapping("/doctor/patient/{patientCode}")
+    @PostMapping("/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<MedicalResponseDto> addPatient(
             Authentication authentication,
@@ -56,7 +56,7 @@ public class MedicalController {
 
 
     // 👨‍⚕️ 로그인한 의사가 관계 삭제
-    @DeleteMapping("/doctor/patient/{medicId}")
+    @DeleteMapping("/{medicId}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> removePatient(
             Authentication authentication,
@@ -69,13 +69,13 @@ public class MedicalController {
     }
 
     // 👁 환자 상세 조회 (누구나 조회 가능 or 추가 검증 가능)
-    @GetMapping("/patient/{patientCode}")
+    @GetMapping("/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
     }
     //의사 일기 조회
-    @GetMapping("/patient/{patientCode}/diary")
+    @GetMapping("/diary/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Optional<DiaryResponseDto>> getPatientDiaryByDate(
             @PathVariable String patientCode,

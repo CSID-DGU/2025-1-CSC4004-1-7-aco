@@ -4,6 +4,7 @@ import com.oss.maeumnaru.diary.dto.DiaryAnalysisRequestDto;
 import com.oss.maeumnaru.diary.dto.DiaryAnalysisResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
 import com.oss.maeumnaru.diary.service.DiaryAnalysisService;
+import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.jwt.SimpleUserPrincipal;
@@ -24,6 +25,19 @@ import java.util.stream.Collectors;
 public class DiaryAnalysisController {
 
     private final DiaryAnalysisService diaryAnalysisService;
+    // 연도(year)와 월(month)을 쿼리 파라미터로 받고, 토큰에서 사용자 ID 추출
+    @GetMapping("/by-month")
+    public ResponseEntity<List<DiaryAnalysisResponseDto>> getDiaryAnalysisByMonth(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestParam int year,
+            @RequestParam int month) {
+
+        Long memberId = principal.getMemberId();
+
+        List<DiaryAnalysisResponseDto> analyses = diaryAnalysisService.getDiaryAnalysisByMonth(memberId, year, month);
+
+        return ResponseEntity.ok(analyses);
+    }
 
     // 분석 결과 저장 또는 수정
     @PostMapping("/{diaryId}")

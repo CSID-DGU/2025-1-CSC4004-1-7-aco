@@ -49,7 +49,7 @@ public class PaintController {
                 .orElse(ResponseEntity.notFound().build());
     }
     // 임시저장
-    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PaintResponseDto> savePaintDraft(
             Authentication authentication,
             @RequestPart MultipartFile file,

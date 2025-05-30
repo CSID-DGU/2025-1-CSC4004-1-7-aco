@@ -1,6 +1,7 @@
 package com.oss.maeumnaru.diary.service;
 
 import com.oss.maeumnaru.diary.dto.DiaryAnalysisRequestDto;
+import com.oss.maeumnaru.diary.dto.DiaryAnalysisResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
 import com.oss.maeumnaru.diary.repository.DiaryAnalysisRepository;
 import com.oss.maeumnaru.diary.entity.DiaryEntity;
@@ -12,9 +13,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +87,27 @@ public class DiaryAnalysisService {
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
+    }
+
+    public List<DiaryAnalysisResponseDto> getDiaryAnalysisByMonth(Long memberId, int year, int month) {
+        // 1. 월의 시작일과 종료일 계산 (LocalDateTime)
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);  // 23:59:59.999999999
+
+        // 2. diaryAnalysisRepository에서 memberId와 날짜 범위로 조회
+        List<DiaryAnalysisEntity> analysisEntities = diaryAnalysisRepository.findByMemberIdAndDateBetween(
+                memberId,
+                startDateTime,
+                endDateTime
+        );
+
+        // 3. Entity → DTO 변환 후 반환
+        return analysisEntities.stream()
+                .map(DiaryAnalysisResponseDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
 }
