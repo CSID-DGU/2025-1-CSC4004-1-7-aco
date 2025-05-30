@@ -17,4 +17,5 @@ public class UserProfileResponseDTO {
     private String birthDate;
     private String createDate;
     private String hospital; // doctor or patient 병원명
+    private String patientCode;   // 환자코드 (환자일 때만 값 있음)
 }

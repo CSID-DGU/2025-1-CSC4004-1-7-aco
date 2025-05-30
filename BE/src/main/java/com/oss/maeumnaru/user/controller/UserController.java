@@ -94,10 +94,16 @@ public class UserController {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
         String hospital = null;
+        String patientCode = null;  // 기본 null
 
         if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+            // 환자 병원명 조회
             hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
                     .map(DoctorEntity::getHospital)
+                    .orElse(null);
+            // 환자코드 조회
+            patientCode = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientCode)
                     .orElse(null);
         } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
             hospital = patientRepository.findByMember_MemberId(member.getMemberId())
@@ -116,6 +122,7 @@ public class UserController {
                 .birthDate(member.getBirthDate() != null ? member.getBirthDate().toString() : null)
                 .createDate(member.getCreateDate() != null ? member.getCreateDate().toString() : null)
                 .hospital(hospital)
+                .patientCode(patientCode)
                 .build();
 
         return ResponseEntity.ok(response);
