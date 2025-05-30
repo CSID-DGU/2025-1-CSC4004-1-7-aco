@@ -28,32 +28,14 @@ const Signin = () => {
 
             console.log("response", response);
 
+            // 로컬에 역할 저장
+            localStorage.setItem(response.memberType);
 
-            // // test
-            // navigate("/doctor");
-
-            // 로그인 성공하면 토큰 저장
-            localStorage.setItem("accessToken", response.accessToken);
-
-            console.log("로그인 직후 저장된 accessToken:", localStorage.getItem("accessToken"));
-
-            // refreshToken도 저장하기
-            localStorage.setItem("refreshToken", response.refreshToken);
-
-            localStorage.setItem("role", response.memberType);
-
-            // 사용자 이름 저장
-            localStorage.setItem("userName", response.name);
-
-            // 어느 페이지로 넘어갈지 구분
-            if (response.memberType === "DOCTOR") {
+            if(response.memberType === "DOCTOR") {
                 navigate("/doctor");
+            } else {
+                navigate("/patient");
             }
-            else {
-                navigate("/mainpage");
-            }
-
-
         }
 
         catch (error) {

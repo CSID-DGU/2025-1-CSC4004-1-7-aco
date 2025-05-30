@@ -221,6 +221,9 @@ const SignupPatient = () => {
         formData.append("memberType", "PATIENT");        
         formData.append("hospital", state.hospital);
 
+        console.log([...formData.entries()]);
+
+
         try {
             const response = await signUpPatient(formData);
             console.log(response);
