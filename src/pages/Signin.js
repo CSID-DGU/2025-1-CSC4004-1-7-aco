@@ -29,12 +29,14 @@ const Signin = () => {
             console.log("response", response);
 
             // 로컬에 역할 저장
-            localStorage.setItem(response.memberType);
+            localStorage.setItem('role', response.memberType);
+            // 이름 저장
+                localStorage.setItem('userName', response.name);
 
             if(response.memberType === "DOCTOR") {
                 navigate("/doctor");
             } else {
-                navigate("/patient");
+                navigate("/mainpage");
             }
         }
 

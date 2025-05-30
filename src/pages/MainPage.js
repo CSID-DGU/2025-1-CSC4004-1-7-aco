@@ -6,7 +6,7 @@ import AnalysisModal from "../components/AnalysisModal";
 import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import styled from "styled-components";
-import { createDiary, updateDiary, deleteDiary, getDiariesByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId } from '../services/diaryService';
+import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId } from '../api/diary';
 
 const MainContent = styled.main`
     width: 100vw;
@@ -122,9 +122,21 @@ export default function MainPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [showAnalyzeConfirm, setShowAnalyzeConfirm] = useState(false);
 
     const dateKey = getKSTDateKey(selectedDate);
     const isTodaySelected = getKSTDateKey(selectedDate) === getKSTDateKey(today);
+    const diary = diaryMap[dateKey];
+    const hasDiary = diary && diary.id;
+    const isAnalyzed = diary && (diary.analysisId || diary.analysisResult || diary.analysis);
+    const canAnalyze = (
+        diary &&
+        typeof diary.mealCount === 'number' && diary.mealCount > 0 &&
+        typeof diary.outing === 'boolean' &&
+        diary.title && diary.title.trim() !== '' &&
+        diary.text && diary.text.trim() !== ''
+    );
 
     // 오늘 날짜 자동 선택
     useEffect(() => {
@@ -141,48 +153,45 @@ export default function MainPage() {
 
     // 일기 작성/수정
     const handleDiaryChange = (value) => {
-        if (!isTodaySelected) {
-            return;
-        }
         setDiaryMap((prev) => ({
             ...prev,
-            [dateKey]: value,
+            [dateKey]: {
+                ...value,
+                createDate: dateKey,
+            },
         }));
-        // 자동 저장 시 사용자에게 알림
-        const saveNotification = document.createElement('div');
-        saveNotification.textContent = '자동 저장됨';
-        saveNotification.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            z-index: 1000;
-        `;
-        document.body.appendChild(saveNotification);
-        setTimeout(() => saveNotification.remove(), 2000);
     };
 
-    // 일기 저장(작성/수정)
+    // 일기 저장(작성)
     const handleSaveDiary = async () => {
-        if (!isTodaySelected) return;
-        const diary = diaryMap[dateKey];
+        let diary = diaryMap[dateKey];
+        diary = { ...diary, createDate: dateKey };
         try {
-            if (diary && diary.id) {
-                await updateDiary(diary.id, diary); // file이 있다면 세 번째 인자에 file 추가
-            } else {
-                await createDiary(diary); // file이 있다면 두 번째 인자에 file 추가
-            }
+            await createDiary(diary);
             alert('저장되었습니다!');
-            // 저장 후 다시 불러오기(선택)
-            const diaries = await getDiariesByDate(dateKey);
+            const diaries = await getDiaryByDate(dateKey);
             if (diaries.length > 0) {
                 setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
             }
         } catch (e) {
             alert('저장 실패: ' + (e.response?.data?.message || e.message));
+        }
+    };
+
+    // 일기 수정(수정 모드에서 저장)
+    const handleEditDiary = async () => {
+        let diary = diaryMap[dateKey];
+        diary = { ...diary, createDate: dateKey };
+        try {
+            await updateDiary(diary.id, diary);
+            alert('수정되었습니다!');
+            const diaries = await getDiaryByDate(dateKey);
+            if (diaries.length > 0) {
+                setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
+            }
+            setIsEditMode(false);
+        } catch (e) {
+            alert('수정 실패: ' + (e.response?.data?.message || e.message));
         }
     };
 
@@ -208,25 +217,36 @@ export default function MainPage() {
         const currentDateKey = getKSTDateKey(targetDate);
         setIsAnalyzing(true);
         try {
-            // 1. 일기 ID 확인
-            const diary = diaryMap[currentDateKey];
-            if (!diary || !diary.diaryId) {
+            // 분석 전 저장/수정
+            let diary = diaryMap[currentDateKey];
+            diary = { ...diary, createDate: currentDateKey };
+            let savedDiary = diary;
+            if (diary && diary.id) {
+                savedDiary = await updateDiary(diary.id, diary);
+            } else {
+                savedDiary = await createDiary(diary);
+            }
+            const diaries = await getDiaryByDate(currentDateKey);
+            if (diaries.length > 0) {
+                setDiaryMap((prev) => ({ ...prev, [currentDateKey]: diaries[0] }));
+                savedDiary = diaries[0];
+            }
+            if (!savedDiary || !savedDiary.diaryId) {
                 alert('해당 날짜에 저장된 일기가 없습니다.');
                 setIsAnalyzing(false);
                 return;
             }
-            // 2. 분석 요청 DTO 예시 (실제 값으로 대체 필요)
+            // 분석 요청 DTO 예시
             const analysisRequest = {
-                emotionRate: 80, // 예시값
-                mealCount: 3,   // 예시값
-                wakeUpTime: "07:30:00", // 예시값
-                wentOutside: true // 예시값
+                emotionRate: 80,
+                mealCount: 3,
+                wakeUpTime: "07:30:00",
+                wentOutside: true
             };
-            // 3. 분석 결과 저장/수정 요청
-            await saveOrUpdateAnalysis(diary.diaryId, analysisRequest);
-            // 4. 분석 결과 조회
-            const analysis = await getAnalysisByDiaryId(diary.diaryId);
+            await saveOrUpdateAnalysis(savedDiary.diaryId, analysisRequest);
+            const analysis = await getAnalysisByDiaryId(savedDiary.diaryId);
             setAnalysisResult(analysis);
+            setIsEditMode(false); // 분석 후 수정 불가
         } catch (e) {
             alert('분석 실패: ' + (e.response?.data?.message || e.message));
         } finally {
@@ -234,14 +254,14 @@ export default function MainPage() {
         }
     };
 
-    // 날짜 선택 시 해당 날짜 일기 불러오기
+    // 날짜 변경
     const handleSelectDate = async (date) => {
         const newDate = new Date(date);
         const dateKey = getKSTDateKey(newDate);
         setSelectedDate(newDate);
         setCurrentMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
         try {
-            const diaries = await getDiariesByDate(dateKey);
+            const diaries = await getDiaryByDate(dateKey);
             if (diaries.length > 0) {
                 setDiaryMap((prev) => ({ ...prev, [dateKey]: diaries[0] }));
             } else {
@@ -276,25 +296,90 @@ export default function MainPage() {
                 </CalendarWrapper>
                 <DiaryArea>
                     <DiaryEditor
-                        value={diaryMap[dateKey] || { title: "", text: "", meal: false, outing: false }}
+                        value={diaryMap[dateKey] || { title: "", text: "", mealCount: '', outing: false }}
                         onChange={handleDiaryChange}
-                        isToday={isTodaySelected}
+                        isToday={!isAnalyzed && (!hasDiary || isEditMode || !diary?.id)}
                         onExpand={() => setIsModalOpen(true)}
                         smallFont={true}
                     />
                     <ButtonContainer>
-                        <AnalyzeButton onClick={() => handleAnalyze(selectedDate)} disabled={isAnalyzing}>
-                            {isAnalyzing ? "분석 중..." : "일기 분석 확인"}
-                        </AnalyzeButton>
-                        <SaveButton onClick={handleSaveDiary} disabled={!isTodaySelected}>
-                            저장하기
-                        </SaveButton>
-                        <DeleteButton
-                            onClick={() => setShowDeleteConfirm(true)}
-                            disabled={!diaryMap[dateKey]}
-                        >
-                            삭제하기
-                        </DeleteButton>
+                        {/* 일기 없음: 저장, 분석 */}
+                        {(!hasDiary && !isAnalyzed) && (
+                            <>
+                                <SaveButton onClick={handleSaveDiary}>저장하기</SaveButton>
+                                <span className="analyze-btn-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+                                    <AnalyzeButton
+                                        onClick={() => canAnalyze && !isAnalyzing && setShowAnalyzeConfirm(true)}
+                                        disabled={isAnalyzing || !canAnalyze}
+                                    >
+                                        {isAnalyzing ? "분석 중..." : "일기 분석하기"}
+                                    </AnalyzeButton>
+                                    {!canAnalyze && (
+                                        <span className="analyze-tooltip" style={{
+                                            position: 'absolute',
+                                            top: '-32px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            background: '#222',
+                                            color: '#fff',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            fontSize: 13,
+                                            whiteSpace: 'nowrap',
+                                            zIndex: 10,
+                                            pointerEvents: 'none',
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s',
+                                        }}>
+                                            빈칸을 모두 채워주세요
+                                        </span>
+                                    )}
+                                </span>
+                            </>
+                        )}
+                        {/* 일기 있음, 분석 전: 수정, 삭제, 분석 */}
+                        {(hasDiary && !isAnalyzed) ? (
+                            <>
+                                {!isEditMode ? (
+                                    <SaveButton onClick={() => setIsEditMode(true)}>수정하기</SaveButton>
+                                ) : (
+                                    <SaveButton onClick={handleEditDiary}>저장하기</SaveButton>
+                                )}
+                                <DeleteButton onClick={() => setShowDeleteConfirm(true)}>삭제하기</DeleteButton>
+                                <span className="analyze-btn-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+                                    <AnalyzeButton
+                                        onClick={() => canAnalyze && !isAnalyzing && setShowAnalyzeConfirm(true)}
+                                        disabled={isAnalyzing || !canAnalyze}
+                                    >
+                                        {isAnalyzing ? "분석 중..." : "일기 분석하기"}
+                                    </AnalyzeButton>
+                                    {!canAnalyze && (
+                                        <span className="analyze-tooltip" style={{
+                                            position: 'absolute',
+                                            top: '-32px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            background: '#222',
+                                            color: '#fff',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            fontSize: 13,
+                                            whiteSpace: 'nowrap',
+                                            zIndex: 10,
+                                            pointerEvents: 'none',
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s',
+                                        }}>
+                                            빈칸을 모두 채워주세요
+                                        </span>
+                                    )}
+                                </span>
+                            </>
+                        ) : null}
+                        {/* 분석 완료: 삭제만 */}
+                        {hasDiary && isAnalyzed && (
+                            <DeleteButton onClick={() => setShowDeleteConfirm(true)}>삭제하기</DeleteButton>
+                        )}
                     </ButtonContainer>
                 </DiaryArea>
             </MainContent>
@@ -320,6 +405,19 @@ export default function MainPage() {
                     onCancel={() => setShowDeleteConfirm(false)}
                 />
             )}
+            {showAnalyzeConfirm && (
+                <ConfirmModal
+                    message="정말 분석하시겠습니까? 분석 후에는 수정이 불가합니다."
+                    onConfirm={async () => {
+                        await handleAnalyze(selectedDate);
+                        setShowAnalyzeConfirm(false);
+                    }}
+                    onCancel={() => setShowAnalyzeConfirm(false)}
+                />
+            )}
+            <style>{`
+            .analyze-btn-wrapper:hover .analyze-tooltip { opacity: 1 !important; }
+            `}</style>
         </div>
     );
 }

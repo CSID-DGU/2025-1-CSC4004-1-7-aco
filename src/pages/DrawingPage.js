@@ -65,12 +65,10 @@ const DrawingPage = () => {
             const ctx = canvas.getContext('2d');
             canvas.width = 800;
             canvas.height = 600;
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = lineWidth;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
         }
-    }, [showModal, currentColor, lineWidth]);
+    }, [showModal]);
 
     useEffect(() => {
         const saved = localStorage.getItem(DRAWING_STORAGE_KEY);
