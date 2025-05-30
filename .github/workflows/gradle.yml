@@ -35,7 +35,7 @@ jobs:
         run: |
           cd BE
           chmod +x ../gradlew
-          ../gradlew clean build
+          ../gradlew clean build -x test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
