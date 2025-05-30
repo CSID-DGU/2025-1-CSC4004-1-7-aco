@@ -128,19 +128,8 @@ const MypageDoctor = () => {
             <Navigation />
 
             <div className="md_editordoctor">
-                <div className="md_header">
-                    <div className="md_titlemp">
-                        마이 페이지
-                    </div>
-
-                    <div className="md_button_container">
-                        <button className="md_edit_button" onClick={handleEdit}>
-                            {isEditing ? "수정 완료" : "정보 수정"}
-                        </button>
-                        <button className="md_delete_button" onClick={handleDeleteUser}>
-                            회원 탈퇴
-                        </button>
-                    </div>
+                <div className="md_titlemp">
+                    마이 페이지
                 </div>
 
                 <div className="md_formgrid">
@@ -233,6 +222,15 @@ const MypageDoctor = () => {
                         )}
 
                     </div>
+                </div>
+
+                <div className="md_button_container">
+                    <button className="md_edit_button" onClick={handleEdit}>
+                        {isEditing ? "수정 완료" : "정보 수정"}
+                    </button>
+                    <button className="md_delete_button" onClick={handleDeleteUser}>
+                        회원 탈퇴
+                    </button>
                 </div>
             </div>
         </div>

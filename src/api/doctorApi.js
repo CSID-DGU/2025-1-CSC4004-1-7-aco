@@ -1,5 +1,7 @@
 import API from './API';
 
+
+
 export const doctorApi = {
   // 환자 목록 조회
   getPatients: async () => {
@@ -11,7 +13,7 @@ export const doctorApi = {
   // 환자 상세 정보 조회
   getPatientDetail: async (patientCode) => {
     try {
-      const response = await API.get(`/medical/patient/${patientCode}`);
+      const response = await API.get(`/doctor/patient/${patientCode}`);
       console.log('[getPatientDetail] response:', response);
       return response.data;
     } catch (error) {
