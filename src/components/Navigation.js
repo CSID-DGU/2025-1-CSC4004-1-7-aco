@@ -132,9 +132,9 @@ const Navigation = () => {
     const [userName, setUserName] = useState('');
 
     useEffect(() => {
-        const name = localStorage.getItem('userName') || '사용자';
+        const name = localStorage.getItem('userName') ;
         setUserName(name);
-    }, []);
+    }, [location]);
 
     const handleLogout = async () => {
         try {

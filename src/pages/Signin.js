@@ -29,8 +29,8 @@ const Signin = () => {
             console.log("response", response);
 
             // 로컬에 역할 저장
-            localStorage.setItem("role", response.memberType);
-
+            localStorage.setItem('role', response.memberType);
+            localStorage.setItem('userName', response.name);
             console.log("memberType", response.memberType);
 
             if(response.memberType === "DOCTOR") {

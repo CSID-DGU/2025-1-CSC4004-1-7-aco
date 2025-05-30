@@ -152,20 +152,26 @@ function DiaryEditor({
       </TopBar>
       <RadioGroup>
         <RadioLabel>
-          식사 여부
+          식사 횟수
           <input
-            type="checkbox"
-            checked={value.meal === true}
-            onChange={() => onChange({ ...value, meal: !value.meal })}
+            type="number"
+            min={0}
+            max={10}
+            value={typeof value.mealCount === 'number' ? value.mealCount : ''}
+            onChange={e => {
+              const v = e.target.value;
+              onChange({ ...value, mealCount: v === '' ? '' : Number(v) });
+            }}
             disabled={!isToday}
+            style={{ width: 50, marginLeft: 8 }}
           />
         </RadioLabel>
         <RadioLabel>
           외출 여부
           <input
             type="checkbox"
-            checked={value.outing === true}
-            onChange={() => onChange({ ...value, outing: !value.outing })}
+            checked={!!value.outing}
+            onChange={e => onChange({ ...value, outing: !value.outing })}
             disabled={!isToday}
           />
         </RadioLabel>

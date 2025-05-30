@@ -14,6 +14,7 @@ export const savePaintDraft = async (file, dto) => {
             'Content-Type': 'multipart/form-data'
         }
     });
+    console.log('[savePaintDraft] response:', response);
     return response.data;
 };
 
@@ -29,18 +30,21 @@ export const finalizePaint = async (paintId, file, dto) => {
             'Content-Type': 'multipart/form-data'
         }
     });
+    console.log('[finalizePaint] response:', response);
     return response.data;
 };
 
 // 그림 단건 조회
 export const getPaintById = async (paintId) => {
     const response = await API.get(`${BASE_URL}/paint/${paintId}`);
+    console.log('[getPaintById] response:', response);
     return response.data;
 };
 
 // 그림의 채팅 목록 조회
 export const getChatsByPaintId = async (paintId) => {
     const response = await API.get(`${BASE_URL}/paint/${paintId}/chats`);
+    console.log('[getChatsByPaintId] response:', response);
     return response.data;
 };
 
@@ -51,6 +55,7 @@ export const saveReplyAndGetNextQuestion = async (paintId, reply) => {
             'Content-Type': 'application/json'
         }
     });
+    console.log('[saveReplyAndGetNextQuestion] response:', response);
     return response.data;
 };
 
@@ -61,11 +66,13 @@ export const completeChat = async (paintId, chatRequestList) => {
             'Content-Type': 'application/json'
         }
     });
+    console.log('[completeChat] response:', response);
     return response.data;
 };
 
 // 그림 삭제
 export const deletePaint = async (paintId) => {
     const response = await API.delete(`${BASE_URL}/paint/${paintId}`);
+    console.log('[deletePaint] response:', response);
     return response.data;
 }; 
