@@ -4,7 +4,6 @@ on:
   pull_request:
     branches: [ dev ]  # dev 브랜치에 PR 발생 시 실행
     types:
-      - opend
       - synchronize
       - closed
 
@@ -49,7 +48,7 @@ jobs:
 
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
