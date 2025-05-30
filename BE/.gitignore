@@ -39,3 +39,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+## idea
+.idea
+.idea/**
+
+## properties
+application-dev.properties
