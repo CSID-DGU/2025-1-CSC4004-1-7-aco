@@ -46,7 +46,9 @@ jobs:
       - name: Write hub username
         run: |
           echo "${{ secrets.DOCKERHUB_USERNAME }}" >> secret.username
+          echo "${{ secrets.DOCKERHUB_PASSWORD }}" >> secret.password
           cat secret.username
+          cat secret.password
 
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       - name: Log in to Docker Hub
