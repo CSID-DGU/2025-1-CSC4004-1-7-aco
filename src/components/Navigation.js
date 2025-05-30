@@ -142,6 +142,8 @@ const Navigation = () => {
         } catch (error) {
             console.error("로그아웃 실패:", error);
         } finally {
+            localStorage.removeItem('userName');
+            localStorage.removeItem('role');
             localStorage.clear();
             setShowLogoutModal(false);
             alert('로그아웃 되었습니다!');
