@@ -17,7 +17,7 @@ const SignupPatient = () => {
         id: false,
         password: false,
         confirmPw: false,
-        birth: false,
+        birthDate: false,
         address: false,
         hospital: false,
         workspace: false
@@ -25,16 +25,14 @@ const SignupPatient = () => {
 
     const [state, setState] = useState({
         name: "",
-        gender: "",
-        phone: "",
-        email: "",
         id: "",
         password: "",
         confirmPw: "",
-        birth: "",
-        address: "",
+        email: "",
+        phone: "",
+        birthDate: "",
+        gender: "",
         hospital: "",
-        workspace: "",
     });
 
     const handleOnChange = (e) => {
@@ -58,21 +56,21 @@ const SignupPatient = () => {
     };
 
     // 생년월일 형식 확인
-    const isBirthDateValid = (birth) => {
+    const isBirthDateValid = (birthDate) => {
         const birthRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!birthRegex.test(birth)) return false;
+        if (!birthRegex.test(birthDate)) return false;
 
-        const [year, month, day] = birth.split('-').map(Number);
-        const birthDate = new Date(year, month - 1, day);
+        const [year, month, day] = birthDate.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
         const today = new Date();
 
         // 유효한 날짜인지 확인
-        if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) {
+        if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day) {
             return false;
         }
 
         // 미래 날짜인지 확인
-        if (birthDate > today) {
+        if (dateObj > today) {
             return false;
         }
 
@@ -106,23 +104,23 @@ const SignupPatient = () => {
         }
     };
 
-    const handleBirthChange = (e) => {
+    const handleBirthDateChange = (e) => {
         const { value } = e.target;
         setState(prev => ({
             ...prev,
-            birth: value
+            birthDate: value
         }));
 
         if (value && !isBirthDateValid(value)) {
             setErrors(prev => ({
                 ...prev,
-                birth: true
+                birthDate: true
             }));
             setError("올바른 생년월일 형식(YYYY-MM-DD)으로 입력해주세요.");
         } else {
             setErrors(prev => ({
                 ...prev,
-                birth: false
+                birthDate: false
             }));
             setError("");
         }
@@ -141,7 +139,7 @@ const SignupPatient = () => {
             id: !state.id,
             password: !state.password,
             confirmPw: !state.confirmPw,
-            birth: !state.birth,
+            birthDate: !state.birthDate,
             hospital: !state.hospital
         };
 
@@ -174,13 +172,13 @@ const SignupPatient = () => {
         }
 
         // 4. 생년월일 형식 검사
-        if (!isBirthDateValid(state.birth)) {
+        if (!isBirthDateValid(state.birthDate)) {
             setErrors(prev => ({
                 ...prev,
-                birth: true
+                birthDate: true
             }));
-            if (state.birth.length === 10) {  // YYYY-MM-DD 형식이 완성되었을 때만 구체적인 에러 메시지 표시
-                const [year, month, day] = state.birth.split('-').map(Number);
+            if (state.birthDate.length === 10) {  // YYYY-MM-DD 형식이 완성되었을 때만 구체적인 에러 메시지 표시
+                const [year, month, day] = state.birthDate.split('-').map(Number);
                 const date = new Date(year, month - 1, day);
                 const today = new Date();
 
@@ -207,7 +205,7 @@ const SignupPatient = () => {
             id: false,
             password: false,
             confirmPw: false,
-            birth: false,
+            birthDate: false,
             hospital: false
         });
 
@@ -222,6 +220,9 @@ const SignupPatient = () => {
         formData.append("gender", state.gender);
         formData.append("memberType", "PATIENT");        
         formData.append("hospital", state.hospital);
+
+        console.log([...formData.entries()]);
+
 
         try {
             const response = await signUpPatient(formData);
@@ -338,8 +339,8 @@ const SignupPatient = () => {
                 <div className="formcolumnpp">
                     <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"}
                         value={state.email} onChange={handleEmailChange} isError={errors.email} />
-                    <Input name="birth" label={"생년월일"} placeholder={"YYYY-MM-DD"}
-                        value={state.birth} onChange={handleBirthChange} isError={errors.birth} />
+                    <Input name="birthDate" label={"생년월일"} placeholder={"YYYY-MM-DD"}
+                        value={state.birthDate} onChange={handleBirthDateChange} isError={errors.birthDate} />
                     <Input name="phone" label={"연락처"} placeholder={"01000000000"}
                         value={state.phone} onChange={handleOnChange} isError={errors.phone} />
                     <Input name="hospital" label={"병원"} placeholder={"진료받는 병원을 입력해주세요"}

@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import Input from "../components/Input";
 import Navigation from "../components/Navigation"
 import { useNavigate } from "react-router-dom";
-import { getUserInfo, updateUserInfo, deleteUser } from "../api/mypage";
+import { getUserInfo, updateUserInfo } from "../api/mypage";
+import { deleteUser } from "../api/auth";
 
 const MypageDoctor = () => {
     const navigate = useNavigate();
@@ -39,7 +40,7 @@ const MypageDoctor = () => {
         try {
             const userInfo = await getUserInfo();
 
-            
+
 
             setState(userInfo);
         } catch (error) {
@@ -83,15 +84,11 @@ const MypageDoctor = () => {
             }
 
             // 비밀번호가 입력된 경우
-            if (state.password !== "") {
-
-                // 공백 확인
-                if (state.password.trim() === "") {
+            if (state.password !== undefined && state.password !== null && state.password !== "") {
+                if (typeof state.password === "string" && state.password.trim() === "") {
                     alert("비밀번호는 공백으로만 설정할 수 없습니다.");
                     return;
                 }
-
-                // 비밀번호 일치 여부 확인
                 if (state.password !== state.confirmPw) {
                     alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
                     return;
@@ -114,7 +111,8 @@ const MypageDoctor = () => {
     // 회원 탈퇴
     const handleDeleteUser = async () => {
         if (window.confirm("정말로 탈퇴하시겠습니까?")) {
-            // await deleteUser();
+            const response = await deleteUser();
+            console.log(response);
             alert("탈퇴가 완료되었습니다.");
             navigate("/");
         }
@@ -174,6 +172,7 @@ const MypageDoctor = () => {
                                 label={"새 비밀번호"}
                                 value={state.password}
                                 onChange={handleOnChange}
+                                type="password"
                             />
                         )}
 
@@ -213,6 +212,7 @@ const MypageDoctor = () => {
                                 label={"비밀번호 확인"}
                                 value={state.confirmPw}
                                 onChange={handleOnChange}
+                                type="password"
                             />
                         )}
 
