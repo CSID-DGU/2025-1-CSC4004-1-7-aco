@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BE.maeumnaru.main.iml" filepath="$PROJECT_DIR$/.idea/modules/BE.maeumnaru.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.oss.maeumnaru.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.oss.maeumnaru.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/maeumnaru.iml" filepath="$PROJECT_DIR$/.idea/modules/maeumnaru.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/maeumnaru.main.iml" filepath="$PROJECT_DIR$/.idea/modules/maeumnaru.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/maeumnaru.test.iml" filepath="$PROJECT_DIR$/.idea/modules/maeumnaru.test.iml" />
+    </modules>
+  </component>
+</project>
