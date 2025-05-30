@@ -127,7 +127,18 @@ public class JwtTokenProvider {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        User principal = new User(subject, "", authorities);
+        // memberEntity 조회
+        MemberEntity memberEntity = memberRepository.findByLoginId(subject)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        // CustomUserDetails로 principal 생성
+        CustomUserDetails principal = new CustomUserDetails(
+                memberEntity.getMemberId(),
+                memberEntity.getLoginId(),
+                memberEntity.getPassword(),
+                authorities
+        );
+
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
