@@ -176,22 +176,21 @@ public class PaintService {
     }
 
     // 그림 수정 - 특정 ID에 해당하는 그림을 수정하는 메서드
-    public PaintResponseDto updatePaint(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
+    public PaintResponseDto updatePaintById(Long paintId, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
-            // 사용자 요청의 날짜를 기준으로 그림을 찾기
-            Date date = dto.getCreateDate();  // PaintRequestDto에 날짜가 포함되어 있다고 가정
-
-            // 환자 코드와 날짜로 그림 조회
-            PaintEntity paint = paintRepository.findByPatientCodeAndCreateDate(patientCode, date)
+            // paintId로 그림 조회
+            PaintEntity paint = paintRepository.findById(paintId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
+
+            String patientCode = paint.getPatientCode();
 
             // S3에 파일 업로드
             String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
 
             // 그림 정보 업데이트
-            paint.setFileUrl(fileUrl);  // 파일 URL 수정
-            paint.setTitle(dto.getTitle());  // 제목 수정
-            paint.setUpdateDate(new Date());  // 수정 날짜 업데이트
+            paint.setFileUrl(fileUrl);          // 파일 URL 수정
+            paint.setTitle(dto.getTitle());     // 제목 수정
+            paint.setUpdateDate(new Date());    // 수정 날짜 업데이트
 
             // 그림 저장
             paintRepository.save(paint);
@@ -210,6 +209,7 @@ public class PaintService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 
 
     public void deletePaint(Long id) {
@@ -249,8 +249,4 @@ public class PaintService {
             }
         }
     }
-
-
-
-
 }

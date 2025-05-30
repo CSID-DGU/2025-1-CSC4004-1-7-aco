@@ -74,7 +74,7 @@ public class MedicalController {
     public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
     }
-
+    //의사 일기 조회
     @GetMapping("/patient/{patientCode}/diary")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Optional<DiaryResponseDto>> getPatientDiaryByDate(

@@ -78,20 +78,18 @@ public class PaintController {
     @PutMapping("/{id}")
     public ResponseEntity<PaintResponseDto> updatePaint(
             @PathVariable Long id,
-            @RequestBody PaintRequestDto dto,
-            Authentication authentication) {
-        try {
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-            Long memberId = principal.getMemberId();
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("paint") PaintRequestDto dto,
+            Authentication authentication) throws IOException {
 
-            String patientCode = getPatientCodeByMemberId(memberId);
+        // 인증된 사용자 정보는 필요하다면 검증용으로 활용 가능
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
 
-            PaintResponseDto updatedPaint = paintService.updatePaint(patientCode, id, dto);
+        // paintId(id)를 기준으로 그림 업데이트
+        PaintResponseDto updatedPaint = paintService.updatePaintById(id, file, dto);
 
-            return ResponseEntity.ok(updatedPaint);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(updatedPaint);
     }
 
     //그림 삭제
