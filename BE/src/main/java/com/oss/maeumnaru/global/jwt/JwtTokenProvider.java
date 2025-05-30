@@ -3,6 +3,8 @@ package com.oss.maeumnaru.global.jwt;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
+import com.oss.maeumnaru.user.entity.MemberEntity;
+import com.oss.maeumnaru.user.repository.MemberRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
+    private final MemberRepository memberRepository;
     @Value("${jwt.secret}")
     private String secret;
 
@@ -50,16 +53,11 @@ public class JwtTokenProvider {
     public record TokenPair(String accessToken, String refreshToken) {}
 
     public TokenPair generateTokenPair(Authentication authentication) {
-        String authorities = authentication.getAuthorities().isEmpty()
-                ? "ROLE_USER"
-                : authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(a -> !a.isBlank())
-                .collect(Collectors.joining(","));
 
+        MemberEntity memberEntity = memberRepository.findByMemberId(((CustomUserDetails) authentication.getPrincipal()).getMemberId());
         String accessToken = Jwts.builder()
                 .setSubject(((CustomUserDetails) authentication.getPrincipal()).getLoginId())  // ✅ loginId 확실히 보장
-                .claim(AUTHORITIES_KEY, authorities)
+                .claim(AUTHORITIES_KEY, "ROLE_" + memberEntity.getMemberType())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(key, SignatureAlgorithm.HS256)

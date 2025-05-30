@@ -36,22 +36,16 @@ public class DiaryAnalysisController {
 
     @GetMapping("/weekly")
     public ResponseEntity<List<DiaryAnalysisResponseDto>> getWeeklyAnalysesByMemberId(
-            Authentication authentication,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date baseDate) {
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date baseDate,
+            @RequestParam String patientCode) {
 
-        // 👇 principal에서 memberId 꺼내기
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
-        Long memberId = principal.getMemberId();
-
-        List<DiaryAnalysisResponseDto> response = diaryAnalysisService.findWeeklyAnalysesByMemberId(memberId, baseDate)
+        List<DiaryAnalysisResponseDto> response = diaryAnalysisService.findWeeklyAnalysesByPatientCode(patientCode, baseDate)
                 .stream()
                 .map(DiaryAnalysisResponseDto::fromEntity)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
-
-
     // 단일 일기 분석 결과 조회
     @GetMapping("/{diaryId}")
     public ResponseEntity<DiaryAnalysisResponseDto> getAnalysisByDiaryId(@PathVariable Long diaryId) {

@@ -4,11 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @NoArgsConstructor
 @Getter
 @Setter
 public class PaintRequestDto {
-    private Long patientCode;
     private String title;
-
+    private Date createDate;
 }

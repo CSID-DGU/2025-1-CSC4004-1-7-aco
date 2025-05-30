@@ -1,5 +1,8 @@
 package com.oss.maeumnaru.medical.controller;
 
+import com.oss.maeumnaru.diary.dto.DiaryResponseDto;
+import com.oss.maeumnaru.diary.service.DiaryService;
+import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.jwt.SimpleUserPrincipal;
@@ -8,6 +11,7 @@ import com.oss.maeumnaru.medical.service.MedicalService;
 import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import com.oss.maeumnaru.medical.dto.MedicalResponseDto;
 import com.oss.maeumnaru.medical.dto.PatientResponseDto;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/medical")
@@ -23,12 +29,13 @@ import java.util.List;
 public class MedicalController {
 
     private final MedicalService medicalService;
-
+    private final DiaryService diaryService;
     // 👨‍⚕️ 로그인한 의사의 환자 목록 조회
     @GetMapping("/doctor/patients")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<List<MedicalResponseDto>> getPatientsForCurrentDoctor(Authentication authentication) {
-        Long memberId = ((SimpleUserPrincipal) authentication.getPrincipal()).getMemberId();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
         return ResponseEntity.ok(medicalService.getPatientsByDoctor(memberId));
     }
 
@@ -39,8 +46,8 @@ public class MedicalController {
             Authentication authentication,
             @PathVariable String patientCode) {
 
-        Long memberId = ((SimpleUserPrincipal) authentication.getPrincipal()).getMemberId();
-
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
         // 리턴값을 MedicalResponseDto로 직접 받아옴
         MedicalResponseDto response = medicalService.addPatientToDoctor(memberId, patientCode);
 
@@ -55,7 +62,8 @@ public class MedicalController {
             Authentication authentication,
             @PathVariable Long medicId) {
 
-        Long memberId = ((SimpleUserPrincipal) authentication.getPrincipal()).getMemberId();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
         medicalService.removePatient(memberId, medicId);
         return ResponseEntity.noContent().build();
     }
@@ -65,5 +73,14 @@ public class MedicalController {
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
+    }
+
+    @GetMapping("/patient/{patientCode}/diary")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<Optional<DiaryResponseDto>> getPatientDiaryByDate(
+            @PathVariable String patientCode,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+        Optional<DiaryResponseDto> diary = diaryService.getDiaryByPatientCodeAndDate(patientCode, date);
+        return ResponseEntity.ok(diary);
     }
 }

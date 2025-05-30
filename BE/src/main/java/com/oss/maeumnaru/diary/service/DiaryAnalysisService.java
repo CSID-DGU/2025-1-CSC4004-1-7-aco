@@ -53,10 +53,9 @@ public class DiaryAnalysisService {
             return diaryAnalysisRepository.save(analysis);
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 
     // 특정 일기 ID로 분석 결과 조회
     public Optional<DiaryAnalysisEntity> findByDiaryId(Long diaryId) {
@@ -70,18 +69,19 @@ public class DiaryAnalysisService {
     }
 
     // 최근 7일간 분석 결과 조회
-    public List<DiaryAnalysisEntity> findWeeklyAnalysesByMemberId(Long memberId, Date baseDate) {
+    public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, Date baseDate) {
         try {
             long MILLIS_IN_DAY = 24 * 60 * 60 * 1000L;
             Date startDate = new Date(baseDate.getTime() - MILLIS_IN_DAY * 6);
             Date endDate = new Date(baseDate.getTime() + MILLIS_IN_DAY - 1);
 
-            return diaryAnalysisRepository.findByDiary_Patient_Member_MemberIdAndResultDateBetweenOrderByResultDateAsc(
-                    memberId, startDate, endDate);
+            return diaryAnalysisRepository.findByDiary_Patient_PatientCodeAndResultDateBetweenOrderByResultDateAsc(
+                    patientCode, startDate, endDate);
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 }

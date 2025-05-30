@@ -10,4 +10,6 @@ public interface PatientRepository extends JpaRepository<PatientEntity, String> 
 
     // 회원 ID로 환자 정보 조회
     Optional<PatientEntity> findByMember_MemberId(Long memberId);
+
+    Optional<PatientEntity> findByPatientCode(String patientCode);
 }

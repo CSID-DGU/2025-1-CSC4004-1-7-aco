@@ -7,7 +7,10 @@ import com.oss.maeumnaru.diary.repository.DiaryRepository;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.service.S3Service;
+import com.oss.maeumnaru.medical.repository.MedicalRepository;
+import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
+import com.oss.maeumnaru.user.repository.DoctorRepository;
 import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -27,30 +30,24 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final MedicalRepository medicalRepository;
     private final S3Service s3Service;
 
-    private String getPatientCodeByMemberId(Long memberId) {
-        try {
-            PatientEntity patient = patientRepository.findByMember_MemberId(memberId)
-                    .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
-            return patient.getPatientCode();
-        } catch (DataAccessException e) {
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
-        }
-    }
+    // 기존 getPatientCodeByMemberId 삭제 혹은 사용하지 않음
 
     @Transactional
-    public DiaryResponseDto createDiary(Long memberId, DiaryRequestDto request, MultipartFile file) {
+    public DiaryResponseDto createDiary(String patientCode, DiaryRequestDto request, MultipartFile file) {
         try {
-            PatientEntity patient = patientRepository.findByMember_MemberId(memberId)
+            PatientEntity patient = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
 
-            String contentPath = s3Service.uploadFile(file, "diary/" + patient.getPatientCode());
+            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", String.valueOf(request.getCreateDate()) + ".txt");
 
             DiaryEntity diary = DiaryEntity.builder()
                     .contentPath(contentPath)
                     .title(request.getTitle())
-                    .createDate(new Date())
+                    .createDate(request.getCreateDate())
                     .updateDate(new Date())
                     .patient(patient)
                     .build();
@@ -67,21 +64,19 @@ public class DiaryService {
         }
     }
 
-    @Transactional
-    public DiaryResponseDto updateDiary(Long memberId, Long diaryId, DiaryRequestDto request, MultipartFile file) {
+    public DiaryResponseDto updateDiary(String patientCode, Long diaryId, DiaryRequestDto request, MultipartFile file) {
         try {
             DiaryEntity existingDiary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
-            if (!existingDiary.getPatient().getMember().getMemberId().equals(memberId)) {
+            if (!existingDiary.getPatient().getPatientCode().equals(patientCode)) {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
 
-            String patientCode = existingDiary.getPatient().getPatientCode();
+            // diaryId 기반으로 고유한 파일 경로 생성 (자동 덮어쓰기됨)
+            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", String.valueOf(existingDiary.getCreateDate()) + ".txt");
 
-            s3Service.deleteFile(existingDiary.getContentPath());
-            String contentPath = s3Service.uploadFile(file, "diary/" + patientCode);
-
+            // 엔티티 업데이트
             existingDiary.setContentPath(contentPath);
             existingDiary.setTitle(request.getTitle());
             existingDiary.setUpdateDate(new Date());
@@ -97,13 +92,14 @@ public class DiaryService {
         }
     }
 
+
     @Transactional
-    public void deleteDiary(Long memberId, Long diaryId) {
+    public void deleteDiary(String patientCode, Long diaryId) {
         try {
             DiaryEntity existingDiary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
-            if (!existingDiary.getPatient().getMember().getMemberId().equals(memberId)) {
+            if (!existingDiary.getPatient().getPatientCode().equals(patientCode)) {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
 
@@ -117,48 +113,14 @@ public class DiaryService {
         }
     }
 
-    public Optional<DiaryResponseDto> getDiaryById(Long memberId, Long diaryId) {
+    public Optional<DiaryResponseDto> getDiaryByPatientCodeAndDate(String patientCode, Date date) {
         try {
-            return diaryRepository.findById(diaryId)
-                    .filter(diary -> diary.getPatient().getMember().getMemberId().equals(memberId))
-                    .map(DiaryResponseDto::fromEntity);
+            Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
+            return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         }
     }
 
-    public List<DiaryResponseDto> getDiariesByMemberIdAndDate(Long memberId, Date date) {
-        try {
-            String patientCode = getPatientCodeByMemberId(memberId);
-            List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
-            return diaries.stream()
-                    .map(DiaryResponseDto::fromEntity)
-                    .collect(Collectors.toList());
-        } catch (DataAccessException e) {
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
-        }
-    }
-
-    public List<DiaryResponseDto> getDiariesByMemberIdAndDateRange(Long memberId, Date start, Date end) {
-        try {
-            String patientCode = getPatientCodeByMemberId(memberId);
-            List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDateBetweenOrderByCreateDateAsc(patientCode, start, end);
-            return diaries.stream()
-                    .map(DiaryResponseDto::fromEntity)
-                    .collect(Collectors.toList());
-        } catch (DataAccessException e) {
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
-        }
-    }
-
-    public List<DiaryResponseDto> getDiariesByMemberIdForPast7Days(Long memberId, Date baseDate) {
-        try {
-            long MILLIS_IN_DAY = 24 * 60 * 60 * 1000L;
-            Date startDate = new Date(baseDate.getTime() - MILLIS_IN_DAY * 6);
-            Date endDate = new Date(baseDate.getTime() + MILLIS_IN_DAY - 1);
-            return getDiariesByMemberIdAndDateRange(memberId, startDate, endDate);
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.SERVER_ERROR);
-        }
-    }
 }
+

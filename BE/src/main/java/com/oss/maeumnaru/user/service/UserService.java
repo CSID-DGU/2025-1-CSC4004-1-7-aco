@@ -80,7 +80,7 @@ public class UserService {
                 }
 
                 String fileUrl = (file != null && !file.isEmpty())
-                        ? s3Service.uploadFile(file, "doctor-license")
+                        ? s3Service.uploadFile(file, dto.licenseNumber() + "/license", member.getCreateDate() + ".jpg")
                         : null;
 
                 DoctorEntity doctor = DoctorEntity.builder()

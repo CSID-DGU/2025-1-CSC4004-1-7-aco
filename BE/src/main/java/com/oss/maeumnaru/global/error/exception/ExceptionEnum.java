@@ -27,8 +27,11 @@ public enum ExceptionEnum {
     AUTHENTICATION_FAILED(401, "로그인 인증에 실패했습니다."),
     MEDICAL_NOT_FOUND(404, "의료 기록을 찾을 수 없습니다."),
     DOCTOR_NOT_FOUND(404, "해당 의사를 찾을 수 없습니다."),
-    PATIENT_ALREADY_ASSIGNED(409, "해당 환자는 이미 다른 의사에게 배정되어 있습니다.");
+    PATIENT_ALREADY_ASSIGNED(409, "해당 환자는 이미 다른 의사에게 배정되어 있습니다."),
 
+
+    PAINT_NOT_FOUND(404, "해당 의사를 찾을 수 없습니다."),
+    CHAT_ALREADY_START(404, "채팅이 이미 시작되었습니다." );
     private final int status;
     private final String message;
 

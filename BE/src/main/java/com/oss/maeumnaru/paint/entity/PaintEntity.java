@@ -18,16 +18,13 @@ public class PaintEntity {
 
     private String fileUrl;
 
-    @Enumerated(EnumType.STRING)
-    private ChatEntity.WriterType writerType;
-
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
 
-    private Long patientCode;
+    private String patientCode;
 
     @Column(nullable = false)
     private String title;

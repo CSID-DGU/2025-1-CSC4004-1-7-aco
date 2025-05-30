@@ -25,17 +25,18 @@ public class S3Service {
         this.s3Client = s3Client;
     }
 
-    public String uploadFile(MultipartFile file, String folderName) throws IOException {
-        // 고유 파일명 생성 (UUID + 원본 확장자)
+    public String uploadFile(MultipartFile file, String folderName, String date) throws IOException {
+        // 원본 확장자 추출
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
             extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
         }
-        String uniqueFileName = UUID.randomUUID().toString() + extension;
+        // 날짜 기반 파일명 생성
+        String fileName = date + extension;  // 예: 2025-05-29.jpg
 
-        // S3 객체 키: 폴더명/파일명 형태
-        String key = folderName + "/" + uniqueFileName;
+        // S3 key 생성: 폴더명/날짜.확장자
+        String key = folderName + "/" + fileName;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -45,9 +46,9 @@ public class S3Service {
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-        // S3 퍼블릭 URL 반환 (버킷 정책에 따라 다름)
         return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
     }
+
     public void deleteFile(String fileUrl) {
         String key = extractKeyFromUrl(fileUrl);
 

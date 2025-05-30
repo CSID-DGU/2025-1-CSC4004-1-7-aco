@@ -3,9 +3,11 @@ package com.oss.maeumnaru.diary.controller;
 import com.oss.maeumnaru.diary.dto.DiaryRequestDto;
 import com.oss.maeumnaru.diary.dto.DiaryResponseDto;
 import com.oss.maeumnaru.diary.service.DiaryService;
+import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.jwt.SimpleUserPrincipal;
+import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/diary")
@@ -23,6 +26,13 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final PatientRepository patientRepository;
+
+    private String getPatientCodeByMemberId(Long memberId) {
+        return patientRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND))
+                .getPatientCode();
+    }
 
     @PostMapping
     public ResponseEntity<DiaryResponseDto> createDiary(
@@ -30,10 +40,11 @@ public class DiaryController {
             @RequestPart("diary") DiaryRequestDto request,
             @RequestPart("file") MultipartFile file) {
 
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
+        String patientCode = getPatientCodeByMemberId(memberId);
 
-        DiaryResponseDto response = diaryService.createDiary(memberId, request, file);
+        DiaryResponseDto response = diaryService.createDiary(patientCode, request, file);
         return ResponseEntity.ok(response);
     }
 
@@ -44,10 +55,11 @@ public class DiaryController {
             @RequestPart("diary") DiaryRequestDto request,
             @RequestPart("file") MultipartFile file) {
 
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
+        String patientCode = getPatientCodeByMemberId(memberId);
 
-        DiaryResponseDto response = diaryService.updateDiary(memberId, diaryId, request, file);
+        DiaryResponseDto response = diaryService.updateDiary(patientCode, diaryId, request, file);
         return ResponseEntity.ok(response);
     }
 
@@ -56,48 +68,24 @@ public class DiaryController {
             Authentication authentication,
             @PathVariable Long diaryId) {
 
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
+        String patientCode = getPatientCodeByMemberId(memberId);
 
-        diaryService.deleteDiary(memberId, diaryId);
+        diaryService.deleteDiary(patientCode, diaryId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{diaryId}")
-    public ResponseEntity<DiaryResponseDto> getDiaryById(
-            Authentication authentication,
-            @PathVariable Long diaryId) {
-
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
-        Long memberId = principal.getMemberId();
-
-        return diaryService.getDiaryById(memberId, diaryId)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
-    }
-
     @GetMapping("/by-date")
-    public ResponseEntity<List<DiaryResponseDto>> getDiariesByMemberIdAndDate(
+    public ResponseEntity<Optional<DiaryResponseDto>> getDiariesByMemberIdAndDate(
             Authentication authentication,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
 
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
+        String patientCode = getPatientCodeByMemberId(memberId);
 
-        List<DiaryResponseDto> diaries = diaryService.getDiariesByMemberIdAndDate(memberId, date);
-        return ResponseEntity.ok(diaries);
+        Optional<DiaryResponseDto> diary = diaryService.getDiaryByPatientCodeAndDate(patientCode, date);
+        return ResponseEntity.ok(diary);
     }
-
-    @GetMapping("/7days")
-    public ResponseEntity<List<DiaryResponseDto>> getDiariesForPast7Days(
-            Authentication authentication,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date baseDate) {
-
-        SimpleUserPrincipal principal = (SimpleUserPrincipal) authentication.getPrincipal();
-        Long memberId = principal.getMemberId();
-
-        List<DiaryResponseDto> diaries = diaryService.getDiariesByMemberIdForPast7Days(memberId, baseDate);
-        return ResponseEntity.ok(diaries);
-    }
-
 }

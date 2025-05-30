@@ -7,10 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
-    List<DiaryEntity> findByPatient_PatientCodeAndCreateDateBetweenOrderByCreateDateAsc(String patientCode, Date start, Date end);
+    Optional<DiaryEntity> findByPatient_PatientCodeAndCreateDate(String patientCode, Date date);
 
-    List<DiaryEntity> findByPatient_PatientCodeAndCreateDate(String patientCode, Date date);
+    List<DiaryEntity> findByPatient_PatientCodeAndCreateDateBetween(String patientCode, Date startDate, Date endDate);
 }

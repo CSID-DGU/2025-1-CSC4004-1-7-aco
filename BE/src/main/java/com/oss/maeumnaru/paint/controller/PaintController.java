@@ -1,9 +1,16 @@
 package com.oss.maeumnaru.paint.controller;
 
+import com.oss.maeumnaru.global.config.CustomUserDetails;
+import com.oss.maeumnaru.global.error.exception.ApiException;
+import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
+import com.oss.maeumnaru.paint.dto.PaintResponseDto;
 import com.oss.maeumnaru.paint.entity.PaintEntity;
 import com.oss.maeumnaru.paint.service.PaintService;
+import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.oss.maeumnaru.paint.entity.ChatEntity;
 import com.oss.maeumnaru.paint.repository.ChatRepository;
@@ -14,6 +21,7 @@ import com.oss.maeumnaru.paint.dto.PaintRequestDto;
 import org.springframework.http.MediaType;
 import jakarta.validation.Valid;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -23,37 +31,64 @@ public class PaintController {
 
     private final PaintService paintService;
     private final ChatRepository chatRepository;
+    private final PatientRepository patientRepository;
 
+    private String getPatientCodeByMemberId(Long memberId) {
+        return patientRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND))
+                .getPatientCode();
+    }
     //ID로 그림 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<PaintEntity> getPaintById(@PathVariable Long id) {
-        return paintService.getPaintById(id)
+    @GetMapping("/by-date")
+    public ResponseEntity<PaintResponseDto> getPaintByPatientCodeAndDate(
+            @RequestParam String patientCode,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+
+        return paintService.getPaintByPatientCodeAndDate(patientCode, date)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
     // 임시저장
     @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<PaintEntity> savePaintDraft(
+    public ResponseEntity<PaintResponseDto> savePaintDraft(
+            Authentication authentication,
             @RequestPart MultipartFile file,
             @RequestPart PaintRequestDto dto) throws IOException {
-        return ResponseEntity.ok(paintService.savePaintDraft(file, dto));
+
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
+
+        String patientCode = getPatientCodeByMemberId(memberId);
+        PaintResponseDto response = paintService.savePaintDraft(patientCode, file, dto);
+        return ResponseEntity.ok(response);
     }
+
     // 최종저장(수정사항 반영 + 대화시작 + 이후 수정불가)
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizePaint(
             @PathVariable Long id,
             @RequestPart MultipartFile file,
             @RequestPart PaintRequestDto dto) throws IOException {
-        paintService.finalizePaint(id, file, dto);
+        String patientCode = getPatientCodeByMemberId(id);
+        paintService.finalizePaint(patientCode, file, dto);
         return ResponseEntity.ok().build();
     }
 
     //그림 수정
     @PutMapping("/{id}")
-    public ResponseEntity<PaintEntity> updatePaint(@PathVariable Long id, @RequestBody PaintEntity updatedPaint) {
+    public ResponseEntity<PaintResponseDto> updatePaint(
+            @PathVariable Long id,
+            @RequestBody PaintRequestDto dto,
+            Authentication authentication) {
         try {
-            return ResponseEntity.ok(paintService.updatePaint(id, updatedPaint));
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            Long memberId = principal.getMemberId();
+
+            String patientCode = getPatientCodeByMemberId(memberId);
+
+            PaintResponseDto updatedPaint = paintService.updatePaint(patientCode, id, dto);
+
+            return ResponseEntity.ok(updatedPaint);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -81,7 +116,6 @@ public class PaintController {
         String nextQuestion = paintService.saveReplyAndGetNextQuestion(id, patientReply);
         return ResponseEntity.ok(nextQuestion);
     }
-
 
     //채팅 완료 -> 대화 전체 리스트 받음
     @PostMapping("/{id}/chat/complete")

@@ -13,4 +13,6 @@ public interface MedicalRepository extends JpaRepository<MedicalEntity, Long> {
     List<MedicalEntity> findByDoctor(DoctorEntity doctor);
 
     Optional<MedicalEntity> findByPatient(PatientEntity patient);
+
+    boolean existsByDoctorAndPatient_PatientCode(DoctorEntity doctor, String patientCode);
 }
