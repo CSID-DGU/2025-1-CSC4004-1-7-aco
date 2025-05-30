@@ -29,16 +29,19 @@ const Signin = () => {
             console.log("response", response);
 
             // 로컬에 역할 저장
-            localStorage.setItem(response.memberType);
+            localStorage.setItem("role", response.memberType);
+
+            console.log("memberType", response.memberType);
 
             if(response.memberType === "DOCTOR") {
                 navigate("/doctor");
             } else {
-                navigate("/patient");
+                navigate("/mainpage");
             }
         }
 
         catch (error) {
+            console.error("로그인 실패 에러:", error);
             if (error.response?.data?.message) {
                 setErrMsg(error.response.data.message);
             } else {

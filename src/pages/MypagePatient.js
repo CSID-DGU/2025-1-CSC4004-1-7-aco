@@ -22,6 +22,8 @@ const MypagePatient = () => {
         hospital: "",
         password: "",
         confirmPw: "",
+
+        patientCode: "",
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -115,9 +117,22 @@ const MypagePatient = () => {
             <Navigation />
 
             <div className="mp_editorpatient">
-                <div className="mp_titlemp">
-                    마이 페이지
+                <div className="mp_header">
+                    <div className="mp_titlemp">
+                        마이 페이지
+                        <span className="patient-code">환자 코드: {state.patientCode}</span>
+                    </div>
+
+                    <div className="mp_button_container">
+                        <button className="mp_edit_button" onClick={handleEdit}>
+                            {isEditing ? "수정 완료" : "정보 수정"}
+                        </button>
+                        <button className="mp_delete_button" onClick={handleDeleteUser}>
+                            회원 탈퇴
+                        </button>
+                    </div>
                 </div>
+
 
                 <div className="mp_formgrid">
                     <div className="mp_formcolumn">
@@ -210,14 +225,6 @@ const MypagePatient = () => {
                     </div>
                 </div>
 
-                <div className="mp_button_container">
-                    <button className="mp_edit_button" onClick={handleEdit}>
-                        {isEditing ? "수정 완료" : "정보 수정"}
-                    </button>
-                    <button className="mp_delete_button" onClick={handleDeleteUser}>
-                        회원 탈퇴
-                    </button>
-                </div>
             </div>
         </div>
     );
