@@ -13,4 +13,9 @@ export const getPatient = async () => {
 export const deletePatient = async (medicId) => {
     const respone = await API.delete(`/medical/${medicId}`);
     return respone.data;
-}
+};
+
+export const getPatientDiary = async (patientCode) => {
+    const response = await API.get(`/diary/${patientCode}`);
+    return response.data;
+};

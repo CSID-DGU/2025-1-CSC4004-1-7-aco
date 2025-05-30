@@ -140,6 +140,8 @@ const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, current
 };
 
 const CalendarContainer = styled.div`
+box-sizing: border-box;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -205,7 +207,9 @@ const DaysContainer = styled.div`
   flex-direction: column;
   align-items: center;
   width: 442px;
-  height: 379px;
+  height: auto;
+  min-height: 379px;
+  padding-bottom: 1px;
 `;
 
 const DaysRow = styled.div`
@@ -214,7 +218,6 @@ const DaysRow = styled.div`
   align-items: center;
   width: 442px;
   height: 64px;
-  margin: -1px 0;
 `;
 
 const DayCell = styled.div`
@@ -246,7 +249,6 @@ const DateRow = styled.div`
   align-items: center;
   width: 442px;
   height: 64px;
-  margin: -1px 0;
 `;
 
 const DateCell = styled.div`
@@ -318,8 +320,9 @@ const DateCell = styled.div`
 `;
 
 const DateText = styled.div`
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
   font-family: 'Inter';
   font-weight: 600;
   font-size: 14px;
