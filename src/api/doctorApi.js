@@ -24,7 +24,7 @@ export const doctorApi = {
 
   // 환자 등록
   addPatient: async (patientCode) => {
-    const response = await API.post(`/medical/doctor/patient/${patientCode}`);
+    const response = await API.post(`/medical/${patientCode}`);
     console.log('[addPatient] response:', response);
     return response.data;
   },

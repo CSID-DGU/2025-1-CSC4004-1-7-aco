@@ -183,6 +183,15 @@ const DrawingPage = () => {
         }
     };
 
+    const handleTempSaveWithTitle = async () => {
+        if (!drawingTitle.trim()) {
+            alert('제목을 입력해주세요!');
+            return;
+        }
+        await handleTempSave();
+        setShowTitleModal(false);
+    };
+
     const handleFinalSave = async () => {
         const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
         const dataUrl = canvas.toDataURL('image/png');
@@ -464,7 +473,7 @@ const DrawingPage = () => {
                         ) : !isPastDrawing ? (
                             <>
                                 <Button onClick={() => clearCanvas(false)}>지우기</Button>
-                                <TempSaveButton onClick={handleTempSave} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                                <TempSaveButton onClick={() => setShowTitleModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
                                 <SaveButton onClick={() => saveDrawing(false)}>최종저장</SaveButton>
                             </>
                         ) : null}
@@ -518,7 +527,7 @@ const DrawingPage = () => {
                         </ModalBody>
                         <ModalFooter>
                             <Button onClick={() => clearCanvas(true)} disabled={isPastDrawing}>지우기</Button>
-                            <TempSaveButton onClick={handleTempSave} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                            <TempSaveButton onClick={() => setShowTitleModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
                             <SaveButton onClick={() => saveDrawing(true)} disabled={isPastDrawing}>최종저장</SaveButton>
                         </ModalFooter>
                     </ModalContent>
@@ -554,7 +563,7 @@ const DrawingPage = () => {
                             />
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={() => handleTitleSave()} disabled={!drawingTitle.trim()}>저장</Button>
+                            <Button onClick={handleTempSaveWithTitle} disabled={!drawingTitle.trim()}>저장</Button>
                             <Button onClick={() => setShowTitleModal(false)}>취소</Button>
                         </ModalFooter>
                     </ModalContent>
