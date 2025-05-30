@@ -101,13 +101,14 @@ public class UserController {
             hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
                     .map(DoctorEntity::getHospital)
                     .orElse(null);
-            // 환자코드 조회
-            patientCode = patientRepository.findByMember_MemberId(member.getMemberId())
-                    .map(PatientEntity::getPatientCode)
-                    .orElse(null);
+
         } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
             hospital = patientRepository.findByMember_MemberId(member.getMemberId())
                     .map(PatientEntity::getPatientHospital)
+                    .orElse(null);
+            // 환자코드 조회
+            patientCode = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientCode)
                     .orElse(null);
         }
 

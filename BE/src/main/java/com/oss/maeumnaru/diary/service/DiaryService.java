@@ -56,10 +56,13 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(saved);
 
         } catch (IOException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -73,10 +76,8 @@ public class DiaryService {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
 
-            // diaryId 기반으로 고유한 파일 경로 생성 (자동 덮어쓰기됨)
             String contentPath = s3Service.uploadFile(file, patientCode + "/diary", String.valueOf(existingDiary.getCreateDate()) + ".txt");
 
-            // 엔티티 업데이트
             existingDiary.setContentPath(contentPath);
             existingDiary.setTitle(request.getTitle());
             existingDiary.setUpdateDate(new Date());
@@ -84,14 +85,16 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(diaryRepository.save(existingDiary));
 
         } catch (IOException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
-
 
     @Transactional
     public void deleteDiary(String patientCode, Long diaryId) {
@@ -107,8 +110,10 @@ public class DiaryService {
             diaryRepository.delete(existingDiary);
 
         } catch (DataAccessException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -118,6 +123,7 @@ public class DiaryService {
             Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
             return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
+            e.printStackTrace(); // 로그 추가
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         }
     }

@@ -168,7 +168,8 @@ public class UserService {
             return TokenResponseDTO.of(
                     tokenPair.accessToken(),
                     tokenPair.refreshToken(),
-                    member.getMemberType()
+                    member.getMemberType(),
+                    member.getName()
             );
 
         } catch (Exception e) {
