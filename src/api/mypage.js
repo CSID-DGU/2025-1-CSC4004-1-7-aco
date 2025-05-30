@@ -5,7 +5,6 @@ export const getUserInfo = async () => {
 
     console.log("getUserInfo");
     console.log("response: ", response);
-    console.log("response.data: ", response.data);
 
     return response.data;
 };
