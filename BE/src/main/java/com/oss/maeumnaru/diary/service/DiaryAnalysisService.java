@@ -88,26 +88,4 @@ public class DiaryAnalysisService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
-
-    public List<DiaryAnalysisResponseDto> getDiaryAnalysisByMonth(Long memberId, int year, int month) {
-        // 1. 월의 시작일과 종료일 계산 (LocalDateTime)
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);  // 23:59:59.999999999
-
-        // 2. diaryAnalysisRepository에서 memberId와 날짜 범위로 조회
-        List<DiaryAnalysisEntity> analysisEntities = diaryAnalysisRepository.findByMemberIdAndDateBetween(
-                memberId,
-                startDateTime,
-                endDateTime
-        );
-
-        // 3. Entity → DTO 변환 후 반환
-        return analysisEntities.stream()
-                .map(DiaryAnalysisResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
 }

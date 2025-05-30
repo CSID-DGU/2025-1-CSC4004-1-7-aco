@@ -8,11 +8,11 @@ import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.medical.repository.MedicalRepository;
-import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
 import com.oss.maeumnaru.user.repository.DoctorRepository;
 import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
@@ -33,8 +32,6 @@ public class DiaryService {
     private final DoctorRepository doctorRepository;
     private final MedicalRepository medicalRepository;
     private final S3Service s3Service;
-
-    // 기존 getPatientCodeByMemberId 삭제 혹은 사용하지 않음
 
     @Transactional
     public DiaryResponseDto createDiary(String patientCode, DiaryRequestDto request, MultipartFile file) {
@@ -56,13 +53,13 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(saved);
 
         } catch (IOException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("createDiary IOException", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("createDiary DatabaseException", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("createDiary UnknownException", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -85,13 +82,13 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(diaryRepository.save(existingDiary));
 
         } catch (IOException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("updateDiary IOException", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("updateDiary DatabaseException", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("updateDiary UnknownException", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -110,10 +107,10 @@ public class DiaryService {
             diaryRepository.delete(existingDiary);
 
         } catch (DataAccessException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("deleteDiary DatabaseException", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("deleteDiary UnknownException", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -123,10 +120,8 @@ public class DiaryService {
             Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
             return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
-            e.printStackTrace(); // 로그 추가
+            log.error("getDiaryByPatientCodeAndDate DatabaseException", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         }
     }
-
 }
-
