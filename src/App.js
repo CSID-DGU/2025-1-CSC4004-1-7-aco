@@ -12,6 +12,8 @@ import SignupFinish from "./pages/SignupFinish";
 import MypageDoctor from "./pages/MypageDoctor";
 import MypagePatient from "./pages/MypagePatient";
 import styled from 'styled-components';
+import TestDoctor from "./pages/testDoctor";
+
 
 const BACKGROUND_VIDEOS = [
   {
@@ -136,6 +138,8 @@ function AppContent() {
         <Route path="/signup/finish" element={<SignupFinish />} />
         <Route path="/mypage/doctor" element={<MypageDoctor />} />
         <Route path="/mypage/patient" element={<MypagePatient />} />
+
+        <Route path="/testdoctor" element={<TestDoctor />} />
       </Routes>
     </>
   );

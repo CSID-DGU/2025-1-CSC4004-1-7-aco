@@ -33,6 +33,8 @@ const Signin = () => {
             localStorage.setItem('userName', response.name);
             console.log("memberType", response.memberType);
 
+            // navigate("/testdoctor");
+
             if(response.memberType === "DOCTOR") {
                 navigate("/doctor");
             } else {

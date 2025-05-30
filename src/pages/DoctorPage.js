@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, R
 import { startOfWeek, format, addDays } from 'date-fns';
 import DoctorCalendar from '../components/DoctorCalendar';
 import Navigation from '../components/Navigation';
-import { doctorApi } from '../api/doctorApi';
+import { registerPatient, getPatient, deletePatient } from '../api/medical';
 
 const DoctorPageContainer = styled.div`
   width: 100vw;
@@ -318,7 +318,7 @@ export default function DoctorPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [patientEmotionMap, setPatientEmotionMap] = useState({});
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
-  const [addPatientId, setAddPatientId] = useState('');
+  const [patientCode, setPatientCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -366,34 +366,6 @@ export default function DoctorPage() {
     })));
   }, [kstSelectedDate]);
 
-  // 환자 목록 조회
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        setLoading(true);
-        const data = await doctorApi.getPatients();
-        setPatients(data.map(patient => ({
-          id: patient.patientCode,
-          name: patient.name,
-          info: `생년월일: ${patient.birthDate}`
-        })));
-        if (data.length > 0) {
-          setSelectedPatient({
-            id: data[0].patientCode,
-            name: data[0].name,
-            info: `생년월일: ${data[0].birthDate}`
-          });
-        }
-      } catch (error) {
-        setError('환자 목록을 불러오는데 실패했습니다.');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPatients();
-  }, []);
-
   // 환자의 감정 데이터를 가져오는 함수 (실제 API 연동 필요)
   useEffect(() => {
     const fetchPatientEmotions = async () => {
@@ -409,98 +381,145 @@ export default function DoctorPage() {
   }, []);
 
   // 환자 선택 시 상세 정보 조회
-  const handlePatientSelect = async (patient) => {
-    setSelectedPatient(patient);
-    try {
-      const detail = await doctorApi.getPatientDetail(patient.id);
-      setPatientDetail(detail);
-    } catch (error) {
-      console.error('환자 상세 정보 조회 실패:', error);
-      setError('환자 상세 정보를 불러오는데 실패했습니다.');
-    }
-  };
+  // const handlePatientSelect = async (patient) => {
+  //   setSelectedPatient(patient);
+  //   try {
+  //     const detail = await doctorApi.getPatientDetail(patient.id);
+  //     setPatientDetail(detail);
+  //   } catch (error) {
+  //     console.error('환자 상세 정보 조회 실패:', error);
+  //     setError('환자 상세 정보를 불러오는데 실패했습니다.');
+  //   }
+  // };
 
   // 환자 삭제 핸들러
-  const handleDeletePatient = async (patientId, e) => {
-    e.stopPropagation();
-    if (!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
+  // const handleDeletePatient = async (patientId, e) => {
+  //   e.stopPropagation();
+  //   if (!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
+  //   try {
+  //     setDeleteLoading(true);
+  //     setDeleteError(null);
+  //     await doctorApi.removePatient(patientId);
+  //     // 환자 목록 새로고침
+  //     const data = await doctorApi.getPatients();
+  //     setPatients(data.map(patient => ({
+  //       id: patient.patientCode,
+  //       name: patient.name,
+  //       info: `생년월일: ${patient.birthDate}`
+  //     })));
+  //     if (selectedPatient?.id === patientId) {
+  //       setSelectedPatient(null);
+  //     }
+  //   } catch (error) {
+  //     setDeleteError(error.response?.data?.message || '환자 삭제에 실패했습니다.');
+  //     console.error(error);
+  //   } finally {
+  //     setDeleteLoading(false);
+  //   }
+  // };
+
+  // 환자 추가하기
+  const handleRegisterPatient = async (patientCode) => {
+    console.log(typeof patientCode, patientCode);
     try {
-      setDeleteLoading(true);
-      setDeleteError(null);
-      await doctorApi.removePatient(patientId);
-      // 환자 목록 새로고침
-      const data = await doctorApi.getPatients();
-      setPatients(data.map(patient => ({
-        id: patient.patientCode,
-        name: patient.name,
-        info: `생년월일: ${patient.birthDate}`
-      })));
-      if (selectedPatient?.id === patientId) {
-        setSelectedPatient(null);
-      }
+      await registerPatient(patientCode);
+      setShowAddPatientModal(false);
+      setPatientCode('');
     } catch (error) {
-      setDeleteError(error.response?.data?.message || '환자 삭제에 실패했습니다.');
-      console.error(error);
-    } finally {
-      setDeleteLoading(false);
+      console.error('환자 등록에 실패했습니다.');
     }
   };
 
-  // 환자 추가 핸들러
-  const handleAddPatientConfirm = async () => {
+  // 환자 리스트 불러오기
+  const handleGetPatient = async () => {
     try {
       setLoading(true);
-      await doctorApi.addPatient(addPatientId);
-      // 환자 목록 새로고침
-      const data = await doctorApi.getPatients();
-      setPatients(data.map(patient => ({
-        id: patient.patientCode,
-        name: patient.name,
-        info: `생년월일: ${patient.birthDate}`
-      })));
-      setShowAddPatientModal(false);
-      setAddPatientId('');
+      const data = await getPatient();
+      console.log("data", data);
+
+      // 환자 한 명씩 불러오기
+      const mappedPatients = data.map(patient => ({
+        patientCode: patient.patientCode,
+        patientName: patient.patientName,
+        patientBirthDate: `생년월일: ${patient.patientBirthDate}`
+      }));
+      console.log("mappedPatients:", mappedPatients);
+  
+      setPatients(mappedPatients);
+
+      // 제일 첫 환자를 자동으로 선택
+      // if (data.length > 0) {
+      //   setSelectedPatient({
+      //     patientCode: data[0].patientCode,
+      //     patientName: data[0].patientName,
+      //     patientBirthDate: `생년월일: ${data[0].patientBirthDate}`
+      //   });
+      // }
+
+      setError(null);
+
     } catch (error) {
-      setError('환자 등록에 실패했습니다.');
-      console.error(error);
+      console.error('handleGetPatient: 환자 목록을 불러오는데 실패했습니다.', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // 페이지 진입 시 환자 리스트 불러오기
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        await handleGetPatient();
+      } catch (error) {
+        console.error('fetchPatient: 환자 목록을 불러오는데 실패했습니다.');
+      }
+    }
+    fetchPatient();
+  }, []);
+
+  // 환자 삭제하기
+  const handleDeletePatient = async (medicId, e) => {
+    e.stopPropagation();
+    if(!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
+    try {
+      setDeleteLoading(true);
+      setDeleteError(null);
+
+      // 환자 삭제
+      await deletePatient(medicId);
+
+      // 환자 목록 새로고침
+      //await handleGetPatient();
+      setPatients(prevPatients => prevPatients.filter(p => p.medicId !== medicId));
+
+    } catch (error) {
+      console.error('환자 삭제에 실패했습니다.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+
   // 환자 추가 모달 취소
   const handleAddPatientCancel = () => {
     setShowAddPatientModal(false);
-    setAddPatientId('');
-  };
-
-  const handleMyPage = () => {
-    alert('마이페이지로 이동');
-  };
-
-  const handleLogout = () => {
-    alert('로그아웃');
+    setPatientCode('');
   };
 
   // 환자 검색 필터링
-  const filteredPatients = patients.filter(p =>
-    p.name.includes(search) || p.info.includes(search)
-  );
+  // const filteredPatients = patients.filter(p =>
+  //   p.name.includes(search) || p.info.includes(search)
+  // );
 
   // 선택된 날짜의 데이터
   const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
 
   return (
     <>
-      <Navigation
-        userName="김의사"
-        showWelcome={true}
-        showMyPage={true}
-        showLogout={true}
-        onMyPage={handleMyPage}
-        onLogout={handleLogout}
-      />
+      <Navigation />
       <DoctorPageContainer>
+
+        
         <LeftPanel>
           <SearchRow>
             <SearchInput
@@ -518,19 +537,17 @@ export default function DoctorPage() {
           ) : error ? (
             <ErrorMessage>{error}</ErrorMessage>
           ) : (
-            filteredPatients.map(p => (
-              <PatientCard
-                key={p.id}
-                onClick={() => handlePatientSelect(p)}
-                style={{ borderColor: selectedPatient?.id === p.id ? '#0089ED' : '#222' }}
-              >
+            // filteredPatients 대신 patients 사용
+            patients.map(p => (
+              <PatientCard key={p.patientCode} style={{ borderColor: selectedPatient?.patientCode === p.patientCode ? '#0089ED' : '#222' }}>
                 <PatientInfo>
-                  <PatientName>{p.name}</PatientName>
-                  <PatientDesc>{p.info}</PatientDesc>
+                  <PatientName>{p.patientName}</PatientName>
+                  <PatientDesc>{p.patientBirthDate}</PatientDesc>
+                  <PatientDesc style={{ color: '#666', marginTop: '4px' }}>환자 코드: {p.patientCode}</PatientDesc>
                 </PatientInfo>
                 <PatientAvatar>👤</PatientAvatar>
                 <DeleteButton
-                  onClick={(e) => handleDeletePatient(p.id, e)}
+                  onClick={(e) => handleDeletePatient(p.medicId, e)}
                   disabled={deleteLoading}
                   title="환자 삭제"
                 >
@@ -541,13 +558,15 @@ export default function DoctorPage() {
           )}
           {deleteError && <ErrorMessage>{deleteError}</ErrorMessage>}
         </LeftPanel>
+
+
         <RightPanel>
           {patientDetail && (
             <div style={{ marginBottom: '24px' }}>
               <SectionTitle>환자 정보</SectionTitle>
-              <div style={{ 
-                background: '#f7f7fa', 
-                padding: '16px', 
+              <div style={{
+                background: '#f7f7fa',
+                padding: '16px',
                 borderRadius: '12px',
                 fontSize: '15px',
                 lineHeight: '1.6'
@@ -578,8 +597,8 @@ export default function DoctorPage() {
                     <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis 
-                        domain={[-1, 1]} 
+                      <YAxis
+                        domain={[-1, 1]}
                         tickCount={5}
                         label={{ value: '감정 수치', angle: -90, position: 'insideLeft' }}
                       />
@@ -606,7 +625,7 @@ export default function DoctorPage() {
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
                       <YAxis allowDecimals={false} />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
-                      <Bar dataKey="meal" fill="#00C49F" radius={[8,8,0,0]} />
+                      <Bar dataKey="meal" fill="#00C49F" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartBox>
@@ -619,7 +638,7 @@ export default function DoctorPage() {
               <thead>
                 <tr>
                   {weekStats.map((d, idx) => (
-                    <th key={d.date}>{['월','화','수','목','금','토','일'][idx]}</th>
+                    <th key={d.date}>{['월', '화', '수', '목', '금', '토', '일'][idx]}</th>
                   ))}
                 </tr>
               </thead>
@@ -665,13 +684,13 @@ export default function DoctorPage() {
               <input
                 type="text"
                 placeholder="환자 고유 ID 입력"
-                value={addPatientId}
-                onChange={e => setAddPatientId(e.target.value)}
+                value={patientCode}
+                onChange={e => setPatientCode(e.target.value)}
                 style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1.5px solid #bbb', fontSize: 15 }}
               />
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-              <DiaryModalClose onClick={handleAddPatientConfirm}>확인</DiaryModalClose>
+              <DiaryModalClose onClick={() => handleRegisterPatient(patientCode)}>확인</DiaryModalClose>
               <DiaryModalClose style={{ background: '#bbb' }} onClick={handleAddPatientCancel}>취소</DiaryModalClose>
             </div>
           </DiaryModalBox>
