@@ -392,39 +392,19 @@ export default function DoctorPage() {
   //   }
   // };
 
-  // 환자 삭제 핸들러
-  // const handleDeletePatient = async (patientId, e) => {
-  //   e.stopPropagation();
-  //   if (!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
-  //   try {
-  //     setDeleteLoading(true);
-  //     setDeleteError(null);
-  //     await doctorApi.removePatient(patientId);
-  //     // 환자 목록 새로고침
-  //     const data = await doctorApi.getPatients();
-  //     setPatients(data.map(patient => ({
-  //       id: patient.patientCode,
-  //       name: patient.name,
-  //       info: `생년월일: ${patient.birthDate}`
-  //     })));
-  //     if (selectedPatient?.id === patientId) {
-  //       setSelectedPatient(null);
-  //     }
-  //   } catch (error) {
-  //     setDeleteError(error.response?.data?.message || '환자 삭제에 실패했습니다.');
-  //     console.error(error);
-  //   } finally {
-  //     setDeleteLoading(false);
-  //   }
-  // };
-
   // 환자 추가하기
   const handleRegisterPatient = async (patientCode) => {
     console.log(typeof patientCode, patientCode);
     try {
+
+      // 환자 추가
       await registerPatient(patientCode);
       setShowAddPatientModal(false);
       setPatientCode('');
+
+      // 환자 리스트 새로고침
+      await handleGetPatient();
+
     } catch (error) {
       console.error('환자 등록에 실패했습니다.');
     }
