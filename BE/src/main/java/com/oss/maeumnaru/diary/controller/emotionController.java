@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/diary")
 @RequiredArgsConstructor
-public class EmotionController {
+public class emotionController {
 
     private final EmotionService emotionService;
     private final MemberRepository memberRepository;
