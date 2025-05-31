@@ -16,7 +16,8 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}                # OpenAI API 키 환경변수
       DOCKER_IMAGE_NAME: janghyoseok0422/maeumnaru-spring   # Docker 이미지 이름 (자신에 맞게 수정)
       DOCKER_IMAGE_TAG: latest                                     # Docker 태그 (필요 시 변경)
-
+      DOC_USERNAME: ${{ secrets.DOC_USERNAME }}
+      DOC_TAC: ${{ secrets.DOC_TAC }}
     steps:
       # 1. 소스코드 체크아웃
       - name: Checkout code
@@ -48,11 +49,11 @@ jobs:
         run: ls -al BE/build/libs/
 
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Docker login
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: $DOC_USERNAME
+          password: $DOC_TAC
 
       # 7. Docker 이미지 빌드 (BE 폴더 기준)
       - name: Build Docker image
