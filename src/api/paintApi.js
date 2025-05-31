@@ -38,13 +38,12 @@ export const savePaintDraft = async (file, dto) => {
 };
 
 // 그림 최종 저장
-export const finalizePaint = async (paintId, file, dto) => {
+export const finalizePaint = async (file, dto) => {
     const formData = new FormData();
     formData.append('file', file, 'drawing.png');
-    const { title } = dto;
-    formData.append('dto', new Blob([JSON.stringify({ title })], { type: 'application/json' }));
+    formData.append('dto', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
 
-    const response = await API.post(`/paint/${paintId}/finalize`, formData, {
+    const response = await API.post(`/paint/finalize`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }

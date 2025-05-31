@@ -35,7 +35,7 @@ const CalendarWrapper = styled.div`
 
 const DiaryArea = styled.div`
     position: relative;
-    width: 700px;
+    width: 650px;
     height: 600px;
     background: transparent;
     border-radius: 28px;
@@ -109,8 +109,11 @@ const ButtonContainer = styled.div`
 
 // KST(한국 시간) 기준 날짜 키 생성 함수
 function getKSTDateKey(date) {
-    const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-    return kst.toISOString().slice(0, 10);
+    // date는 이미 KST 기준임
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 // 감정 점수 맵 API 요청 함수
@@ -164,7 +167,6 @@ export default function MainPage() {
     const [emotionMap, setEmotionMap] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisResult, setAnalysisResult] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [showAnalyzeConfirm, setShowAnalyzeConfirm] = useState(false);
@@ -177,8 +179,6 @@ export default function MainPage() {
     const isAnalyzed = diary && (diary.analysisId || diary.analysisResult || diary.analysis);
     const canAnalyze = (
         diary &&
-        typeof diary.mealCount === 'number' && diary.mealCount > 0 &&
-        typeof diary.outing === 'boolean' &&
         diary.title && diary.title.trim() !== '' &&
         diary.text && diary.text.trim() !== ''
     );
@@ -314,9 +314,7 @@ export default function MainPage() {
                 wakeUpTime: analysisInput.wakeUpTime,
             };
             await saveOrUpdateAnalysis(savedDiary.diaryId, analysisRequest);
-            const analysis = await getAnalysisByDiaryId(savedDiary.diaryId);
-            setAnalysisResult(analysis);
-            setIsEditMode(false); // 분석 후 수정 불가
+            // 분석 결과 모달은 더 이상 띄우지 않음
         } catch (e) {
             alert('분석 실패: ' + (e.response?.data?.message || e.message));
         } finally {
@@ -486,9 +484,6 @@ export default function MainPage() {
                     showDelete={!!diaryMap[dateKey]}
                     onSave={handleSaveDiary}
                 />
-            )}
-            {analysisResult && (
-                <AnalysisModal result={analysisResult} onClose={() => setAnalysisResult(null)} />
             )}
             {showDeleteConfirm && (
                 <ConfirmModal

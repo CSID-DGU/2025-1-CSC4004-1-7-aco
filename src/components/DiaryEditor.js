@@ -58,7 +58,7 @@ const TitleInput = styled.input`
 
 const DiaryLines = styled.textarea`
   width: 100%;
-  height: 320px;
+  height: 392px;
   background: repeating-linear-gradient(
     to bottom,
     transparent,
@@ -71,7 +71,7 @@ const DiaryLines = styled.textarea`
   resize: none;
   outline: none;
   background-color: transparent;
-  margin-bottom: 24px;
+  margin-bottom: -15px;
   padding: 0;
   font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
   color: #333;
