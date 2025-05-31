@@ -32,8 +32,7 @@ public class DiaryEntity {
     private PatientEntity patient;
 
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "diary_analysis_id")  // DiaryEntity 테이블에 FK 컬럼
+    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private DiaryAnalysisEntity diaryAnalysis;
 
 
