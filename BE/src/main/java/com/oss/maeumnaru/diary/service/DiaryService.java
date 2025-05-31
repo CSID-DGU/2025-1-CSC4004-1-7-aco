@@ -20,9 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Optional;
 
 @Slf4j
@@ -120,25 +117,11 @@ public class DiaryService {
 
     public Optional<DiaryResponseDto> getDiaryByPatientCodeAndDate(String patientCode, Date date) {
         try {
-            // Date → LocalDate로 변환
-            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-            // 범위 계산 (하루 단위)
-            LocalDateTime startOfDay = localDate.atStartOfDay();
-            LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-            Date startDate = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
-            Date endDate = Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
-
-            // 범위 조회로 변경!
-            return diaryRepository.findByPatient_PatientCodeAndCreateDateBetween(patientCode, startDate, endDate)
-                    .stream()
-                    .findFirst()
-                    .map(DiaryResponseDto::fromEntity);
-
+            Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
+            return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
             log.error("getDiaryByPatientCodeAndDate DatabaseException", e);
-            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+            throw new ApiException (ExceptionEnum.DATABASE_ERROR);
         }
     }
 }
