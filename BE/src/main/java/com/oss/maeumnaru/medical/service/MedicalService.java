@@ -37,6 +37,7 @@ public class MedicalService {
                 .map(medical -> {
                     PatientEntity patient = medical.getPatient();
                     return MedicalResponseDto.builder()
+                            .medicId(medical.getMedicId())
                             .patientCode(patient.getPatientCode())
                             .patientName(patient.getMember().getName())
                             .patientBirthDate(patient.getMember().getBirthDate().toString())
