@@ -18,7 +18,8 @@ public class DoctorEntity {
     private String hospital;
     private String certificationPath;
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private DoctorEntity doctor;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")  // FK 컬럼
+    private MemberEntity member;
 
 }

@@ -48,10 +48,9 @@ public class MemberEntity {
     public enum MemberType {
         PATIENT, DOCTOR, ADMIN
     }
-    @OneToOne(mappedBy = "member_id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private DoctorEntity doctor;
 
-    @OneToOne(mappedBy = "member_id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PatientEntity patient;
-
 }

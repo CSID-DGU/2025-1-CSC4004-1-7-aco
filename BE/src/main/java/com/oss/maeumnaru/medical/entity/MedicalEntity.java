@@ -19,11 +19,11 @@ public class MedicalEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long medicId;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "patient_code")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_code")  // 외래키가 medical 테이블에 있음
     private PatientEntity patient;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "license_number")
     private DoctorEntity doctor;
 
