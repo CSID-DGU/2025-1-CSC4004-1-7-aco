@@ -18,7 +18,8 @@ public class EmotionService {
 
     private final DiaryRepository diaryRepository;
 
-    public List<DiaryResponseDto> getDiariesByPatientCodeAndMonth(String patientCode, int year, int month) {
+    // 연-월 조회만 사용
+    public List<DiaryResponseDto> getDiariesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
             List<DiaryEntity> diaries = diaryRepository
                     .findByPatient_PatientCodeAndYearAndMonth(patientCode, year, month);
@@ -28,6 +29,8 @@ public class EmotionService {
                     .collect(Collectors.toList());
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+        } catch (Exception e) {
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 }

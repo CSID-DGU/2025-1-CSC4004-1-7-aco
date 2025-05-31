@@ -16,23 +16,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/diary")
 @RequiredArgsConstructor
-public class emotionController {
+public class EmotionController {
 
-    private final EmotionService emotionService;
-    private final MemberRepository memberRepository;
+    private final EmotionService EmotionService;
+    private final MemberRepository MemberRepository;
 
     @GetMapping("/mainpage")
     public ResponseEntity<List<DiaryResponseDto>> getDiariesByMonthAndYear(
             Authentication authentication,
-            @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam String year,
+            @RequestParam String month) {
 
-        // 1️⃣ 로그인 사용자 확인
         String loginId = authentication.getName();
-        MemberEntity member = memberRepository.findByLoginId(loginId)
+        MemberEntity member = MemberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.MEMBER_NOT_FOUND));
 
-        // 2️⃣ 환자 코드 조회
         String patientCode = member.getPatient() != null
                 ? member.getPatient().getPatientCode()
                 : null;
@@ -41,8 +39,7 @@ public class emotionController {
             throw new ApiException(ExceptionEnum.PATIENT_NOT_FOUND);
         }
 
-        // 3️⃣ EmotionService 호출
-        List<DiaryResponseDto> diaries = emotionService.getDiariesByPatientCodeAndMonth(patientCode, year, month);
+        List<DiaryResponseDto> diaries = EmotionService.getDiariesByPatientCodeAndMonth(patientCode, year, month);
 
         return ResponseEntity.ok(diaries);
     }
