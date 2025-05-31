@@ -45,10 +45,10 @@ jobs:
 
       - name: Write hub username
         run: |
-          echo "${{ secrets.DOC_USERNAME }}" >> secret.username
-          echo "${{ secrets.DOC_TAC }}" >> secret.password
-          cat secret.username
-          cat secret.password
+          echo "${{ secrets.DOC_USERNAME }}" >> secrets.username
+          echo "${{ secrets.DOC_TAC }}" >> secrets.password
+          cat secrets.username
+          cat secrets.password
 
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
