@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const days = ['Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, currentMonth, onChangeMonth }) => {
     const today = new Date();
@@ -145,8 +145,8 @@ box-sizing: border-box;
   align-items: flex-start;
   padding: 30px;
   gap: 12px;
-  width: 502px;
-  height: 497px;
+  width: 100%;
+  max-width:502px;
   background: #FFFFFF;
   border: 5px solid rgba(0, 0, 0, 0.1);
   box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -204,7 +204,7 @@ const DaysContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 442px;
+  width: 100%;
   height: auto;
   min-height: 379px;
   padding-bottom: 1px;
@@ -255,7 +255,7 @@ const DateCell = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 12px;
   width: 64px;
   height: 64px;
   border: 1px solid #D5D4DF;
