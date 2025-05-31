@@ -341,6 +341,23 @@ export default function DoctorPage() {
     // 환자가 선택되어 있을 때만 주간 데이터 받아오기
     if (selectedPatientCode !== "") {
       handleGetWeeklyData(selectedPatientCode, date);
+    } else {
+      // 환자가 선택되지 않은 경우에도 일주일 날짜만 표시
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      const weekDatesArr = [];
+      for (let i = 0; i < 7; i++) {
+        const d = addDays(weekStart, i);
+        weekDatesArr.push(format(d, 'yyyy-MM-dd'));
+      }
+      setWeekStats(weekDatesArr.map(dateStr => ({
+        date: dateStr,
+        diary: null,
+        emotion: null,
+        meal: null,
+        outing: null,
+        wakeTime: null,
+        painting: null,
+      })));
     }
   };
 
@@ -357,30 +374,27 @@ export default function DoctorPage() {
     }
   };
 
-  // 주간 데이터 계산
+  // 주간 데이터 계산 (초기 진입 및 날짜 변경 시)
   useEffect(() => {
-
-    // 주간 시작일 계산 (KST 기준)
-    const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
-
-    // 한 주의 7일 날짜 배열 생성 (KST 기준)
-    const weekDatesArr = [];
-    for (let i = 0; i < 7; i++) {
-      const d = addDays(weekStart, i);
-      weekDatesArr.push(format(d, 'yyyy-MM-dd'));
+    // 환자가 선택되어 있지 않을 때만 동작
+    if (selectedPatientCode === "") {
+      const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
+      const weekDatesArr = [];
+      for (let i = 0; i < 7; i++) {
+        const d = addDays(weekStart, i);
+        weekDatesArr.push(format(d, 'yyyy-MM-dd'));
+      }
+      setWeekStats(weekDatesArr.map(dateStr => ({
+        date: dateStr,
+        diary: null,
+        emotion: null,
+        meal: null,
+        outing: null,
+        wakeTime: null,
+        painting: null,
+      })));
     }
-
-    // 각 날짜별로 데이터 매칭 (실제 API 연동 필요)
-    setWeekStats(weekDatesArr.map(dateStr => ({
-      date: dateStr,
-      diary: null,
-      emotion: null,
-      meal: null,
-      outing: null,
-      wakeTime: null,
-      painting: null,
-    })));
-  }, [kstSelectedDate]);
+  }, [kstSelectedDate, selectedPatientCode]);
 
   // 환자의 감정 데이터를 가져오는 함수 (실제 API 연동 필요)
   // useEffect(() => {
