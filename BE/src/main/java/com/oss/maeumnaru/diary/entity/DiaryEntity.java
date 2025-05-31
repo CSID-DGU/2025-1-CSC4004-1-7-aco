@@ -30,4 +30,7 @@ public class DiaryEntity {
     @ManyToOne
     @JoinColumn(name = "patient_code")
     private PatientEntity patient;
+
+    @OneToOne(mappedBy = "diary")
+    private DiaryAnalysisEntity diaryAnalysis;
 }
