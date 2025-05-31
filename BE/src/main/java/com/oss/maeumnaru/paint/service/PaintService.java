@@ -188,6 +188,10 @@ public class PaintService {
             PaintEntity paint = paintRepository.findById(paintId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
 
+            if (paint.isFinalized()) {
+                throw new ApiException(ExceptionEnum.FINALIZED_PAINT_CANNOT_BE_UPDATED);
+            }
+
             String patientCode = paint.getPatientCode();
 
             // S3에 파일 업로드
