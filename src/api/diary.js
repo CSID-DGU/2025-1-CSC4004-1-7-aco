@@ -1,5 +1,4 @@
 import API from './API';
-import axios from 'axios';
 
 
 // 일기 생성
@@ -14,7 +13,15 @@ export async function createDiary(diary) {
     const dd = String(today.getDate()).padStart(2, '0');
     const fileName = `${yyyy}-${mm}-${dd}.txt`;
     // title, createDate만 포함
-    const { title, createDate } = diary;
+    const { title } = diary;
+    let { createDate } = diary;
+    // createDate가 Date 객체라면 YYYY-MM-DD 문자열로 변환
+    if (createDate instanceof Date) {
+        const y = createDate.getFullYear();
+        const m = String(createDate.getMonth() + 1).padStart(2, '0');
+        const d = String(createDate.getDate()).padStart(2, '0');
+        createDate = `${y}-${m}-${d}`;
+    }
     const diaryMeta = { title, createDate };
     formData.append('diary', new Blob([JSON.stringify(diaryMeta)], { type: 'application/json' }));
     formData.append('file', textFile, fileName);
@@ -40,7 +47,15 @@ export async function updateDiary(diaryId, diary) {
     const dd = String(today.getDate()).padStart(2, '0');
     const fileName = `${yyyy}-${mm}-${dd}.txt`;
     // title, createDate만 포함
-    const { title, createDate } = diary;
+    const { title } = diary;
+    let { createDate } = diary;
+    // createDate가 Date 객체라면 YYYY-MM-DD 문자열로 변환
+    if (createDate instanceof Date) {
+        const y = createDate.getFullYear();
+        const m = String(createDate.getMonth() + 1).padStart(2, '0');
+        const d = String(createDate.getDate()).padStart(2, '0');
+        createDate = `${y}-${m}-${d}`;
+    }
     const diaryMeta = { title, createDate };
     formData.append('diary', new Blob([JSON.stringify(diaryMeta)], { type: 'application/json' }));
     formData.append('file', textFile, fileName);
