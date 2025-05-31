@@ -11,5 +11,5 @@ import java.util.Date;
 @Setter
 public class PaintRequestDto {
     private String title;
-    private Date createDate;
+    private String createDate;
 }
