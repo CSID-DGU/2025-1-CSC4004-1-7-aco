@@ -13,8 +13,9 @@ public interface DiaryAnalysisRepository extends JpaRepository<DiaryAnalysisEnti
 
     Optional<DiaryAnalysisEntity> findByDiary_DiaryId(Long diaryId);
 
-    List<DiaryAnalysisEntity> findByDiary_Patient_PatientCodeAndResultDateBetweenOrderByResultDateAsc(String patientCode, Date startDate, Date endDate);
+    List<DiaryAnalysisEntity> findByDiary_Patient_PatientCodeAndResultDateBetweenOrderByResultDateAsc(
+            String patientCode, String startDate, String endDate);
 
     List<DiaryAnalysisEntity> findByDiary_Patient_PatientCodeAndDiary_CreateDateBetweenOrderByDiary_CreateDateAsc(
-            String patientCode, Date startDate, Date endDate);
+            String patientCode, String startDate, String endDate);
 }

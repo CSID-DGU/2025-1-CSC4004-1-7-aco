@@ -22,8 +22,7 @@ public class DiaryEntity {
 
     private String title;
 
-    @Temporal(TemporalType.DATE)
-    private Date createDate;
+    private String createDate;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
