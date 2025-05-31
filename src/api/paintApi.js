@@ -102,4 +102,11 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
     return null;
-} 
+}
+
+// 특정 날짜 그림 조회
+export const getPaintByDate = async (date) => {
+    const response = await API.get(`/paint/by-date?date=${date}`);
+    console.log('[getPaintByDate] response:', response);
+    return response.data;
+}; 

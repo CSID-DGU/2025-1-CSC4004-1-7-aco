@@ -4,7 +4,7 @@ import Calendar from '../components/Calendar';
 import './DrawingPage.css';
 import Navigation from "../components/Navigation";
 import { format } from 'date-fns';
-import { savePaintDraft, finalizePaint, getPaintById, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat, deletePaint } from '../api/paintApi';
+import { savePaintDraft, finalizePaint, getPaintById, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat, deletePaint, getPaintByDate } from '../api/paintApi';
 
 const DRAWING_STORAGE_KEY = 'drawing_records_v1';
 
@@ -329,16 +329,29 @@ const DrawingPage = () => {
         );
     };
 
-    const handleCalendarClick = (date) => {
+    const handleCalendarClick = async (date) => {
         setSelectedDate(date);
         setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
         const dateKey = format(date, 'yyyy-MM-dd');
-        if (drawingRecords[dateKey]) {
-            setSelectedRecord(drawingRecords[dateKey]);
-            setIsFinalSaved(true);
-            setIsPastDrawing(!isToday(date));
-        } else {
-            setSelectedRecord(null);
+        try {
+            const paint = await getPaintByDate(dateKey);
+            if (paint && paint.paintId) {
+                setPaintId(paint.paintId);
+                setPaintInfo(paint);
+                setSavedImage(paint.fileUrl);
+                setIsFinalSaved(true);
+                setIsPastDrawing(!isToday(date));
+            } else {
+                setPaintId(null);
+                setPaintInfo(null);
+                setSavedImage(null);
+                setIsFinalSaved(false);
+                setIsPastDrawing(!isToday(date));
+            }
+        } catch (e) {
+            setPaintId(null);
+            setPaintInfo(null);
+            setSavedImage(null);
             setIsFinalSaved(false);
             setIsPastDrawing(!isToday(date));
         }
