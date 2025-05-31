@@ -76,15 +76,30 @@ public class DiaryAnalysisService {
     // 최근 7일간 분석 결과 조회
     public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, String baseDate) {
         try {
-            LocalDate base = LocalDate.parse(baseDate); // Java 8+
+            System.out.println("Service 진입: findWeeklyAnalysesByPatientCode");
+            System.out.println("입력된 patientCode: " + patientCode);
+            System.out.println("입력된 baseDate: " + baseDate);
 
-            String startDate = base.minusDays(6).toString();  // yyyy-MM-dd
-            String endDate = base.toString();                 // yyyy-MM-dd
+            // 날짜 파싱
+            LocalDate base = LocalDate.parse(baseDate);
+            System.out.println("baseDate 파싱 성공: " + base);
 
-            return diaryAnalysisRepository
+            // startDate와 endDate 계산
+            String startDate = base.minusDays(6).toString();
+            String endDate = base.toString();
+            System.out.println("startDate: " + startDate);
+            System.out.println("endDate: " + endDate);
+
+            // Repository 호출
+            List<DiaryAnalysisEntity> result = diaryAnalysisRepository
                     .findWeeklyAnalysesByPatientCode(patientCode, startDate, endDate);
+            System.out.println("Repository 호출 결과 size: " + (result != null ? result.size() : "null"));
+
+            return result;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 }
