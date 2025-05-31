@@ -37,42 +37,16 @@ public class DiaryAnalysisController {
 
     @GetMapping("/weekly")
     public ResponseEntity<List<DiaryAnalysisResponseDto>> getWeeklyAnalysesByMemberId(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date baseDate,
+            @RequestParam String baseDate,
             @RequestParam String patientCode) {
 
-        List<DiaryAnalysisEntity> entities = diaryAnalysisService.findWeeklyAnalysesByPatientCode(patientCode, baseDate);
-
-        List<DiaryAnalysisResponseDto> response = new ArrayList<>();
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(baseDate);
-
-        // 🔑 월요일부터 시작하도록 수정
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        int diff = (dayOfWeek == Calendar.SUNDAY) ? -6 : (Calendar.MONDAY - dayOfWeek);
-        calendar.add(Calendar.DATE, diff);
-
-        for (int i = 0; i < 7; i++) {
-            Date currentDate = calendar.getTime();
-
-            Optional<DiaryAnalysisEntity> matchedEntity = entities.stream()
-                    .filter(entity -> isSameDay(entity.getResultDate(), currentDate))
-                    .findFirst();
-
-            if (matchedEntity.isPresent()) {
-                response.add(DiaryAnalysisResponseDto.fromEntity(matchedEntity.get()));
-            } else {
-                response.add(DiaryAnalysisResponseDto.builder()
-                        .resultDate(currentDate)
-                        .build());
-            }
-
-            calendar.add(Calendar.DATE, 1);
-        }
+        List<DiaryAnalysisResponseDto> response = diaryAnalysisService.findWeeklyAnalysesByPatientCode(patientCode, baseDate)
+                .stream()
+                .map(DiaryAnalysisResponseDto::fromEntity)
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
-
 
     // 단일 일기 분석 결과 조회
     @GetMapping("/{diaryId}")
