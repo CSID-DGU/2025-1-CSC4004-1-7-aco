@@ -5,9 +5,7 @@ const days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, currentMonth, onChangeMonth }) => {
     const today = new Date();
-    // 한국 시간으로 변환
-    const koreaTime = new Date(today.getTime() + (9 * 60 * 60 * 1000));
-    const currentDate = currentMonth || new Date(koreaTime.getFullYear(), koreaTime.getMonth(), 1);
+    const currentDate = currentMonth || new Date(today.getFullYear(), today.getMonth(), 1);
 
     // 월 변경 함수
     const handlePrevMonth = () => {
@@ -51,9 +49,9 @@ const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, current
     const isTodayCell = (date) => {
         if (!date) return false;
         return (
-            koreaTime.getFullYear() === year &&
-            koreaTime.getMonth() === month &&
-            koreaTime.getDate() === date
+            today.getFullYear() === year &&
+            today.getMonth() === month &&
+            today.getDate() === date
         );
     };
 
