@@ -43,12 +43,11 @@ jobs:
       - name: List jar files in BE/build/libs
         run: ls -al BE/build/libs/
 
-      - name: Write hub username
+      - name: Check Docker Hub secrets length
         run: |
-          echo "${{ secrets.DOC_USERNAME }}" >> secrets.username
-          echo "${{ secrets.DOC_TAC }}" >> secrets.password
-          cat secrets.username
-          cat secrets.password
+          echo "Username length: ${{ secrets.DOC_USERNAME }} " | wc -c
+          echo "Password length: ${{ secrets.DOC_TAC }} " | wc -c
+      
 
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
