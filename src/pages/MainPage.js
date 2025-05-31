@@ -192,7 +192,22 @@ export default function MainPage() {
             try {
                 const diary = await getDiaryByDate(dateKey);
                 if (diary && diary.diaryId) {
-                    setDiaryMap((prev) => ({ ...prev, [dateKey]: normalizeDiary(diary) }));
+                    let text = '';
+                    if (diary.contentPath) {
+                        try {
+                            const res = await axios.get(diary.contentPath, { responseType: 'text' });
+                            text = res.data;
+                        } catch (e) {
+                            console.error('S3에서 파일 읽기 실패:', e);
+                        }
+                    }
+                    setDiaryMap((prev) => ({
+                        ...prev,
+                        [dateKey]: {
+                            ...normalizeDiary(diary),
+                            text,
+                        }
+                    }));
                     setSelectedDiaryId(diary.diaryId);
                 } else {
                     setDiaryMap((prev) => {
@@ -334,12 +349,26 @@ export default function MainPage() {
         try {
             // diary는 단일 객체로 온다고 가정
             const diary = await getDiaryByDate(dateKey);
+            console.log('API 응답 diary:', diary);
+            if (diary && diary.contentPath) {
+                console.log('API 응답 contentPath:', diary.contentPath);
+            }
+            // diary가 null/undefined면 diaryMap에서 해당 날짜 값 삭제
+            if (!diary) {
+                setDiaryMap(prev => {
+                    const newMap = { ...prev };
+                    delete newMap[dateKey];
+                    return newMap;
+                });
+                setSelectedDiaryId(null);
+                return;
+            }
             let text = '';
             if (diary && diary.contentPath) {
                 try {
                     const res = await axios.get(diary.contentPath, { responseType: 'text' });
                     text = res.data;
-                    console.log('S3에서 받아온 텍스트:', text);
+                    console.log('S3에서 받아온 텍스트:', res.data);
                 } catch (e) {
                     console.error('S3에서 파일 읽기 실패:', e);
                 }
