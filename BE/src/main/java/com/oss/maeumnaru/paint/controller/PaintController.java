@@ -35,7 +35,7 @@ public class PaintController {
     private final PatientRepository patientRepository;
     private void validateOwnership(Long paintId, Long memberId) {
         PaintEntity paintEntity = paintService.getPaintEntityById(paintId);
-        String patientCode = paintEntity.getPatientCode();
+        String patientCode = paintEntity.getPatient().getPatientCode();
 
         PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
@@ -56,29 +56,38 @@ public class PaintController {
     @GetMapping("/by-date")
     public ResponseEntity<PaintResponseDto> getPaintByPatientCodeAndDate(
             Authentication authentication,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+            @RequestParam String date) {
             CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
             Long memberId = principal.getMemberId();
             String patientCode = getPatientCodeByMemberId(memberId);
 
-        return paintService.getPaintByPatientCodeAndDate(patientCode, date)
+        return paintService.findByPatient_PatientCodeAndCreateDate(patientCode, date)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     // 임시저장
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<PaintResponseDto> savePaintDraft(
-            Authentication authentication,
+    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PaintResponseDto> saveOrUpdatePaintDraft(
+            @RequestPart(required = false) Long paintId,
             @RequestPart MultipartFile file,
-            @RequestPart PaintRequestDto dto) throws IOException {
+            @RequestPart PaintRequestDto dto,
+            Authentication authentication) throws IOException {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
         String patientCode = getPatientCodeByMemberId(memberId);
-        PaintResponseDto response = paintService.savePaintDraft(patientCode, file, dto);
-        return ResponseEntity.ok(response);
+
+        if (paintId != null) {
+            validateOwnership(paintId, memberId);
+            PaintResponseDto updatedPaint = paintService.updatePaintById(paintId, file, dto);
+            return ResponseEntity.ok(updatedPaint);
+        } else {
+            PaintResponseDto savedPaint = paintService.savePaintDraft(patientCode, file, dto);
+            return ResponseEntity.ok(savedPaint);
+        }
     }
+
 
     // 최종저장(수정사항 반영 + 대화시작 + 이후 수정불가)
     @PostMapping("/finalize")
@@ -92,26 +101,6 @@ public class PaintController {
         String patientCode = getPatientCodeByMemberId(memberId);
         paintService.finalizePaint(patientCode, file, dto);
         return ResponseEntity.ok().build();
-    }
-
-    //그림 수정
-    @PutMapping("/{paintId}")
-    public ResponseEntity<PaintResponseDto> updatePaint(
-            @PathVariable("paintId") Long id,
-            @RequestPart("file") MultipartFile file,
-            @RequestPart("paint") PaintRequestDto dto,
-            Authentication authentication) throws IOException {
-
-        // 인증된 사용자 정보는 필요하다면 검증용으로 활용 가능
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = principal.getMemberId();
-
-        validateOwnership(id, memberId);
-
-        // paintId(id)를 기준으로 그림 업데이트
-        PaintResponseDto updatedPaint = paintService.updatePaintById(id, file, dto);
-
-        return ResponseEntity.ok(updatedPaint);
     }
 
     //그림 삭제

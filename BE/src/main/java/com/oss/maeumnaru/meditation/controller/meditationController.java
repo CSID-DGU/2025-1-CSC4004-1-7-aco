@@ -5,9 +5,11 @@ import com.oss.maeumnaru.meditation.dto.meditationResponseDto;
 import com.oss.maeumnaru.meditation.entity.MeditationEntity;
 import com.oss.maeumnaru.meditation.service.MeditationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,39 +40,22 @@ public class meditationController {
     }
 
     // 저장
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<meditationResponseDto> saveMeditation(@RequestBody meditationRequestDto dto) {
+    public ResponseEntity<meditationResponseDto> saveMeditation(
+            @RequestPart("meditation") meditationRequestDto dto,
+            @RequestPart(value = "mp3File", required = false) MultipartFile mp3File) {
+
         MeditationEntity entity = MeditationEntity.builder()
                 .meditationTitle(dto.getMeditationTitle())
                 .durationTime(dto.getDurationTime())
-                .filePath(dto.getFilePath())
+                // 파일 URL는 서비스에서 세팅됨
                 .build();
 
-        MeditationEntity saved = meditationService.saveMeditation(entity); // 내부에서 예외 발생 가능
+        MeditationEntity saved = meditationService.saveMeditation(entity, mp3File);
 
         return ResponseEntity.ok(meditationResponseDto.fromEntity(saved));
     }
-
-    // 수정
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<meditationResponseDto> updateMeditation(
-            @PathVariable Long id,
-            @RequestBody meditationRequestDto dto) {
-
-        MeditationEntity updated = meditationService.updateMeditation(
-                id,
-                MeditationEntity.builder()
-                        .meditationTitle(dto.getMeditationTitle())
-                        .durationTime(dto.getDurationTime())
-                        .filePath(dto.getFilePath())
-                        .build()
-        );
-
-        return ResponseEntity.ok(meditationResponseDto.fromEntity(updated));
-    }
-
     //삭제
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

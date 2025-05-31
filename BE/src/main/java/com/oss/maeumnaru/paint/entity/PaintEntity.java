@@ -1,9 +1,13 @@
 package com.oss.maeumnaru.paint.entity;
 
+import com.oss.maeumnaru.user.entity.PatientEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 @Entity
 @Table(name = "paint")
 @Getter
@@ -12,6 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class PaintEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paintId;
@@ -19,15 +24,22 @@ public class PaintEntity {
     private String fileUrl;
 
     @Temporal(TemporalType.DATE)
-    private Date createDate;
+    private String createDate;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
 
-    private String patientCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_code")
+    private PatientEntity patient;
+
+    @OneToMany(mappedBy = "paint", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatEntity> chats = new ArrayList<>();
 
     @Column(nullable = false)
     private String title;
+
+    private boolean finalized;
 
 
 }
