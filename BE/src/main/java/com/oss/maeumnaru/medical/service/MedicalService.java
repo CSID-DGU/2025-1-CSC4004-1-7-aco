@@ -37,12 +37,11 @@ public class MedicalService {
         List<MedicalEntity> medicalEntities = medicalRepository.findByDoctor(doctor);
         System.out.println(">>> medicalEntities.size() = " + medicalEntities.size());
 
-        return medicalRepository.findByDoctor(doctor).stream()
+        return medicalEntities.stream()
                 .map(medical -> {
-                    System.out.println(">>> medicId = " + medical.getMedicId());
+                    System.out.println(">>> doctorLicenseNumber = " + medical.getDoctor().getLicenseNumber());
                     PatientEntity patient = medical.getPatient();
                     return MedicalResponseDto.builder()
-                            .medicId(medical.getMedicId())
                             .patientCode(patient.getPatientCode())
                             .patientName(patient.getMember().getName())
                             .patientBirthDate(patient.getMember().getBirthDate().toString())
@@ -54,7 +53,6 @@ public class MedicalService {
                 })
                 .toList();
     }
-
 
     // 환자 추가 (중복 방지 로직 추가)
     public MedicalResponseDto addPatientToDoctor(Long memberId, String patientCode) {
@@ -108,14 +106,13 @@ public class MedicalService {
                 .build();
     }
 
-    public void removePatient(Long memberId, Long medicId) {
-        MedicalEntity medical = medicalRepository.findById(medicId)
-                .orElseThrow(() -> new ApiException(ExceptionEnum.MEDICAL_NOT_FOUND));
+    // 환자 삭제 (doctor + patientCode 조합)
+    public void removePatient(Long memberId, String patientCode) {
+        DoctorEntity doctor = doctorRepository.findByMember_MemberId(memberId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.DOCTOR_NOT_FOUND));
 
-        // 요청한 의사와 실제 연결된 의사가 일치하는지 확인
-        if (!medical.getDoctor().getMember().getMemberId().equals(memberId)) {
-            throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
-        }
+        MedicalEntity medical = medicalRepository.findByDoctorAndPatient_PatientCode(doctor, patientCode)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.MEDICAL_NOT_FOUND));
 
         medicalRepository.delete(medical);
     }

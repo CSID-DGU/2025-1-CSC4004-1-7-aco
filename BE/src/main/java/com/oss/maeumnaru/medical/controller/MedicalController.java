@@ -30,6 +30,7 @@ public class MedicalController {
 
     private final MedicalService medicalService;
     private final DiaryService diaryService;
+
     // 👨‍⚕️ 로그인한 의사의 환자 목록 조회
     @GetMapping("/patients")
     @PreAuthorize("hasRole('DOCTOR')")
@@ -45,35 +46,31 @@ public class MedicalController {
     public ResponseEntity<MedicalResponseDto> addPatient(
             Authentication authentication,
             @PathVariable String patientCode) {
-
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
-        // 리턴값을 MedicalResponseDto로 직접 받아옴
         MedicalResponseDto response = medicalService.addPatientToDoctor(memberId, patientCode);
-
         return ResponseEntity.ok(response);
     }
 
-
     // 👨‍⚕️ 로그인한 의사가 관계 삭제
-    @DeleteMapping("/{medicId}")
+    @DeleteMapping("/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> removePatient(
             Authentication authentication,
-            @PathVariable Long medicId) {
-
+            @PathVariable String patientCode) {
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
-        medicalService.removePatient(memberId, medicId);
+        medicalService.removePatient(memberId, patientCode);
         return ResponseEntity.noContent().build();
     }
 
-    // 👁 환자 상세 조회 (누구나 조회 가능 or 추가 검증 가능)
+    // 👁 환자 상세 조회
     @GetMapping("/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
     }
+
     // 의사 일기 조회
     @GetMapping("/diary/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
