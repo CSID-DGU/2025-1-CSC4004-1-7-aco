@@ -3,10 +3,6 @@ name: Deploy to EC2
 on:
   pull_request:
     branches: [ dev ]  # dev 브랜치에 PR 발생 시 실행
-    types:
-      - opend
-      - synchronize
-      - closed
 
 jobs:
   deploy:
@@ -38,8 +34,8 @@ jobs:
       - name: Build BE module only
         run: |
           cd BE
-          chmod +x ../gradlew
-          ../gradlew clean build -x test
+          chmod +x ./gradlew
+          ./gradlew clean build -x test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
@@ -47,12 +43,21 @@ jobs:
       - name: List jar files in BE/build/libs
         run: ls -al BE/build/libs/
 
+      - name: Write hub username
+        run: |
+          echo "${{ secrets.DOC_USERNAME }}" >> secret.username
+          echo "${{ secrets.DOC_TAC }}" >> secret.password
+          cat secret.username
+          cat secret.password
+
+      # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       # 6. Docker Hub 로그인 (Docker 이미지 푸시를 위해)
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: ${{ secrets.DOC_USERNAME }}
+          password: ${{ secrets.DOC_TAC }}
+
 
       # 7. Docker 이미지 빌드 (BE 폴더 기준)
       - name: Build Docker image
