@@ -21,7 +21,7 @@ public interface DiaryAnalysisRepository extends JpaRepository<DiaryAnalysisEnti
         JOIN dae.diary d
         JOIN d.patient p
         WHERE p.patientCode = :patientCode
-        AND FUNCTION('DATE_FORMAT', d.createDate, '%Y-%m-%d') BETWEEN :startDate AND :endDate
+        AND d.createDate BETWEEN :startDate AND :endDate
         ORDER BY d.createDate
     """)
     List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(
