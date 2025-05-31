@@ -15,7 +15,7 @@ public class DiaryResponseDto {
     private Long diaryId;
     private String contentPath;
     private String title;
-    private Date createDate;
+    private String createDate;
     private Date updateDate;
     private String patientCode;
 

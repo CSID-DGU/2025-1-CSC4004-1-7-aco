@@ -79,7 +79,7 @@ public class DiaryController {
     @GetMapping("/by-date")
     public ResponseEntity<Optional<DiaryResponseDto>> getDiariesByMemberIdAndDate(
             Authentication authentication,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+            @RequestParam String date) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();

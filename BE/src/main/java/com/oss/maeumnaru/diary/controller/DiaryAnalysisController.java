@@ -37,7 +37,7 @@ public class DiaryAnalysisController {
 
     @GetMapping("/weekly")
     public ResponseEntity<List<DiaryAnalysisResponseDto>> getWeeklyAnalysesByMemberId(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date baseDate,
+            @RequestParam String baseDate,
             @RequestParam String patientCode) {
 
         List<DiaryAnalysisResponseDto> response = diaryAnalysisService.findWeeklyAnalysesByPatientCode(patientCode, baseDate)
@@ -47,6 +47,7 @@ public class DiaryAnalysisController {
 
         return ResponseEntity.ok(response);
     }
+
     // 단일 일기 분석 결과 조회
     @GetMapping("/{diaryId}")
     public ResponseEntity<DiaryAnalysisResponseDto> getAnalysisByDiaryId(@PathVariable Long diaryId) {
