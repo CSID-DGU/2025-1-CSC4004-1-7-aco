@@ -35,6 +35,7 @@ public class MedicalService {
 
         return medicalRepository.findByDoctor(doctor).stream()
                 .map(medical -> {
+                    System.out.println(">>> medicId = " + medical.getMedicId());
                     PatientEntity patient = medical.getPatient();
                     return MedicalResponseDto.builder()
                             .medicId(medical.getMedicId())
