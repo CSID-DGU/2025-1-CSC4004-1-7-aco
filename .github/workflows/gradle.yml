@@ -14,7 +14,7 @@ jobs:
 
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}                # OpenAI API 키 환경변수
-      DOCKER_IMAGE_NAME: janghyoseok0422/maeumnaru-spring   # Docker 이미지 이름 (자신에 맞게 수정)
+      DOCKER_IMAGE_NAME: hyrn/maeumnaru   # Docker 이미지 이름 (자신에 맞게 수정)
       DOCKER_IMAGE_TAG: latest                                     # Docker 태그 (필요 시 변경)
 
     steps:
