@@ -46,6 +46,12 @@ public class PaintService {
         return paint.map(PaintResponseDto::fromEntity);
     }
 
+    public PaintEntity getPaintEntityById(Long paintId) {
+        return paintRepository.findById(paintId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
+    }
+
+
     public PaintResponseDto savePaintDraft(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
             // S3에 파일 업로드

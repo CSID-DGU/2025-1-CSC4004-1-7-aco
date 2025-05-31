@@ -3,6 +3,7 @@ package com.oss.maeumnaru.paint.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import com.oss.maeumnaru.paint.entity.PaintEntity;
+
 import java.util.Date;
 
 @Entity
