@@ -41,6 +41,7 @@ const DrawingPage = () => {
     const [chatInput, setChatInput] = useState("");
     const [isChatLoading, setIsChatLoading] = useState(false);
     const [showFinalConfirmModal, setShowFinalConfirmModal] = useState(false);
+    const [saveMode, setSaveMode] = useState('temp');
 
     const colors = [
         '#000000', // 검정
@@ -171,10 +172,9 @@ const DrawingPage = () => {
         const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
         const dataUrl = canvas.toDataURL('image/png');
         const blob = await (await fetch(dataUrl)).blob();
-        const patientCode = Number(localStorage.getItem('patientCode'));
-        const dto = { patientCode, title: drawingTitle };
+        const dto = { title: drawingTitle };
         try {
-            const res = await savePaintDraft(blob, dto);
+            const res = await savePaintDraft(blob, dto, paintId);
             setPaintId(res.paintId);
             setPaintInfo(res);
             setSavedImage(dataUrl);
@@ -197,27 +197,18 @@ const DrawingPage = () => {
         const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
         const dataUrl = canvas.toDataURL('image/png');
         const blob = await (await fetch(dataUrl)).blob();
-        const patientCode = Number(localStorage.getItem('patientCode'));
-        const dto = { patientCode, title: drawingTitle };
-
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const createDate = `${yyyy}-${mm}-${dd}`;
+        const dto = { title: drawingTitle, createDate };
         try {
-            let id = paintId;
-            if (!id) {
-                // 임시 저장이 되어있지 않은 경우, 먼저 임시 저장
-                const res = await savePaintDraft(blob, dto);
-                id = res.paintId;
-                setPaintId(id);
-                setPaintInfo(res);
-            } else {
-                // 기존 그림 정보 조회
-                const paint = await getPaintById(id);
-                setPaintInfo(paint);
-            }
-
-            // 최종 저장
-            await finalizePaint(id, blob, dto);
+            const res = await finalizePaint(blob, dto, paintId);
+            setPaintId(res.paintId);
             setSavedImage(dataUrl);
             setIsFinalSaved(true);
+            setShowTitleModal(false);
             alert('최종저장되었습니다.');
         } catch (e) {
             alert('최종저장 실패: ' + (e.response?.data?.message || e.message));
@@ -440,7 +431,7 @@ const DrawingPage = () => {
         const createDate = `${yyyy}-${mm}-${dd}`;
         const dto = { title: drawingTitle, createDate };
         try {
-            await finalizePaint(blob, dto);
+            await finalizePaint(blob, dto, paintId);
             setSavedImage(dataUrl);
             setIsFinalSaved(true);
             setShowTitleModal(false);
@@ -512,8 +503,8 @@ const DrawingPage = () => {
                         ) : !isPastDrawing ? (
                             <>
                                 <Button onClick={() => clearCanvas(false)}>지우기</Button>
-                                <TempSaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
-                                <SaveButton onClick={() => setShowFinalConfirmModal(true)}>최종저장</SaveButton>
+                                <TempSaveButton onClick={() => { setSaveMode('temp'); setShowTitleModal(true); }} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                                <SaveButton onClick={() => { setSaveMode('final'); setShowTitleModal(true); }} disabled={isPastDrawing}>최종저장</SaveButton>
                             </>
                         ) : null}
                     </ButtonGroup>
@@ -566,7 +557,7 @@ const DrawingPage = () => {
                         </ModalBody>
                         <ModalFooter>
                             <Button onClick={() => clearCanvas(true)} disabled={isPastDrawing}>지우기</Button>
-                            <TempSaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                            <TempSaveButton type="button" onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
                             <SaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>최종저장</SaveButton>
                         </ModalFooter>
                     </ModalContent>
@@ -585,6 +576,8 @@ const DrawingPage = () => {
                     </ModalContent>
                 </ModalOverlay>
             )}
+            
+
 
             {showTitleModal && (
                 <ModalOverlay>
@@ -602,7 +595,18 @@ const DrawingPage = () => {
                             />
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={handleFinalSaveWithTitle} disabled={!drawingTitle.trim()}>저장</Button>
+                            <Button onClick={async () => {
+                                if (!drawingTitle.trim()) {
+                                    alert('제목을 입력해주세요!');
+                                    return;
+                                }
+                                if (saveMode === 'final') {
+                                    await handleFinalSave();
+                                } else {
+                                    await handleTempSave();
+                                }
+                                setShowTitleModal(false);
+                            }} disabled={!drawingTitle.trim()}>저장</Button>
                             <Button onClick={() => setShowTitleModal(false)}>취소</Button>
                         </ModalFooter>
                     </ModalContent>
@@ -803,7 +807,7 @@ const ColorGrid = styled.div`
     margin-bottom: 8px;
 `;
 
-const ColorButton = styled.button`
+const ColorButton = styled.button.attrs({ type: 'button' })`
     width: 34px;
     height: 34px;
     background: ${props => props.color};
@@ -838,7 +842,7 @@ const ButtonGroup = styled.div`
     gap: 11px;
 `;
 
-const Button = styled.button`
+const Button = styled.button.attrs({ type: 'button' })`
     width: 100px;
     height: 40px;
     background: #FFFFFF;
@@ -921,7 +925,7 @@ const ModalHeader = styled.div`
     }
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled.button.attrs({ type: 'button' })`
     background: none;
     border: none;
     font-size: 28px;
@@ -971,7 +975,7 @@ const ModalFooter = styled.div`
     gap: 11px;
 `;
 
-const ZoomButton = styled.button`
+const ZoomButton = styled.button.attrs({ type: 'button' })`
     width: 38px;
     height: 38px;
     background: #FFFFFF;
