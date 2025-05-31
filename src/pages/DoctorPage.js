@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, R
 import { startOfWeek, format, addDays } from 'date-fns';
 import DoctorCalendar from '../components/DoctorCalendar';
 import Navigation from '../components/Navigation';
-import { registerPatient, getPatient, deletePatient } from '../api/medical';
+import { registerPatient, getPatientsInfo, deletePatient, getWeeklyData, getPatientDiary } from '../api/medical';
 
 const DoctorPageContainer = styled.div`
   width: 100vw;
@@ -160,6 +160,7 @@ const ChartCol = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  
 `;
 
 const ChartBox = styled.div`
@@ -167,14 +168,14 @@ const ChartBox = styled.div`
   height: 240px;
   background: #f7f7fa;
   border-radius: 20px;
-  padding: 20px 16px 0 16px;
+  padding: 0 16px 0 16px;
   margin-bottom: 0;
 `;
 
 const SectionTitle = styled.div`
   font-size: 20px;
   font-weight: 700;
-  margin: 28px 0 16px 0;
+  margin: 0 0 16px 0;
 `;
 
 const SummaryCol = styled.div`
@@ -186,10 +187,8 @@ const SummaryCol = styled.div`
 const OutingTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin: 24px 0 18px 0;
+  margin: 0 0 18px 0;
   background: #f7f7fa;
-  border-radius: 16px;
-  overflow: hidden;
   font-size: 15px;
   th, td {
     border: 1px solid #ddd;
@@ -308,12 +307,22 @@ const CustomDot = (props) => {
 };
 
 export default function DoctorPage() {
+  // 의사가 등록한 환자 리스트
   const [patients, setPatients] = useState([]);
+
+  // 리스트 중에서 선택한 환자의 코드
+  const [selectedPatientCode, setSelectedPatientCode] = useState("");
+
   const [search, setSearch] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientDetail, setPatientDetail] = useState(null);
+
+  // 일기 모달 창 띄우기
   const [showDiaryModal, setShowDiaryModal] = useState(false);
+
+  // 모달 내 일기 내용
   const [modalDiary, setModalDiary] = useState(null);
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [patientEmotionMap, setPatientEmotionMap] = useState({});
@@ -331,6 +340,11 @@ export default function DoctorPage() {
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {
     setSelectedDate(date);
+
+    // 환자가 선택되어 있을 때만 주간 데이터 받아오기
+    if (selectedPatientCode !== "") {
+      handleGetWeeklyData(selectedPatientCode, date);
+    }
   };
 
   // 월 변경 핸들러
@@ -367,30 +381,18 @@ export default function DoctorPage() {
   }, [kstSelectedDate]);
 
   // 환자의 감정 데이터를 가져오는 함수 (실제 API 연동 필요)
-  useEffect(() => {
-    const fetchPatientEmotions = async () => {
-      try {
-        // TODO: API 호출하여 환자의 감정 데이터 가져오기
-        setPatientEmotionMap({});
-      } catch (error) {
-        console.error('Failed to fetch patient emotions:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchPatientEmotions = async () => {
+  //     try {
+  //       // TODO: API 호출하여 환자의 감정 데이터 가져오기
+  //       setPatientEmotionMap({});
+  //     } catch (error) {
+  //       console.error('Failed to fetch patient emotions:', error);
+  //     }
+  //   };
 
-    fetchPatientEmotions();
-  }, []);
-
-  // 환자 선택 시 상세 정보 조회
-  // const handlePatientSelect = async (patient) => {
-  //   setSelectedPatient(patient);
-  //   try {
-  //     const detail = await doctorApi.getPatientDetail(patient.id);
-  //     setPatientDetail(detail);
-  //   } catch (error) {
-  //     console.error('환자 상세 정보 조회 실패:', error);
-  //     setError('환자 상세 정보를 불러오는데 실패했습니다.');
-  //   }
-  // };
+  //   fetchPatientEmotions();
+  // }, []);
 
   // 환자 추가하기
   const handleRegisterPatient = async (patientCode) => {
@@ -403,7 +405,7 @@ export default function DoctorPage() {
       setPatientCode('');
 
       // 환자 리스트 새로고침
-      await handleGetPatient();
+      await handleGetPatientsInfo();
 
     } catch (error) {
       console.error('환자 등록에 실패했습니다.');
@@ -411,10 +413,10 @@ export default function DoctorPage() {
   };
 
   // 환자 리스트 불러오기
-  const handleGetPatient = async () => {
+  const handleGetPatientsInfo = async () => {
     try {
       setLoading(true);
-      const data = await getPatient();
+      const data = await getPatientsInfo();
       console.log("data", data);
 
       // 환자 한 명씩 불러오기
@@ -426,20 +428,10 @@ export default function DoctorPage() {
       console.log("mappedPatients:", mappedPatients);
   
       setPatients(mappedPatients);
-
-      // 제일 첫 환자를 자동으로 선택
-      // if (data.length > 0) {
-      //   setSelectedPatient({
-      //     patientCode: data[0].patientCode,
-      //     patientName: data[0].patientName,
-      //     patientBirthDate: `생년월일: ${data[0].patientBirthDate}`
-      //   });
-      // }
-
       setError(null);
 
     } catch (error) {
-      console.error('handleGetPatient: 환자 목록을 불러오는데 실패했습니다.', error);
+      console.error('handleGetPatientsInfo: 환자 목록을 불러오는데 실패했습니다.', error);
     } finally {
       setLoading(false);
     }
@@ -449,7 +441,7 @@ export default function DoctorPage() {
   useEffect(() => {
     const fetchPatient = async () => {
       try {
-        await handleGetPatient();
+        await handleGetPatientsInfo();
       } catch (error) {
         console.error('fetchPatient: 환자 목록을 불러오는데 실패했습니다.');
       }
@@ -461,16 +453,18 @@ export default function DoctorPage() {
   const handleDeletePatient = async (medicId, e) => {
     e.stopPropagation();
     if(!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
+    console.log("handleDeletePatient");
     try {
       setDeleteLoading(true);
       setDeleteError(null);
 
       // 환자 삭제
       await deletePatient(medicId);
+      console.log("환자 삭제 완료");
 
       // 환자 목록 새로고침
-      //await handleGetPatient();
-      setPatients(prevPatients => prevPatients.filter(p => p.medicId !== medicId));
+      await handleGetPatientsInfo();
+      console.log("환자 목록 새로고침 완료");
 
     } catch (error) {
       console.error('환자 삭제에 실패했습니다.');
@@ -479,7 +473,19 @@ export default function DoctorPage() {
     }
   };
 
+  // 환자의 주간 데이터 가져오기
+  const handleGetWeeklyData = async (patientCode, baseDate) => {
 
+    console.log("요청 날짜", baseDate);
+
+    try {
+      const data = await getWeeklyData(patientCode, baseDate);
+      console.log("patient weekly data", data);
+    } catch (error) {
+      console.error('handleGetWeeklyData: 주간 데이터를 불러오는데 실패했습니다.');
+    }
+  };
+  
   // 환자 추가 모달 취소
   const handleAddPatientCancel = () => {
     setShowAddPatientModal(false);
@@ -493,6 +499,16 @@ export default function DoctorPage() {
 
   // 선택된 날짜의 데이터
   const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
+
+  // PatientCard 클릭 핸들러
+  const handlePatientSelect = (patientCode) => {
+    setSelectedPatientCode(patientCode);
+    
+    // 환자 선택 시 현재 선택된 날짜가 있다면 해당 날짜의 주간 데이터 가져오기
+    if (selectedDate) {
+      handleGetWeeklyData(patientCode, selectedDate);
+    }
+  };
 
   return (
     <>
@@ -519,7 +535,13 @@ export default function DoctorPage() {
           ) : (
             // filteredPatients 대신 patients 사용
             patients.map(p => (
-              <PatientCard key={p.patientCode} style={{ borderColor: selectedPatient?.patientCode === p.patientCode ? '#0089ED' : '#222' }}>
+              <PatientCard 
+                key={p.patientCode} 
+                onClick={() => handlePatientSelect(p.patientCode)}
+                style={{ 
+                  borderColor: selectedPatientCode === p.patientCode ? '#0089ED' : '#222' 
+                }}
+              >
                 <PatientInfo>
                   <PatientName>{p.patientName}</PatientName>
                   <PatientDesc>{p.patientBirthDate}</PatientDesc>
@@ -541,6 +563,7 @@ export default function DoctorPage() {
 
 
         <RightPanel>
+          
           {patientDetail && (
             <div style={{ marginBottom: '24px' }}>
               <SectionTitle>환자 정보</SectionTitle>
@@ -561,6 +584,8 @@ export default function DoctorPage() {
               </div>
             </div>
           )}
+
+
           <CalendarAndChartsRow>
             <DoctorCalendar
               selectedDate={selectedDate}
@@ -613,6 +638,8 @@ export default function DoctorPage() {
             </ChartCol>
           </CalendarAndChartsRow>
           <SummaryCol>
+
+
             <SectionTitle>외출 여부 (요일별)</SectionTitle>
             <OutingTable>
               <thead>
@@ -630,6 +657,8 @@ export default function DoctorPage() {
                 </tr>
               </tbody>
             </OutingTable>
+
+
             <SectionTitle>그림으로 분석된 내용 (일별)</SectionTitle>
             <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
               {dayStat && dayStat.diary ? (
@@ -640,6 +669,7 @@ export default function DoctorPage() {
                 <>해당 일자의 그림 분석 데이터가 없습니다.</>
               )}
             </div>
+            
           </SummaryCol>
         </RightPanel>
       </DoctorPageContainer>
