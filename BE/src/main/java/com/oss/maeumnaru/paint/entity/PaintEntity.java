@@ -24,7 +24,7 @@ public class PaintEntity {
     private String fileUrl;
 
     @Temporal(TemporalType.DATE)
-    private String createDate;
+    private Date createDate;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
