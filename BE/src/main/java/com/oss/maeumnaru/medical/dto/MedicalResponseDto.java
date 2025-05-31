@@ -8,6 +8,7 @@ import java.util.Date;
 @Data
 @Builder
 public class MedicalResponseDto {
+    private Long medicId;
 
     private String patientCode;
     private String patientName;
