@@ -78,5 +78,5 @@ jobs:
             docker stop maeumnaru || true
             docker rm maeumnaru || true
 
-            docker run -d --name maeumnaru -p 8080:8080 -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+            docker run -d --name maeumnaru -p 8080:8080 -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} hyrn/maeumnaru:latest
 
