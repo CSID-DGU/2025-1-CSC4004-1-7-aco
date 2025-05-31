@@ -72,8 +72,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            script: |
-            docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+            docker pull hyrn/maeumnaru:latest
 
             docker stop maeumnaru || true
             docker rm maeumnaru || true
