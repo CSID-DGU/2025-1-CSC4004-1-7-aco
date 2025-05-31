@@ -1,4 +1,5 @@
 import API from './API';
+import axios from 'axios';
 
 
 // 일기 생성
