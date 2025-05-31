@@ -40,19 +40,6 @@ const MagnifierBtn = styled.button`
   cursor: pointer;
 `;
 
-const RadioGroup = styled.div`
-  display: flex;
-  gap: 32px;
-  margin-bottom: 16px;
-  justify-content: flex-end;
-  width: 100%;
-`;
-
-const RadioLabel = styled.label`
-  font-size: 14px;
-  margin-right: 8px;
-`;
-
 const TitleInput = styled.input`
   width: 100%;
   font-size: 20px;
@@ -150,32 +137,6 @@ function DiaryEditor({
           <span role="img" aria-label="돋보기">🔍</span>
         </MagnifierBtn>
       </TopBar>
-      <RadioGroup>
-        <RadioLabel>
-          식사 횟수
-          <input
-            type="number"
-            min={0}
-            max={10}
-            value={typeof value.mealCount === 'number' ? value.mealCount : ''}
-            onChange={e => {
-              const v = e.target.value;
-              onChange({ ...value, mealCount: v === '' ? '' : Number(v) });
-            }}
-            disabled={!isToday}
-            style={{ width: 50, marginLeft: 8 }}
-          />
-        </RadioLabel>
-        <RadioLabel>
-          외출 여부
-          <input
-            type="checkbox"
-            checked={!!value.outing}
-            onChange={e => onChange({ ...value, outing: !value.outing })}
-            disabled={!isToday}
-          />
-        </RadioLabel>
-      </RadioGroup>
       <TitleInput
         type="text"
         placeholder="제목을 입력하세요"

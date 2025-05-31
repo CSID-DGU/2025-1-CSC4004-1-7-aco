@@ -1,9 +1,5 @@
 import API from './API';
 
-function getAuthHeader() {
-    const token = localStorage.getItem('token');
-    return { Authorization: `Bearer ${token}` };
-}
 
 // 일기 생성
 export async function createDiary(diary) {
@@ -63,7 +59,9 @@ export async function updateDiary(diaryId, diary) {
 
 // 일기 삭제
 export async function deleteDiary(diaryId) {
-    await API.delete(`/diary/${diaryId}`);
+    const res = await API.delete(`/diary/${diaryId}`);
+    console.log('[deleteDiary] response:', res);
+    return res.data;
 }
 
 // 특정 날짜 일기 조회
