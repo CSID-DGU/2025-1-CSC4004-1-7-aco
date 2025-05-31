@@ -76,15 +76,13 @@ public class DiaryAnalysisService {
     // 최근 7일간 분석 결과 조회
     public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, String baseDate) {
         try {
-
             LocalDate base = LocalDate.parse(baseDate); // Java 8+
 
             String startDate = base.minusDays(6).toString();  // yyyy-MM-dd
             String endDate = base.toString();                 // yyyy-MM-dd
 
             return diaryAnalysisRepository
-                    .findByDiary_Patient_PatientCodeAndDiary_CreateDateBetweenOrderByDiary_CreateDateAsc(
-                            patientCode, startDate, endDate);
+                    .findWeeklyAnalysesByPatientCode(patientCode, startDate, endDate);
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }

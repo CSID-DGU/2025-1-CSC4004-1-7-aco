@@ -21,7 +21,7 @@ public class DiaryEntity {
     private String contentPath;
 
     private String title;
-
+    @Column(name = "create_date", columnDefinition = "varchar(255)")
     private String createDate;
 
     @Temporal(TemporalType.TIMESTAMP)
