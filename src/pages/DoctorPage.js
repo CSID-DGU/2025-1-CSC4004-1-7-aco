@@ -282,11 +282,6 @@ const ErrorMessage = styled.div`
   border: 1px solid #ffdddd;
 `;
 
-// KST 변환 함수
-function toKST(date) {
-  return new Date(date.getTime() + (9 * 60 * 60 * 1000));
-}
-
 // 감정 그래프의 점(dot) 클릭 시 모달 띄우는 커스텀 Dot 컴포넌트
 const CustomDot = (props) => {
   const { cx, cy, payload, onClick } = props;
@@ -335,7 +330,7 @@ export default function DoctorPage() {
   const [weekStats, setWeekStats] = useState([]);
 
   // selectedDate를 항상 KST로 변환해서 사용
-  const kstSelectedDate = useMemo(() => toKST(selectedDate), [selectedDate]);
+  const kstSelectedDate = selectedDate; // 이미 KST이므로 변환 불필요
 
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {

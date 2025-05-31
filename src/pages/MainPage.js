@@ -8,6 +8,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import AnalysisInputModal from '../components/AnalysisInputModal';
 import styled from "styled-components";
 import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId } from '../api/diary';
+import axios from 'axios';
 
 const MainContent = styled.main`
     width: 100vw;
@@ -326,22 +327,35 @@ export default function MainPage() {
     const handleSelectDate = async (date) => {
         const newDate = new Date(date);
         const dateKey = getKSTDateKey(newDate);
+        // 콘솔에 날짜 정보 출력
+        console.log('[handleSelectDate] 전달하는 날짜:', newDate, 'dateKey:', dateKey);
         setSelectedDate(newDate);
         setCurrentMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
         try {
             // diary는 단일 객체로 온다고 가정
             const diary = await getDiaryByDate(dateKey);
-            if (diary && diary.diaryId) {
-                setDiaryMap((prev) => ({ ...prev, [dateKey]: normalizeDiary(diary) }));
-                setSelectedDiaryId(diary.diaryId);
-            } else {
-                setDiaryMap((prev) => {
-                    const newMap = { ...prev };
-                    delete newMap[dateKey];
-                    return newMap;
-                });
-                setSelectedDiaryId(null);
+            let text = '';
+            if (diary && diary.contentPath) {
+                try {
+                    const res = await axios.get(diary.contentPath, { responseType: 'text' });
+                    text = res.data;
+                    console.log('S3에서 받아온 텍스트:', text);
+                } catch (e) {
+                    console.error('S3에서 파일 읽기 실패:', e);
+                }
             }
+            setDiaryMap((prev) => {
+                const newMap = {
+                    ...prev,
+                    [dateKey]: {
+                        ...normalizeDiary(diary),
+                        text, // S3에서 받아온 텍스트로 덮어씀
+                    }
+                };
+                console.log('setDiaryMap 이후:', newMap[dateKey]);
+                return newMap;
+            });
+            setSelectedDiaryId(diary?.diaryId || null);
         } catch (e) {
             alert('일기 불러오기 실패: ' + (e.response?.data?.message || e.message));
             setSelectedDiaryId(null);
