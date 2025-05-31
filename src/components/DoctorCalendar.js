@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const days = ['Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const DoctorCalendar = ({ selectedDate, onSelectDate, patientEmotionMap, currentMonth, onChangeMonth }) => {
     const today = new Date();

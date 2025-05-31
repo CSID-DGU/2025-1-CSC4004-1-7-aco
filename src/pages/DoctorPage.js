@@ -327,6 +327,8 @@ export default function DoctorPage() {
   const [error, setError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+
+  // 받아온 환자의 주간 데이터
   const [weekStats, setWeekStats] = useState([]);
 
   // selectedDate를 항상 KST로 변환해서 사용
@@ -357,21 +359,26 @@ export default function DoctorPage() {
 
   // 주간 데이터 계산
   useEffect(() => {
+
     // 주간 시작일 계산 (KST 기준)
     const weekStart = startOfWeek(kstSelectedDate, { weekStartsOn: 1 });
+
     // 한 주의 7일 날짜 배열 생성 (KST 기준)
     const weekDatesArr = [];
     for (let i = 0; i < 7; i++) {
       const d = addDays(weekStart, i);
       weekDatesArr.push(format(d, 'yyyy-MM-dd'));
     }
+
     // 각 날짜별로 데이터 매칭 (실제 API 연동 필요)
     setWeekStats(weekDatesArr.map(dateStr => ({
       date: dateStr,
+      diary: null,
       emotion: null,
       meal: null,
       outing: null,
-      diary: null
+      wakeTime: null,
+      painting: null,
     })));
   }, [kstSelectedDate]);
 
@@ -418,7 +425,8 @@ export default function DoctorPage() {
       const mappedPatients = data.map(patient => ({
         patientCode: patient.patientCode,
         patientName: patient.patientName,
-        patientBirthDate: `생년월일: ${patient.patientBirthDate}`
+        patientBirthDate: `생년월일: ${patient.patientBirthDate}`,
+        medicId: patient.medicId,
       }));
       console.log("mappedPatients:", mappedPatients);
   
@@ -476,6 +484,9 @@ export default function DoctorPage() {
     try {
       const data = await getWeeklyData(patientCode, baseDate);
       console.log("patient weekly data", data);
+
+      // 받아온 주간 데이터 저장
+      setWeekStats(data);
     } catch (error) {
       console.error('handleGetWeeklyData: 주간 데이터를 불러오는데 실패했습니다.');
     }
@@ -558,28 +569,6 @@ export default function DoctorPage() {
 
 
         <RightPanel>
-          
-          {patientDetail && (
-            <div style={{ marginBottom: '24px' }}>
-              <SectionTitle>환자 정보</SectionTitle>
-              <div style={{
-                background: '#f7f7fa',
-                padding: '16px',
-                borderRadius: '12px',
-                fontSize: '15px',
-                lineHeight: '1.6'
-              }}>
-                <p><strong>이름:</strong> {patientDetail.name}</p>
-                <p><strong>생년월일:</strong> {patientDetail.birthDate}</p>
-                <p><strong>성별:</strong> {patientDetail.gender === 'FEMALE' ? '여성' : '남성'}</p>
-                <p><strong>이메일:</strong> {patientDetail.email}</p>
-                <p><strong>전화번호:</strong> {patientDetail.phone}</p>
-                <p><strong>환자 코드:</strong> {patientDetail.patientCode}</p>
-                <p><strong>병원:</strong> {patientDetail.hospital}</p>
-              </div>
-            </div>
-          )}
-
 
           <CalendarAndChartsRow>
             <DoctorCalendar
@@ -616,6 +605,8 @@ export default function DoctorPage() {
                   </ResponsiveContainer>
                 </ChartBox>
               </div>
+
+              
               <div>
                 <SectionTitle>식사 횟수 (일별)</SectionTitle>
                 <ChartBox>
@@ -652,7 +643,24 @@ export default function DoctorPage() {
                 </tr>
               </tbody>
             </OutingTable>
-
+            
+            <SectionTitle>기상 시간 (요일별)</SectionTitle>
+            <OutingTable>
+              <thead>
+                <tr>
+                  {weekStats.map((d, idx) => (
+                    <th key={d.date}>{['월', '화', '수', '목', '금', '토', '일'][idx]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {weekStats.map((d, idx) => (
+                    <td key={d.date}>{d.wakeTime || '-'}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </OutingTable>
 
             <SectionTitle>그림으로 분석된 내용 (일별)</SectionTitle>
             <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
