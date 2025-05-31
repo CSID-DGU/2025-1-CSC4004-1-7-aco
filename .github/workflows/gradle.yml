@@ -8,6 +8,7 @@ on:
       - synchronize
       - closed
 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
