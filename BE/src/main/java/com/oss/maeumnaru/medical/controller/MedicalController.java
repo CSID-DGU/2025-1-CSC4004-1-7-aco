@@ -74,12 +74,12 @@ public class MedicalController {
     public ResponseEntity<PatientResponseDto> getPatientDetail(@PathVariable String patientCode) {
         return ResponseEntity.ok(medicalService.getPatientDetail(patientCode));
     }
-    //의사 일기 조회
+    // 의사 일기 조회
     @GetMapping("/diary/{patientCode}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Optional<DiaryResponseDto>> getPatientDiaryByDate(
             @PathVariable String patientCode,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+            @RequestParam String date) {
         Optional<DiaryResponseDto> diary = diaryService.getDiaryByPatientCodeAndDate(patientCode, date);
         return ResponseEntity.ok(diary);
     }

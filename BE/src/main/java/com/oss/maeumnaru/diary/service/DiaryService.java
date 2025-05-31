@@ -115,13 +115,16 @@ public class DiaryService {
         }
     }
 
-    public Optional<DiaryResponseDto> getDiaryByPatientCodeAndDate(String patientCode, Date date) {
+    public Optional<DiaryResponseDto> getDiaryByPatientCodeAndDate(String patientCode, String date) {
         try {
             Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
             return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
             log.error("getDiaryByPatientCodeAndDate DatabaseException", e);
-            throw new ApiException (ExceptionEnum.DATABASE_ERROR);
+            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+        } catch (Exception e) {
+            log.error("getDiaryByPatientCodeAndDate UnknownException", e);
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
 }

@@ -30,11 +30,16 @@ public class MedicalService {
 
     // 특정 의사의 환자 목록 조회
     public List<MedicalResponseDto> getPatientsByDoctor(Long memberId) {
+        System.out.println(">>> getPatientsByDoctor() called");
         DoctorEntity doctor = doctorRepository.findByMember_MemberId(memberId)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.DOCTOR_NOT_FOUND));
 
+        List<MedicalEntity> medicalEntities = medicalRepository.findByDoctor(doctor);
+        System.out.println(">>> medicalEntities.size() = " + medicalEntities.size());
+
         return medicalRepository.findByDoctor(doctor).stream()
                 .map(medical -> {
+                    System.out.println(">>> medicId = " + medical.getMedicId());
                     PatientEntity patient = medical.getPatient();
                     return MedicalResponseDto.builder()
                             .medicId(medical.getMedicId())
