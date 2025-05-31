@@ -29,5 +29,11 @@ public class PaintEntity {
     @Column(nullable = false)
     private String title;
 
+    private boolean finalized;
+    public boolean isFinalized() {
+        return this.finalized;
+    }
+
+
 
 }
