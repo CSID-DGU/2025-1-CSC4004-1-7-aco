@@ -18,9 +18,8 @@ public class PatientEntity {
 
     private String patientHospital;
 
-    @OneToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private MemberEntity member;
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PatientEntity patient;
 
     @OneToOne
     @JoinColumn(name = "medic_id")

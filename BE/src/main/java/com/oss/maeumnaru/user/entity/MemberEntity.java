@@ -22,7 +22,7 @@ public class MemberEntity {
     @Column(unique = true, nullable = false)
     private String password;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
     private String phone;
@@ -48,11 +48,10 @@ public class MemberEntity {
     public enum MemberType {
         PATIENT, DOCTOR, ADMIN
     }
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @OneToOne(mappedBy = "member_id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private DoctorEntity doctor;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @OneToOne(mappedBy = "member_id", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PatientEntity patient;
+
 }
