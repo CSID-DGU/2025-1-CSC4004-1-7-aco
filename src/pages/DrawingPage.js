@@ -40,6 +40,7 @@ const DrawingPage = () => {
     const [chatList, setChatList] = useState([]);
     const [chatInput, setChatInput] = useState("");
     const [isChatLoading, setIsChatLoading] = useState(false);
+    const [showFinalConfirmModal, setShowFinalConfirmModal] = useState(false);
 
     const colors = [
         '#000000', // 검정
@@ -424,6 +425,31 @@ const DrawingPage = () => {
         }
     };
 
+    const handleFinalSaveWithTitle = async () => {
+        if (!drawingTitle.trim()) {
+            alert('제목을 입력해주세요!');
+            return;
+        }
+        const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
+        const dataUrl = canvas.toDataURL('image/png');
+        const blob = await (await fetch(dataUrl)).blob();
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const createDate = `${yyyy}-${mm}-${dd}`;
+        const dto = { title: drawingTitle, createDate };
+        try {
+            await finalizePaint(blob, dto);
+            setSavedImage(dataUrl);
+            setIsFinalSaved(true);
+            setShowTitleModal(false);
+            alert('최종저장되었습니다.');
+        } catch (e) {
+            alert('최종저장 실패: ' + (e.response?.data?.message || e.message));
+        }
+    };
+
     return (
         <DrawingPageContainer>
             <Navigation />
@@ -486,8 +512,8 @@ const DrawingPage = () => {
                         ) : !isPastDrawing ? (
                             <>
                                 <Button onClick={() => clearCanvas(false)}>지우기</Button>
-                                <TempSaveButton onClick={() => setShowTitleModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
-                                <SaveButton onClick={() => saveDrawing(false)}>최종저장</SaveButton>
+                                <TempSaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                                <SaveButton onClick={() => setShowFinalConfirmModal(true)}>최종저장</SaveButton>
                             </>
                         ) : null}
                     </ButtonGroup>
@@ -540,8 +566,8 @@ const DrawingPage = () => {
                         </ModalBody>
                         <ModalFooter>
                             <Button onClick={() => clearCanvas(true)} disabled={isPastDrawing}>지우기</Button>
-                            <TempSaveButton onClick={() => setShowTitleModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
-                            <SaveButton onClick={() => saveDrawing(true)} disabled={isPastDrawing}>최종저장</SaveButton>
+                            <TempSaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>임시저장</TempSaveButton>
+                            <SaveButton onClick={() => setShowFinalConfirmModal(true)} disabled={isPastDrawing}>최종저장</SaveButton>
                         </ModalFooter>
                     </ModalContent>
                 </ModalOverlay>
@@ -576,7 +602,7 @@ const DrawingPage = () => {
                             />
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={handleTempSaveWithTitle} disabled={!drawingTitle.trim()}>저장</Button>
+                            <Button onClick={handleFinalSaveWithTitle} disabled={!drawingTitle.trim()}>저장</Button>
                             <Button onClick={() => setShowTitleModal(false)}>취소</Button>
                         </ModalFooter>
                     </ModalContent>
@@ -703,6 +729,21 @@ const DrawingPage = () => {
                                 </div>
                             </div>
                         </ModalBody>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
+
+            {showFinalConfirmModal && (
+                <ModalOverlay>
+                    <ModalContent>
+                        <h2>최종 저장 하시겠습니까?</h2>
+                        <ModalFooter>
+                            <Button onClick={() => {
+                                setShowFinalConfirmModal(false);
+                                setShowTitleModal(true);
+                            }}>네</Button>
+                            <Button onClick={() => setShowFinalConfirmModal(false)}>아니오</Button>
+                        </ModalFooter>
                     </ModalContent>
                 </ModalOverlay>
             )}
