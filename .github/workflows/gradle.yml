@@ -72,12 +72,11 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            # 이미지 최신 상태로 당겨오기
+            script: |
             docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
 
-            # 기존 컨테이너가 있으면 종료 및 삭제
             docker stop maeumnaru || true
             docker rm maeumnaru || true
 
-            # 새 컨테이너 백그라운드 실행, 8080 포트 매핑
-            docker run -d --name maeumnaru -p 8080:8080 hyrn/maeumnaru:latest
+            docker run -d --name maeumnaru -p 8080:8080 -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+
