@@ -80,8 +80,10 @@ public class DiaryAnalysisService {
             Date startDate = new Date(baseDate.getTime() - MILLIS_IN_DAY * 6);
             Date endDate = new Date(baseDate.getTime() + MILLIS_IN_DAY - 1);
 
-            return diaryAnalysisRepository.findByDiary_Patient_PatientCodeAndResultDateBetweenOrderByResultDateAsc(
-                    patientCode, startDate, endDate);
+            return diaryAnalysisRepository
+                    .findByDiary_Patient_PatientCodeAndDiary_CreateDateBetweenOrderByDiary_CreateDateAsc(
+                            patientCode, startDate, endDate
+                    );
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
