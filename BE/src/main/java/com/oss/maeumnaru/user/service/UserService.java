@@ -79,9 +79,11 @@ public class UserService {
                     throw new IllegalArgumentException("의사의 licenseNumber는 필수입니다.");
                 }
 
-                String fileUrl = (file != null && !file.isEmpty())
-                        ? s3Service.uploadFile(file, dto.licenseNumber() + "/license", member.getCreateDate() + ".jpg")
-                        : null;
+                if (file == null || file.isEmpty()) {
+                    throw new IllegalArgumentException("파일이 비어있거나 존재하지 않습니다.");
+                }
+
+                String fileUrl = s3Service.uploadFile(file, dto.licenseNumber() + "/license", member.getCreateDate() + ".jpg");
 
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())

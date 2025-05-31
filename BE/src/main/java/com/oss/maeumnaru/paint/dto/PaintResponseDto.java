@@ -1,6 +1,8 @@
 package com.oss.maeumnaru.paint.dto;
 
+import com.oss.maeumnaru.medical.dto.PatientResponseDto;
 import com.oss.maeumnaru.paint.entity.PaintEntity;
+import com.oss.maeumnaru.user.entity.PatientEntity;
 import lombok.*;
 
 import java.util.Date;
@@ -14,16 +16,18 @@ public class PaintResponseDto {
     private String fileUrl;
     private Date createDate;
     private Date updateDate;
-    private String patientCode;
+    private String patientCode;  // PatientEntity 대신 환자코드만 저장
     private String title;
-    public static PaintResponseDto fromEntity(PaintEntity paintEntity) {
-        PaintResponseDto dto = new PaintResponseDto();
-        dto.setPaintId(paintEntity.getPaintId());
-        dto.setFileUrl(paintEntity.getFileUrl());
-        dto.setPatientCode(paintEntity.getPatientCode());
-        dto.setCreateDate(paintEntity.getCreateDate());
-        dto.setUpdateDate(paintEntity.getUpdateDate());
-        dto.setTitle(paintEntity.getTitle());
-        return dto;
+    public static PaintResponseDto fromEntity(PaintEntity entity) {
+        if (entity == null) return null;
+        return new PaintResponseDto(
+                entity.getPaintId(),
+                entity.getFileUrl(),
+                entity.getCreateDate(),
+                entity.getUpdateDate(),
+                entity.getPatient().getPatientCode(),  // PatientEntity 대신 patientCode 사용
+                entity.getTitle()
+        );
     }
 }
+

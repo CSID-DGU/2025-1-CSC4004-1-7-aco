@@ -35,14 +35,14 @@ public class PaintService {
 
     //의존성 주입 대상인 paintRepository를 선언, DB 작업을 위한 인터페이스임
     private final PaintRepository paintRepository;
+    private final PatientRepository patientRepository;
     private final ChatRepository chatRepository;
     private final OpenAiService openAiService;
     private final S3Service s3Service;
-    private final PatientRepository patientRepository;
 
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
-    public Optional<PaintResponseDto> getPaintByPatientCodeAndDate(String patientCode, Date date) {
-        Optional<PaintEntity> paint = paintRepository.findByPatientCodeAndCreateDate(patientCode, date);
+    public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, Date date) {
+        Optional<PaintEntity> paint = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
         return paint.map(PaintResponseDto::fromEntity);
     }
 
@@ -56,11 +56,12 @@ public class PaintService {
         try {
             // S3에 파일 업로드
             String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
-            // PaintEntity 객체 생성
             PaintEntity paint = PaintEntity.builder()
                     .fileUrl(fileUrl)
-                    .patientCode(patientCode)
+                    .patient(patientEntity)
                     .title(dto.getTitle())
                     .createDate(dto.getCreateDate())
                     .updateDate(new Date())
@@ -75,9 +76,10 @@ public class PaintService {
                     savedPaint.getFileUrl(),
                     savedPaint.getCreateDate(),
                     savedPaint.getUpdateDate(),
-                    savedPaint.getPatientCode(),
+                    savedPaint.getPatient() != null ? savedPaint.getPatient().getPatientCode() : null,
                     savedPaint.getTitle()
             );
+
         } catch (IOException e) {
             // 파일 업로드 중 오류가 발생하면 예외 처리
             throw new ApiException(ExceptionEnum.S3_UPLOAD_FAILED);
@@ -91,9 +93,11 @@ public class PaintService {
         try {
             // 사용자 요청의 날짜를 기준으로 그림을 찾기
             Date date = dto.getCreateDate();  // PaintRequestDto에 날짜가 포함되어 있다고 가정
+            PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
             // 환자 코드와 날짜로 그림 조회
-            PaintEntity paint = paintRepository.findByPatientCodeAndCreateDate(patientCode, date)
+            PaintEntity paint = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
 
             // 대화가 이미 시작된 그림인지 확인
@@ -107,7 +111,7 @@ public class PaintService {
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);
-            paint.setPatientCode(patientCode);  // 환자 코드 설정
+            paint.setPatient(patientEntity);  // 환자 코드 설정
             paint.setTitle(dto.getTitle());
             paint.setUpdateDate(new Date());
 
@@ -123,7 +127,7 @@ public class PaintService {
                     paint.getFileUrl(),
                     paint.getCreateDate(),
                     paint.getUpdateDate(),
-                    paint.getPatientCode(),
+                    paint.getPatient() != null ? paint.getPatient().getPatientCode() : null,
                     paint.getTitle()
             );
 
@@ -187,12 +191,10 @@ public class PaintService {
             // paintId로 그림 조회
             PaintEntity paint = paintRepository.findById(paintId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
-
             if (paint.isFinalized()) {
                 throw new ApiException(ExceptionEnum.FINALIZED_PAINT_CANNOT_BE_UPDATED);
             }
-
-            String patientCode = paint.getPatientCode();
+            String patientCode = paint.getPatient().getPatientCode();
 
             // S3에 파일 업로드
             String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
@@ -211,7 +213,7 @@ public class PaintService {
                     paint.getFileUrl(),
                     paint.getCreateDate(),
                     paint.getUpdateDate(),
-                    paint.getPatientCode(),
+                    paint.getPatient() != null ? paint.getPatient().getPatientCode() : null,
                     paint.getTitle()
             );
 

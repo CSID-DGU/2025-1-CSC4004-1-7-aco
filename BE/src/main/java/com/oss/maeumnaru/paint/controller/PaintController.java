@@ -35,7 +35,7 @@ public class PaintController {
     private final PatientRepository patientRepository;
     private void validateOwnership(Long paintId, Long memberId) {
         PaintEntity paintEntity = paintService.getPaintEntityById(paintId);
-        String patientCode = paintEntity.getPatientCode();
+        String patientCode = paintEntity.getPatient().getPatientCode();
 
         PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
@@ -61,7 +61,7 @@ public class PaintController {
             Long memberId = principal.getMemberId();
             String patientCode = getPatientCodeByMemberId(memberId);
 
-        return paintService.getPaintByPatientCodeAndDate(patientCode, date)
+        return paintService.findByPatient_PatientCodeAndCreateDate(patientCode, date)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
