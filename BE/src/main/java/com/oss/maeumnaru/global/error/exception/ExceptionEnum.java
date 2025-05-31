@@ -2,6 +2,7 @@ package com.oss.maeumnaru.global.error.exception;
 
 import lombok.Getter;
 
+
 @Getter
 public enum ExceptionEnum {
     DIARY_NOT_FOUND(404, "해당 일기를 찾을 수 없습니다."),
@@ -11,6 +12,9 @@ public enum ExceptionEnum {
     SERVER_ERROR(500, "서버 내부 오류가 발생했습니다."),
     PATIENT_NOT_FOUND(404, "회원의 환자 정보가 없습니다."),
     FILE_UPLOAD_FAILED(500, "파일 업로드에 실패했습니다."),
+    FINALIZED_PAINT_CANNOT_BE_UPDATED(400, "최종 확정된 그림은 수정할 수 없습니다."),
+
+
     //명상 오류
     MEDITATION_RETRIEVAL_FAILED(500, "명상 정보를 불러오는데 실패했습니다."),
     MEDITATION_NOT_FOUND(404, "해당 명상 정보를 찾을 수 없습니다."),

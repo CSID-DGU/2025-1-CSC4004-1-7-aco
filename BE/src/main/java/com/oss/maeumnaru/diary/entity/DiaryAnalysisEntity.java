@@ -29,7 +29,7 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    @OneToOne
-    @JoinColumn(name = "diary_id")
+    @OneToOne(mappedBy = "diaryAnalysis")
     private DiaryEntity diary;
+
 }
