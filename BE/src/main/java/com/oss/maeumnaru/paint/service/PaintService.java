@@ -41,7 +41,7 @@ public class PaintService {
     private final S3Service s3Service;
 
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
-    public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, Date date) {
+    public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, String date) {
         Optional<PaintEntity> paint = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
         return paint.map(PaintResponseDto::fromEntity);
     }
@@ -92,7 +92,7 @@ public class PaintService {
     public PaintResponseDto finalizePaint(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
             // 사용자 요청의 날짜를 기준으로 그림을 찾기
-            Date date = dto.getCreateDate();  // PaintRequestDto에 날짜가 포함되어 있다고 가정
+            String date = dto.getCreateDate();  // PaintRequestDto에 날짜가 포함되어 있다고 가정
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
