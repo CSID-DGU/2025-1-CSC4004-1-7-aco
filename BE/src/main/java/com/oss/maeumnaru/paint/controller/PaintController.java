@@ -91,7 +91,7 @@ public class PaintController {
 
     // 최종저장(수정사항 반영 + 대화시작 + 이후 수정불가)
     @PostMapping("/finalize")
-    public ResponseEntity<Void> finalizePaint(
+    public ResponseEntity<PaintResponseDto> finalizePaint(
             Authentication authentication,
             @RequestPart MultipartFile file,
             @RequestPart PaintRequestDto dto) throws IOException {
@@ -99,8 +99,8 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         String patientCode = getPatientCodeByMemberId(memberId);
-        paintService.finalizePaint(patientCode, file, dto);
-        return ResponseEntity.ok().build();
+        PaintResponseDto responseDto = paintService.finalizePaint(patientCode, file, dto);
+        return ResponseEntity.ok(responseDto);
     }
 
     //그림 삭제
