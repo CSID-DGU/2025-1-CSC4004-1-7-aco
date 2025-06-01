@@ -44,13 +44,7 @@ public class PaintService {
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
     public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, String date) {
         Optional<PaintEntity> paintOpt = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
-        paintOpt.ifPresent(paint -> {
-            String today = LocalDate.now().toString(); // "yyyy-MM-dd" 형식
-            if (!paint.getCreateDate().equals(today) && !paint.isChatCompleted()) {
-                paint.setChatCompleted(true);
-                paintRepository.save(paint);
-            }
-        });
+
         return paintOpt.map(PaintResponseDto::fromEntity);
     }
 
@@ -78,6 +72,8 @@ public class PaintService {
 
             // 그림 임시 저장
             PaintEntity savedPaint = paintRepository.save(paint);
+
+            System.out.println("[DEBUG] chatCompleted in savedPaint = " + savedPaint.isChatCompleted());
 
             // 저장된 그림을 PaintResponseDto로 변환하여 반환
             return new PaintResponseDto(
