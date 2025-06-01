@@ -8,6 +8,8 @@ import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.jwt.SimpleUserPrincipal;
 import com.oss.maeumnaru.medical.entity.MedicalEntity;
 import com.oss.maeumnaru.medical.service.MedicalService;
+import com.oss.maeumnaru.paint.dto.PaintResponseDto;
+import com.oss.maeumnaru.paint.service.PaintService;
 import com.oss.maeumnaru.user.entity.DoctorEntity;
 import com.oss.maeumnaru.user.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class MedicalController {
 
     private final MedicalService medicalService;
     private final DiaryService diaryService;
+    private final PaintService paintService;
 
     // 👨‍⚕️ 로그인한 의사의 환자 목록 조회
     @GetMapping("/patients")
@@ -79,5 +82,14 @@ public class MedicalController {
             @RequestParam String date) {
         Optional<DiaryResponseDto> diary = diaryService.getDiaryByPatientCodeAndDate(patientCode, date);
         return ResponseEntity.ok(diary);
+    }
+    // 의사 그림 조회
+    @GetMapping("/paint/{patientCode}")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<Optional<PaintResponseDto>> getPatientPaintByDate(
+            @PathVariable String patientCode,
+            @RequestParam String date) {
+        Optional<PaintResponseDto> paint = paintService.findByPatient_PatientCodeAndCreateDate(patientCode, date);
+        return ResponseEntity.ok(paint);
     }
 }

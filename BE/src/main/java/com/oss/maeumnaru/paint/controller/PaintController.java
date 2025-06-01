@@ -46,20 +46,19 @@ public class PaintController {
         }
     }
 
-
     private String getPatientCodeByMemberId(Long memberId) {
         return patientRepository.findByMember_MemberId(memberId)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND))
                 .getPatientCode();
     }
-    //ID로 그림 조회 - 환자가
+    //날짜로 그림 조회 - 환자가
     @GetMapping("/by-date")
     public ResponseEntity<PaintResponseDto> getPaintByPatientCodeAndDate(
             Authentication authentication,
             @RequestParam String date) {
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-            Long memberId = principal.getMemberId();
-            String patientCode = getPatientCodeByMemberId(memberId);
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
+        String patientCode = getPatientCodeByMemberId(memberId);
 
         return paintService.findByPatient_PatientCodeAndCreateDate(patientCode, date)
                 .map(ResponseEntity::ok)
@@ -77,8 +76,8 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         String patientCode = getPatientCodeByMemberId(memberId);
-        boolean exists = paintService.hasPaintForDate(patientCode, dto.getCreateDate());
-        if (exists) {
+
+        if (paintId != null) {
             validateOwnership(paintId, memberId);
             PaintResponseDto updatedPaint = paintService.updatePaintById(paintId, file, dto);
             return ResponseEntity.ok(updatedPaint);
@@ -153,7 +152,6 @@ public class PaintController {
     @PostMapping("/{paintId}/chat/complete")
     public ResponseEntity<Void> completeChat(
             @PathVariable Long id,
-            @RequestBody List<ChatRequestDto> chatList,
             Authentication authentication ) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
@@ -162,7 +160,7 @@ public class PaintController {
         // 🔒 소유자 검증
         validateOwnership(id, memberId);
 
-        paintService.saveCompleteChat(id, chatList);
+        paintService.completeChat(id);
         return ResponseEntity.ok().build();
     }
 

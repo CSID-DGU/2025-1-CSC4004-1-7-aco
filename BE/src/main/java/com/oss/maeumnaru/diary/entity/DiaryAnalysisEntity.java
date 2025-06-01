@@ -21,6 +21,8 @@ public class DiaryAnalysisEntity {
     @Temporal(TemporalType.DATE)
     private Date resultDate;
 
+    private String createDate;
+
     private Long emotionRate;
 
     private long mealCount;
@@ -28,10 +30,5 @@ public class DiaryAnalysisEntity {
     private LocalTime wakeUpTime;
 
     private boolean wentOutside;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "diary_id")
-    private DiaryEntity diary;
-
 
 }
