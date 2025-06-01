@@ -64,7 +64,9 @@ public class PaintService {
     public PaintResponseDto savePaintDraft(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
             // S3에 파일 업로드
+
             String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
