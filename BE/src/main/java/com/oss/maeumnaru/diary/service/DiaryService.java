@@ -39,8 +39,7 @@ public class DiaryService {
         try {
             PatientEntity patient = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = sdf.format(request.getCreateDate());
+            String dateStr = request.getCreateDate();
             String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             DiaryEntity diary = DiaryEntity.builder()
@@ -74,8 +73,7 @@ public class DiaryService {
             if (!existingDiary.getPatient().getPatientCode().equals(patientCode)) {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = sdf.format(existingDiary.getCreateDate());
+            String dateStr = request.getCreateDate();
             String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             existingDiary.setContentPath(contentPath);
