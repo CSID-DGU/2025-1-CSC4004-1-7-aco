@@ -29,7 +29,8 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    // DiaryAnalysisEntity.java
+    @OneToOne
     @JoinColumn(name = "diary_id")
     private DiaryEntity diary;
 
