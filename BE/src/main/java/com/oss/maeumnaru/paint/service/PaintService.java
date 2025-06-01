@@ -72,6 +72,8 @@ public class PaintService {
                     .updateDate(new Date())
                     .build();
 
+            System.out.println("[DEBUG] savePaintDraft() 진입");
+
             // 그림 임시 저장
             PaintEntity savedPaint = paintRepository.save(paint);
 
