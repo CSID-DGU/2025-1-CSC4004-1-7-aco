@@ -40,6 +40,7 @@ public class DiaryAnalysisService {
 
             if (existingAnalysisOpt.isPresent()) {
                 analysis = existingAnalysisOpt.get();
+                analysis.setDiary(diary);
                 analysis.setEmotionRate(request.getEmotionRate());
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
