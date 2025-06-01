@@ -111,8 +111,7 @@ public class PaintService {
             }
 
             // S3에 파일 업로드
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = sdf.format(dto.getCreateDate());
+            String dateStr = dto.getCreateDate();
             String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             // 그림 정보 업데이트
@@ -267,4 +266,8 @@ public class PaintService {
             }
         }
     }
+    public boolean hasPaintForDate(String patientCode, String date) {
+        return paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date).isPresent();
+    }
+
 }
