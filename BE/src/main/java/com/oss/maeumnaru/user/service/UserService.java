@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -82,9 +83,10 @@ public class UserService {
                 if (file == null || file.isEmpty()) {
                     throw new IllegalArgumentException("파일이 비어있거나 존재하지 않습니다.");
                 }
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String dateStr = sdf.format(member.getCreateDate());
 
-                String fileUrl = s3Service.uploadFile(file, dto.licenseNumber() + "/license", member.getCreateDate() + ".jpg");
-
+                String fileUrl = s3Service.uploadFile(file, "doctor/" + dto.licenseNumber(), dateStr);
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())
                         .hospital(dto.hospital())

@@ -130,7 +130,6 @@ public class UserController {
     }
 
 
-
     @PutMapping("/me")
     public ResponseEntity<Void> updateMyInfo(
             @RequestBody UserUpdateRequestDTO dto,
@@ -168,38 +167,55 @@ public class UserController {
     }
 
 
-
-
     // 회원 탈퇴 (Redis 삭제 + 쿠키 삭제 + DB 삭제)
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawMyAccount(Authentication authentication, HttpServletResponse response) {
         String loginId = authentication.getName();
         MemberEntity member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
+        String memberType = String.valueOf(member.getMemberType());  // DOCTOR 또는 PATIENT
 
-        // Redis 토큰 삭제
-        tokenRedisRepository.deleteById(String.valueOf(member.getMemberId()));
-
-        // 쿠키 삭제
-        jwtTokenProvider.clearCookie(response);
-
-        // 연관된 doctor 또는 patient 먼저 삭제
-        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+        if ("DOCTOR".equalsIgnoreCase(memberType)) {
             DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
-                    .orElseThrow(() -> new RuntimeException("해당 의사를 찾을 수 없습니다."));
-            if (doctor.getCertificationPath() != null) {
-                s3Service.deleteFile(doctor.getCertificationPath());
-            }
-            doctorRepository.delete(doctor);
-        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
-            PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
-                    .orElseThrow(() -> new RuntimeException("해당 환자를 찾을 수 없습니다."));
-            patientRepository.delete(patient);
-        }
+                    .orElseThrow(() -> new RuntimeException("의사 정보가 없습니다."));
+            String licenseNumber = doctor.getLicenseNumber();
 
-        memberRepository.delete(member);
+            // 예: S3에서 의사 면허증 파일 경로
+            String folderPrefix = "doctor/" + licenseNumber + "/";
+
+            s3Service.deleteFolder(folderPrefix);
+
+
+        }
+        else if ("PATIENT".equalsIgnoreCase(memberType)) {
+            PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .orElseThrow(() -> new RuntimeException("환자 정보가 없습니다."));
+            String patientCode = patient.getPatientCode();
+            // 예: S3에서 의사 면허증 파일 경로
+            String folderPrefix = "patient/" + patientCode + "/";
+
+            s3Service.deleteFolder(folderPrefix);
+            // Redis 토큰 삭제
+            //
+            tokenRedisRepository.deleteById(String.valueOf(member.getMemberId()));
+
+            // 쿠키 삭제
+            jwtTokenProvider.clearCookie(response);
+
+            // 연관된 doctor 또는 patient 먼저 삭제
+            if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+                DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
+                        .orElseThrow(() -> new RuntimeException("해당 의사를 찾을 수 없습니다."));
+                if (doctor.getCertificationPath() != null) {
+                    s3Service.deleteFile(doctor.getCertificationPath());
+                }
+                doctorRepository.delete(doctor);
+            } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+                patientRepository.delete(patient);
+            }
+            memberRepository.delete(member);
+            return ResponseEntity.ok().build();
+        }
         return ResponseEntity.ok().build();
     }
-
-
 }

@@ -5,6 +5,8 @@ import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.paint.dto.PaintResponseDto;
 import com.oss.maeumnaru.paint.entity.ChatEntity;
+
+import java.text.SimpleDateFormat;
 import java.util.Random;
 import com.oss.maeumnaru.paint.repository.ChatRepository;
 import java.util.Date;
@@ -55,7 +57,9 @@ public class PaintService {
     public PaintResponseDto savePaintDraft(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
             // S3에 파일 업로드
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(dto.getCreateDate());
+            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/paint", dateStr);
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
@@ -107,7 +111,9 @@ public class PaintService {
             }
 
             // S3에 파일 업로드
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(dto.getCreateDate());
+            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);
@@ -197,7 +203,9 @@ public class PaintService {
             String patientCode = paint.getPatient().getPatientCode();
 
             // S3에 파일 업로드
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(dto.getCreateDate());
+            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);          // 파일 URL 수정
@@ -221,8 +229,6 @@ public class PaintService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
-
-
 
     public void deletePaint(Long id) {
         // 1. 먼저 DB에서 그림 엔티티 조회

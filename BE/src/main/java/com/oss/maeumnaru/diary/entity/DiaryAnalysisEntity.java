@@ -32,4 +32,5 @@ public class DiaryAnalysisEntity {
     @OneToOne(mappedBy = "diaryAnalysis")
     private DiaryEntity diary;
 
+
 }
