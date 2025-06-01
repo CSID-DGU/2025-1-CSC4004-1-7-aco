@@ -29,6 +29,7 @@ public class PaintResponseDto {
                 entity.getPatient().getPatientCode(),  // PatientEntity 대신 patientCode 사용
                 entity.getTitle(),
                 entity.isChatCompleted()
+            
         );
     }
 }
