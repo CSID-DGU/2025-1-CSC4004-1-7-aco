@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 import 'react-calendar/dist/Calendar.css';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { startOfWeek, format, addDays } from 'date-fns';
 import DoctorCalendar from '../components/DoctorCalendar';
 import Navigation from '../components/Navigation';
-import { registerPatient, getPatientsInfo, deletePatient, getWeeklyData, getPatientDiary } from '../api/medical';
+import { registerPatient, getPatientsInfo, deletePatient, getWeeklyData, getPatientDiary, getPaintByDate } from '../api/medical';
 
 const DoctorPageContainer = styled.div`
   width: 100vw;
@@ -285,21 +286,16 @@ const ErrorMessage = styled.div`
 // 감정 그래프의 점(dot) 클릭 시 모달 띄우는 커스텀 Dot 컴포넌트
 const CustomDot = (props) => {
   const { cx, cy, payload, onClick } = props;
+
+  // console.log("payload", payload);
+
   // emotion이 null이면 dot을 그리지 않음
   if (payload.emotion === null || payload.emotion === undefined) return null;
   return (
-    <circle
-      cx={cx}
-      cy={cy}
-      r={7}
-      stroke="#0089ED"
-      fill="#fff"
-      strokeWidth={2}
-      style={{ cursor: 'pointer', pointerEvents: 'all' }}
-      onClick={() => onClick(payload)}
-    />
+    <circle cx={cx} cy={cy} r={7} stroke="#0089ED" fill="#fff" strokeWidth={2} 
+        style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onClick(payload)} />
   );
-};
+};  
 
 export default function DoctorPage() {
   // 의사가 등록한 환자 리스트
@@ -308,28 +304,35 @@ export default function DoctorPage() {
   // 리스트 중에서 선택한 환자의 코드
   const [selectedPatientCode, setSelectedPatientCode] = useState("");
 
+  // 환자 검색
   const [search, setSearch] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [patientDetail, setPatientDetail] = useState(null);
 
   // 일기 모달 창 띄우기
   const [showDiaryModal, setShowDiaryModal] = useState(false);
-
   // 모달 내 일기 내용
   const [modalDiary, setModalDiary] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [patientEmotionMap, setPatientEmotionMap] = useState({});
+
+  // 환자 추가 모달 창
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+
+  // 환자 추가를 위해 입력하는 환자 코드
   const [patientCode, setPatientCode] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const [error, setError] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
 
   // 받아온 환자의 주간 데이터
   const [weekStats, setWeekStats] = useState([]);
+
+  // 선택한 날짜의 환자의 그림
+  const [paintFile, setPaintFile] = useState(null);
 
   // selectedDate를 항상 KST로 변환해서 사용
   const kstSelectedDate = selectedDate; // 이미 KST이므로 변환 불필요
@@ -337,41 +340,43 @@ export default function DoctorPage() {
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {
     setSelectedDate(date);
+    console.log("date click", date);
+    console.log("selectedPatientCode after date click", selectedPatientCode);
 
     // 환자가 선택되어 있을 때만 주간 데이터 받아오기
     if (selectedPatientCode !== "") {
-      handleGetWeeklyData(selectedPatientCode, date);
+      // Date 객체를 'yyyy-MM-dd' 형식의 문자열로 변환
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      // 변환된 날짜 문자열로 주간 데이터 요청
+      handleGetWeeklyData(selectedPatientCode, formattedDate);
+
+      console.log("formattedDate", formattedDate);
+      // 변환된 날짜 문자열로 해당 날짜에 환자가 그린 그림 가져오기
+      handleGetPaintByDate(formattedDate);
     } else {
       // 환자가 선택되지 않은 경우에도 일주일 날짜만 표시
-      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      const weekStart = addDays(date, -6);
       const weekDatesArr = [];
       for (let i = 0; i < 7; i++) {
         const d = addDays(weekStart, i);
         weekDatesArr.push(format(d, 'yyyy-MM-dd'));
       }
+      // 빈 데이터로 주간 통계 초기화
       setWeekStats(weekDatesArr.map(dateStr => ({
         date: dateStr,
-        diary: null,
         emotion: null,
         meal: null,
         outing: null,
         wakeTime: null,
-        painting: null,
       })));
+
+
     }
   };
 
   // 월 변경 핸들러
   const handleChangeMonth = (date) => {
     setCurrentMonth(date);
-  };
-
-  // 그래프에서 일자 클릭 시 모달 오픈
-  const handleChartClick = (data) => {
-    if (data && data.diary) {
-      setModalDiary(data);
-      setShowDiaryModal(true);
-    }
   };
 
   // 주간 데이터 계산 (초기 진입 및 날짜 변경 시)
@@ -386,29 +391,13 @@ export default function DoctorPage() {
       }
       setWeekStats(weekDatesArr.map(dateStr => ({
         date: dateStr,
-        diary: null,
         emotion: null,
         meal: null,
         outing: null,
         wakeTime: null,
-        painting: null,
       })));
     }
   }, [kstSelectedDate, selectedPatientCode]);
-
-  // 환자의 감정 데이터를 가져오는 함수 (실제 API 연동 필요)
-  // useEffect(() => {
-  //   const fetchPatientEmotions = async () => {
-  //     try {
-  //       // TODO: API 호출하여 환자의 감정 데이터 가져오기
-  //       setPatientEmotionMap({});
-  //     } catch (error) {
-  //       console.error('Failed to fetch patient emotions:', error);
-  //     }
-  //   };
-
-  //   fetchPatientEmotions();
-  // }, []);
 
   // 환자 추가하기
   const handleRegisterPatient = async (patientCode) => {
@@ -440,7 +429,7 @@ export default function DoctorPage() {
         patientCode: patient.patientCode,
         patientName: patient.patientName,
         patientBirthDate: `생년월일: ${patient.patientBirthDate}`,
-        medicId: patient.medicId,
+        // medicId: patient.medicId,
       }));
       console.log("mappedPatients:", mappedPatients);
   
@@ -456,6 +445,8 @@ export default function DoctorPage() {
 
   // 페이지 진입 시 환자 리스트 불러오기
   useEffect(() => {
+    console.log("selectedDate", selectedDate);
+
     const fetchPatient = async () => {
       try {
         await handleGetPatientsInfo();
@@ -467,7 +458,7 @@ export default function DoctorPage() {
   }, []);
 
   // 환자 삭제하기
-  const handleDeletePatient = async (medicId, e) => {
+  const handleDeletePatient = async (patientCode, e) => {
     e.stopPropagation();
     if(!window.confirm('정말로 이 환자를 삭제하시겠습니까?')) return;
     console.log("handleDeletePatient");
@@ -475,8 +466,10 @@ export default function DoctorPage() {
       setDeleteLoading(true);
       setDeleteError(null);
 
+
+      console.log("patientCode", patientCode);
       // 환자 삭제
-      await deletePatient(medicId);
+      await deletePatient(patientCode);
       console.log("환자 삭제 완료");
 
       // 환자 목록 새로고침
@@ -492,17 +485,148 @@ export default function DoctorPage() {
 
   // 환자의 주간 데이터 가져오기
   const handleGetWeeklyData = async (patientCode, baseDate) => {
-
     console.log("요청 날짜", baseDate);
 
     try {
       const data = await getWeeklyData(patientCode, baseDate);
-      console.log("patient weekly data", data);
+      console.log("raw weekly data", data);
 
-      // 받아온 주간 데이터 저장
-      setWeekStats(data);
+      // 받아온 데이터를 주간 통계 형식에 맞게 변환
+      const weekStart = addDays(new Date(baseDate), -6);
+      const weekDatesArr = [];
+      
+      // 한 주의 날짜 배열 생성
+      for (let i = 0; i < 7; i++) {
+        const d = addDays(weekStart, i);
+        weekDatesArr.push(format(d, 'yyyy-MM-dd'));
+      }
+      console.log("weekDatesArr", weekDatesArr);
+
+      // 각 날짜별 데이터 매핑
+      const formattedData = weekDatesArr.map(dateStr => {
+        // 해당 날짜의 데이터 찾기
+        const dayData = data.find(item => format(new Date(item.createDate), 'yyyy-MM-dd') === dateStr) || {};
+        
+        return {
+          date: dateStr,
+          // 감정 수치 (-1 ~ 1 사이값)
+          // emotion: dayData.emotion || null,
+          emotion: 0.5,
+          // 식사 횟수 (0 ~ 3)
+          meal: dayData.mealCount || null,
+          // 외출 여부 (0 또는 1)
+          outing: dayData.wentOutside !== undefined ? dayData.wentOutside : null,
+          // 기상 시간 (HH:mm 형식)
+          wakeTime: dayData.wakeUpTime || null,
+        };
+      });
+
+      console.log("formattedData", formattedData);
+
+      // 변환된 데이터로 상태 업데이트
+      setWeekStats(formattedData);
+
     } catch (error) {
       console.error('handleGetWeeklyData: 주간 데이터를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 환자가 해당 일자에 작성한 일기 가져오기
+  const handleGetPatientDiary = async (patientCode, date) => {
+    try {
+      const data = await getPatientDiary(patientCode, date);
+      console.log("patient diary", data);
+      return data;
+
+    } catch (error) {
+      console.error('handleGetPatientDiary: 일기를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 일기 내용 파일 가져오기
+  const getDiaryFile = async (contentPath) => {
+    try {
+      const response = await axios.get(contentPath, {responseType: 'text'});
+      console.log("diaryFile", response.data);
+      return response.data;
+  } catch (error) {
+      console.error('getDiaryFile: 일기 내용 파일을 불러오는데 실패했습니다.');
+      return null;
+  }
+};
+
+  // 그래프에서 점 클릭 시 모달 오픈
+  // 환자가 해당 날짜에 작성한 일기 보여주기
+  const handleDotClick = async (data) => {
+    console.log("data", data);
+    console.log("selectedPatientCode", selectedPatientCode);
+    console.log("data.date", data.date);
+
+    if (data && data.date) {
+      try {
+        // 일기 내용 받아오기
+        console.log("enter handleDotClick");
+        const diaryContent = await handleGetPatientDiary(selectedPatientCode, data.date);
+        console.log("diaryContent", diaryContent);
+
+        const diaryFile = await getDiaryFile(diaryContent.contentPath);
+        console.log("diaryFile", diaryFile);
+
+        setModalDiary({diaryContent, diaryFile});
+
+        console.log("modalDiary", modalDiary);
+        setShowDiaryModal(true);
+      } catch (error) {
+        console.error('handleDotClick: 일기를 불러오는데 실패했습니다.');
+      }
+    }
+  };
+
+  // modalDiary가 변경될 때마다 새로운 값 출력
+  useEffect(() => {
+  if (modalDiary) {
+      console.log("modalDiary updated:", modalDiary);
+  }}, [modalDiary]);
+
+  // 그림 파일 가져오기
+  const getPaintFile = async (contentPath) => {
+    console.log("contentPath", contentPath);
+
+    try {
+      const response = await axios.get(contentPath, {responseType: 'blob'});
+      console.log("paintFile", response.data);
+
+      // 이미지 URL 생성
+      const imageUrl = URL.createObjectURL(response.data);
+      console.log("imageUrl", imageUrl);
+
+      return imageUrl;
+
+    } catch (error) {
+      console.error('getPaintFile: 그림 파일을 불러오는데 실패했습니다.');
+      return null;
+    }
+  };
+
+  // 선택된 날짜의 그림 분석 데이터 가져오기
+  const handleGetPaintByDate = async (date) => {
+    
+    try {
+      console.log("date", date);
+      console.log("date type", typeof date);
+      console.log("selectedPatientCode", selectedPatientCode);
+
+      const data = await getPaintByDate(selectedPatientCode, date);
+      console.log("paintByDate", data);
+
+      const paintFile = await getPaintFile(data.fileUrl);
+      console.log("paintFile", paintFile);
+
+      setPaintFile(paintFile);
+      console.log("paintFile", paintFile);
+
+    } catch (error) {
+      console.error('handleGetPaintByDate: 그림 분석 데이터를 불러오는데 실패했습니다.');
     }
   };
   
@@ -513,20 +637,30 @@ export default function DoctorPage() {
   };
 
   // 환자 검색 필터링
-  // const filteredPatients = patients.filter(p =>
-  //   p.name.includes(search) || p.info.includes(search)
-  // );
+  const filteredPatients = patients.filter(p => 
+    p.patientName.toLowerCase().includes(search.toLowerCase()) || 
+    p.patientCode.toLowerCase().includes(search.toLowerCase()) ||
+    p.patientBirthDate.toLowerCase().includes(search.toLowerCase())
+  );
 
   // 선택된 날짜의 데이터
   const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
 
   // PatientCard 클릭 핸들러
   const handlePatientSelect = (patientCode) => {
+    console.log("set PatientCode", patientCode);
     setSelectedPatientCode(patientCode);
     
     // 환자 선택 시 현재 선택된 날짜가 있다면 해당 날짜의 주간 데이터 가져오기
     if (selectedDate) {
-      handleGetWeeklyData(patientCode, selectedDate);
+      // Date 객체를 'yyyy-MM-dd' 형식의 문자열로 변환
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      // 변환된 날짜 문자열로 주간 데이터 요청
+      handleGetWeeklyData(patientCode, formattedDate);
+
+      console.log("formattedDate", formattedDate);
+      // 변환된 날짜 문자열로 해당 날짜에 환자가 그린 그림 가져오기
+      handleGetPaintByDate(formattedDate);
     }
   };
 
@@ -553,8 +687,7 @@ export default function DoctorPage() {
           ) : error ? (
             <ErrorMessage>{error}</ErrorMessage>
           ) : (
-            // filteredPatients 대신 patients 사용
-            patients.map(p => (
+            filteredPatients.map(p => (
               <PatientCard 
                 key={p.patientCode} 
                 onClick={() => handlePatientSelect(p.patientCode)}
@@ -569,7 +702,7 @@ export default function DoctorPage() {
                 </PatientInfo>
                 <PatientAvatar>👤</PatientAvatar>
                 <DeleteButton
-                  onClick={(e) => handleDeletePatient(p.medicId, e)}
+                  onClick={(e) => handleDeletePatient(p.patientCode, e)}
                   disabled={deleteLoading}
                   title="환자 삭제"
                 >
@@ -600,19 +733,15 @@ export default function DoctorPage() {
                     <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis
-                        domain={[-1, 1]}
-                        tickCount={5}
-                        label={{ value: '감정 수치', angle: -90, position: 'insideLeft' }}
-                      />
+                      <YAxis domain={[-1, 1]} tickCount={5} label={{ value: '감정 수치', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }} />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
                       <Line
                         type="monotone"
                         dataKey="emotion"
                         stroke="#0089ED"
                         strokeWidth={2}
-                        dot={<CustomDot onClick={handleChartClick} />}
-                        activeDot={<CustomDot onClick={handleChartClick} />}
+                        dot={<CustomDot onClick={handleDotClick} />}
+                        activeDot={<CustomDot onClick={handleDotClick} />}
                         connectNulls={false}
                       />
                     </LineChart>
@@ -628,7 +757,7 @@ export default function DoctorPage() {
                     <BarChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis allowDecimals={false} />
+                      <YAxis allowDecimals={false} label={{ value: '식사 횟수', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }} />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
                       <Bar dataKey="meal" fill="#00C49F" radius={[8, 8, 0, 0]} />
                     </BarChart>
@@ -644,15 +773,17 @@ export default function DoctorPage() {
             <OutingTable>
               <thead>
                 <tr>
-                  {weekStats.map((d, idx) => (
-                    <th key={d.date}>{['월', '화', '수', '목', '금', '토', '일'][idx]}</th>
+                  {weekStats.map((d) => (
+                    <th key={d.date}>{d.date.slice(5)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   {weekStats.map((d, idx) => (
-                    <td key={d.date}>{d.outing === 1 ? 'O' : d.outing === 0 ? 'X' : '-'}</td>
+                    <td key={d.date} style={{ width: 156.7, background: d.outing === true || d.outing === false ? '#fff' : 'inherit'}}>
+                      {d.outing === true ? 'O' : d.outing === false ? 'X' : '-'}
+                    </td>
                   ))}
                 </tr>
               </tbody>
@@ -662,30 +793,36 @@ export default function DoctorPage() {
             <OutingTable>
               <thead>
                 <tr>
-                  {weekStats.map((d, idx) => (
-                    <th key={d.date}>{['월', '화', '수', '목', '금', '토', '일'][idx]}</th>
+                  {weekStats.map((d) => (
+                    <th key={d.date}>{d.date.slice(5)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  {weekStats.map((d, idx) => (
-                    <td key={d.date}>{d.wakeTime || '-'}</td>
+                  {weekStats.map((d) => (
+                    <td key={d.date} style={{ width: 156.7, background: d.wakeTime ? '#fff' : 'inherit'}}>
+                      {d.wakeTime || '-'}
+                    </td>
                   ))}
                 </tr>
               </tbody>
             </OutingTable>
 
-            <SectionTitle>그림으로 분석된 내용 (일별)</SectionTitle>
-            <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
-              {dayStat && dayStat.diary ? (
-                <>
-                  <b>{format(selectedDate, 'yyyy-MM-dd')}</b> : {dayStat.diary}
-                </>
-              ) : (
-                <>해당 일자의 그림 분석 데이터가 없습니다.</>
-              )}
+            <div>
+              <SectionTitle>그림과 채팅 내용</SectionTitle>
+              <div style={{ color: '#444', fontSize: 15, marginBottom: 18 }}>
+                {dayStat && dayStat.diaryId ? (
+                  <>
+                    <b>{format(selectedDate, 'yyyy-MM-dd')}</b> : {dayStat.diaryId}
+                  </>
+                ) : (
+                  <>해당 일자의 그림 분석 데이터가 없습니다.</>
+                )}
+              </div>
+              {paintFile && (<img src={paintFile} alt="환자 그림" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }} />)}
             </div>
+            
             
           </SummaryCol>
         </RightPanel>
@@ -693,16 +830,15 @@ export default function DoctorPage() {
       {showDiaryModal && (
         <DiaryModalBg>
           <DiaryModalBox>
-            <DiaryModalTitle>일기 기록 ({modalDiary.date})</DiaryModalTitle>
+            <DiaryModalTitle>{modalDiary.diaryContent.title}</DiaryModalTitle>
             <DiaryModalText>
-              {modalDiary && modalDiary.diary
-                ? modalDiary.diary
-                : "일기 기록이 없습니다."}
+              {modalDiary && modalDiary.diaryFile ? modalDiary.diaryFile : "일기 기록이 없습니다."}
             </DiaryModalText>
             <DiaryModalClose onClick={() => setShowDiaryModal(false)}>닫기</DiaryModalClose>
           </DiaryModalBox>
         </DiaryModalBg>
       )}
+
       {showAddPatientModal && (
         <DiaryModalBg>
           <DiaryModalBox>
