@@ -43,6 +43,8 @@ const DrawingPage = () => {
     const [showFinalConfirmModal, setShowFinalConfirmModal] = useState(false);
     const [saveMode, setSaveMode] = useState('temp');
     const [chatCompleted, setChatCompleted] = useState(false);
+    const [showLoadingModal, setShowLoadingModal] = useState(false);
+    const [skipGetPaintByDate, setSkipGetPaintByDate] = useState(false);
 
     const colors = [
         '#000000', // 검정
@@ -81,10 +83,12 @@ const DrawingPage = () => {
     }, []);
 
     useEffect(() => {
-        const today = new Date();
-        setSelectedDate(today);
-        setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
-        const dateKey = format(today, 'yyyy-MM-dd');
+        if (paintId) return;
+        if (skipGetPaintByDate) {
+            setSkipGetPaintByDate(false);
+            return;
+        }
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
         (async () => {
             try {
                 const paint = await getPaintByDate(dateKey);
@@ -93,26 +97,30 @@ const DrawingPage = () => {
                     setPaintInfo(paint);
                     setSavedImage(paint.fileUrl);
                     setIsFinalSaved(!!paint.chatCompleted);
-                    setIsPastDrawing(!isToday(today));
+                    setIsPastDrawing(!isToday(selectedDate));
                     setChatCompleted(!!paint.chatCompleted);
                 } else {
-                    setPaintId(null);
+                    if (paintId !== null) {
+                        setPaintId(null); console.log('setPaintId(null) 호출: useEffect - 오늘 날짜에 그림 없음');
+                    }
                     setPaintInfo(null);
                     setSavedImage(null);
                     setIsFinalSaved(false);
-                    setIsPastDrawing(!isToday(today));
+                    setIsPastDrawing(!isToday(selectedDate));
                     setChatCompleted(false);
                 }
             } catch (e) {
-                setPaintId(null);
+                if (paintId !== null) {
+                    setPaintId(null); console.log('setPaintId(null) 호출: useEffect - 에러 발생');
+                }
                 setPaintInfo(null);
                 setSavedImage(null);
                 setIsFinalSaved(false);
-                setIsPastDrawing(!isToday(today));
+                setIsPastDrawing(!isToday(selectedDate));
                 setChatCompleted(false);
             }
         })();
-    }, []);
+    }, [selectedDate, skipGetPaintByDate]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -213,6 +221,8 @@ const DrawingPage = () => {
             setPaintId(res.paintId);
             setPaintInfo(res);
             setSavedImage(dataUrl);
+            setSkipGetPaintByDate(true);
+            setTimeout(() => setSkipGetPaintByDate(false), 1000); // 1초 후에만 다시 허용
             alert('임시저장되었습니다.');
         } catch (e) {
             alert('임시저장 실패: ' + (e.response?.data?.message || e.message));
@@ -235,7 +245,7 @@ const DrawingPage = () => {
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
+        const dd = String(today.getDate());
         const createDate = `${yyyy}-${mm}-${dd}`;
         const dto = { title: drawingTitle, createDate };
         try {
@@ -243,18 +253,26 @@ const DrawingPage = () => {
             // paintId가 없으면 임시저장 먼저!
             if (!tempPaintId) {
                 const tempRes = await savePaintDraft(blob, dto, null);
+                console.log('임시저장 paintId:', tempRes.paintId);
                 tempPaintId = tempRes.paintId;
                 setPaintId(tempPaintId);
             }
             // paintId로 최종저장
             const res = await finalizePaint(blob, dto, tempPaintId);
-            setPaintId(res.paintId);
+            if (res && res.paintId) {
+                setPaintId(res.paintId);
+                setShowLoadingModal(false);
+                setShowChatModal(true);
+            }
+            console.log('최종저장 후 paintId:', res.paintId);
             setSavedImage(dataUrl);
             setIsFinalSaved(true);
             setShowTitleModal(false);
-            setShowChatModal(true);
             alert('최종저장되었습니다.');
+            setSkipGetPaintByDate(true);
+            setTimeout(() => setSkipGetPaintByDate(false), 1000); // 1초 후에만 다시 허용
         } catch (e) {
+            setShowLoadingModal(false);
             alert('최종저장 실패: ' + (e.response?.data?.message || e.message));
         }
     };
@@ -284,6 +302,10 @@ const DrawingPage = () => {
             await completeChat(paintId, chatRequestList);
             alert('대화가 저장되었습니다.');
             setShowChatModal(false);
+            // 오늘 날짜를 다시 선택
+            setSelectedDate(new Date());
+            // 화면 새로고침
+            window.location.reload();
         } catch (e) {
             alert('대화 저장 실패: ' + (e.response?.data?.message || e.message));
         }
@@ -318,7 +340,7 @@ const DrawingPage = () => {
     const handleConfirmAction = async () => {
         try {
             if (paintId) {
-                // 서버에서 그림 삭제
+                // 서버에서 그림 삭제 (DELETE /api/paint/{paintId})
                 await deletePaint(paintId);
             }
 
@@ -333,13 +355,17 @@ const DrawingPage = () => {
                 setIsFinalSaved(false);
                 setIsPastDrawing(false);
                 clearCanvas();
+                setPaintId(null); console.log('setPaintId(null) 호출: handleConfirmAction - 삭제 후 오늘 날짜');
             } else {
                 setIsFinalSaved(true);
                 setIsPastDrawing(true);
+                setPaintId(null); console.log('setPaintId(null) 호출: handleConfirmAction - 삭제 후 과거 날짜');
             }
             setShowConfirmModal(false);
-            setPaintId(null);
-            setPaintInfo(null);
+            // 오늘 날짜를 다시 선택
+            setSelectedDate(new Date());
+            // 화면 새로고침
+            window.location.reload();
         } catch (e) {
             alert('삭제 실패: ' + (e.response?.data?.message || e.message));
         }
@@ -366,6 +392,7 @@ const DrawingPage = () => {
     };
 
     const handleCalendarClick = async (date) => {
+        setSkipGetPaintByDate(false);
         console.log('날짜 클릭:', date);
         setSelectedDate(date);
         setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
@@ -382,7 +409,7 @@ const DrawingPage = () => {
                 setIsPastDrawing(!isToday(date));
                 setChatCompleted(!!paint.chatCompleted);
             } else {
-                setPaintId(null);
+                setPaintId(null); console.log('setPaintId(null) 호출: handleCalendarClick - 그림 없음');
                 setPaintInfo(null);
                 setSavedImage(null);
                 setIsFinalSaved(false);
@@ -394,7 +421,7 @@ const DrawingPage = () => {
                 }
             }
         } catch (e) {
-            setPaintId(null);
+            setPaintId(null); console.log('setPaintId(null) 호출: handleCalendarClick - 에러 발생');
             setPaintInfo(null);
             setSavedImage(null);
             setIsFinalSaved(false);
@@ -784,7 +811,11 @@ const DrawingPage = () => {
                             </div>
                         </ModalBody>
                         <ModalFooter>
-                            <CompleteButton onClick={handleCompleteChat}>대화 완료</CompleteButton>
+                            {chatCompleted ? (
+                                <Button onClick={() => setShowChatModal(false)}>닫기</Button>
+                            ) : (
+                                <CompleteButton onClick={handleCompleteChat} disabled={!paintId}>대화 완료</CompleteButton>
+                            )}
                         </ModalFooter>
                     </ModalContent>
                 </ModalOverlay>
@@ -822,6 +853,18 @@ const DrawingPage = () => {
                             }}>네</Button>
                             <Button onClick={() => setShowFinalConfirmModal(false)}>아니오</Button>
                         </ModalFooter>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
+
+            {showLoadingModal && (
+                <ModalOverlay>
+                    <ModalContent style={{ width: '320px', textAlign: 'center', padding: '40px 0' }}>
+                        <div style={{ marginBottom: 20 }}>
+                            <div className="loader" style={{ margin: '0 auto', width: 48, height: 48, border: '6px solid #eee', borderTop: '6px solid #0089ED', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                        </div>
+                        <div style={{ fontSize: 18, color: '#222' }}>그림 정보를 불러오는 중입니다...</div>
+                        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
                     </ModalContent>
                 </ModalOverlay>
             )}
