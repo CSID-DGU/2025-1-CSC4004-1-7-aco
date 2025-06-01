@@ -32,7 +32,7 @@ public class DiaryEntity {
     private PatientEntity patient;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "diary_analysis_id")  // DiaryEntity 테이블에 FK 컬럼
+    @JoinColumn(name = "diary_analysis_id")  // DiaryEntity 테이블에 FK 컬럼 추가
     private DiaryAnalysisEntity diaryAnalysis;
 
 
