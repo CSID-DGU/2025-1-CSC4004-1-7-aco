@@ -20,7 +20,7 @@ public class DiaryAnalysisResponseDto {
     private LocalTime wakeUpTime;
     private boolean wentOutside;
     private String createDate;
-    private boolean analyzed;
+    private Boolean analyzed;
 
     public static DiaryAnalysisResponseDto fromEntity(DiaryAnalysisEntity entity) {
         return DiaryAnalysisResponseDto.builder()
@@ -31,7 +31,7 @@ public class DiaryAnalysisResponseDto {
                 .wakeUpTime(entity.getWakeUpTime())
                 .wentOutside(entity.isWentOutside())
                 .createDate(entity.getCreateDate())
-                .analyzed(entity.isAnalyzed())
+                .analyzed(entity.getAnalyzed())
                 .build();
     }
 }
