@@ -19,7 +19,6 @@ public class DiaryAnalysisResponseDto {
     private long mealCount;
     private LocalTime wakeUpTime;
     private boolean wentOutside;
-    private Long diaryId;  // 연관된 DiaryEntity의 ID
     private String createDate;
 
     public static DiaryAnalysisResponseDto fromEntity(DiaryAnalysisEntity entity) {
@@ -30,8 +29,7 @@ public class DiaryAnalysisResponseDto {
                 .mealCount(entity.getMealCount())
                 .wakeUpTime(entity.getWakeUpTime())
                 .wentOutside(entity.isWentOutside())
-                .diaryId(entity.getDiary() != null ? entity.getDiary().getDiaryId() : null)
-                .createDate(entity.getDiary() != null ? entity.getDiary().getCreateDate() : null)
+                .createDate(entity.getCreateDate())
                 .build();
     }
 }

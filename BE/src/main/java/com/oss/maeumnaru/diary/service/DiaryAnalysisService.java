@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,25 +36,25 @@ public class DiaryAnalysisService {
             DiaryEntity diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
-            Optional<DiaryAnalysisEntity> existingAnalysisOpt = diaryAnalysisRepository.findByDiary_DiaryId(diaryId);
-            DiaryAnalysisEntity analysis;
+            DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
 
-            if (existingAnalysisOpt.isPresent()) {
-                analysis = existingAnalysisOpt.get();
-                analysis.setDiary(diary);
+            if (analysis != null) {
+                // 기존 분석 결과가 있을 경우 업데이트
                 analysis.setEmotionRate(request.getEmotionRate());
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
                 analysis.setWentOutside(request.isWentOutside());
+                analysis.setResultDate(new Date());
             } else {
+                // 새로 생성
                 analysis = DiaryAnalysisEntity.builder()
-                        .diary(diary)
                         .emotionRate(request.getEmotionRate())
                         .mealCount(request.getMealCount())
                         .wakeUpTime(request.getWakeUpTime())
                         .wentOutside(request.isWentOutside())
                         .resultDate(new Date())
                         .build();
+                diary.setDiaryAnalysis(analysis);
             }
 
             return diaryAnalysisRepository.save(analysis);
@@ -63,10 +64,13 @@ public class DiaryAnalysisService {
     }
 
 
+
     // 특정 일기 ID로 분석 결과 조회
     public Optional<DiaryAnalysisEntity> findByDiaryId(Long diaryId) {
         try {
-            return diaryAnalysisRepository.findByDiary_DiaryId(diaryId);
+            DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
+            return Optional.ofNullable(diaryEntity.getDiaryAnalysis());
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
@@ -75,6 +79,7 @@ public class DiaryAnalysisService {
     }
 
     // 최근 7일간 분석 결과 조회
+    @Transactional(readOnly = true)
     public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, String baseDate) {
         try {
             System.out.println("Service 진입: findWeeklyAnalysesByPatientCode");
@@ -83,24 +88,28 @@ public class DiaryAnalysisService {
 
             // 날짜 파싱
             LocalDate base = LocalDate.parse(baseDate);
-            System.out.println("baseDate 파싱 성공: " + base);
 
-            // startDate와 endDate 계산
-            String startDate = base.minusDays(6).toString();
-            String endDate = base.toString();
+            // 시작일과 종료일 계산
+            String startDate = base.minusDays(6).toString();  // 예: 2025-05-26
+            String endDate = base.toString();                 // 예: 2025-06-01
             System.out.println("startDate: " + startDate);
             System.out.println("endDate: " + endDate);
 
-            // Repository 호출
-            List<DiaryAnalysisEntity> result = diaryAnalysisRepository
-                    .findWeeklyAnalysesByPatientCode(patientCode, startDate, endDate);
-            System.out.println("Repository 호출 결과 size: " + (result != null ? result.size() : "null"));
+            // DiaryEntity 목록 조회
+            List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDateBetween(patientCode, startDate, endDate);
+            System.out.println("조회된 일기 수: " + diaries.size());
 
+            // DiaryAnalysisEntity만 추출
+            List<DiaryAnalysisEntity> result = diaries.stream()
+                    .map(DiaryEntity::getDiaryAnalysis)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            System.out.println("분석 결과 수: " + result.size());
             return result;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
-
 }
