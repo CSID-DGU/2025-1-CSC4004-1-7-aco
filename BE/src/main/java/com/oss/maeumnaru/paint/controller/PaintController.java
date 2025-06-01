@@ -105,36 +105,36 @@ public class PaintController {
     //그림 삭제
     @DeleteMapping("/{paintId}")
     public ResponseEntity<Void> deletePaint(
-            @PathVariable("paintId") Long id,
+            @PathVariable("paintId") Long paintId,
             Authentication authentication ) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        paintService.deletePaint(id);
+        paintService.deletePaint(paintId);
         return ResponseEntity.noContent().build();
     }
 
     //의사가 대화 조회에 사용
     @GetMapping("/{paintId}/chats")
     public ResponseEntity<List<ChatEntity>> getChatsByPaintId(
-            @PathVariable("paintId") Long id,
+            @PathVariable("paintId") Long paintId,
             Authentication authentication) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id));
+        return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId));
     }
 
     // 응답과 다음 질문
     @PostMapping("/{paintId}/chat/reply")
     public ResponseEntity<String> saveReplyAndGetNextQuestion(
-            @PathVariable Long id,
+            @PathVariable Long paintId,
             @RequestBody String patientReply,
             Authentication authentication) {
 
@@ -142,25 +142,25 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         // 🔒 소유자 검증
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        String nextQuestion = paintService.saveReplyAndGetNextQuestion(id, patientReply);
+        String nextQuestion = paintService.saveReplyAndGetNextQuestion(paintId, patientReply);
         return ResponseEntity.ok(nextQuestion);
     }
 
     //채팅 완료 -> 대화 전체 리스트 받음
     @PostMapping("/{paintId}/chat/complete")
     public ResponseEntity<Void> completeChat(
-            @PathVariable Long id,
+            @PathVariable Long paintId,
             Authentication authentication ) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
         // 🔒 소유자 검증
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        paintService.completeChat(id);
+        paintService.completeChat(paintId);
         return ResponseEntity.ok().build();
     }
 
