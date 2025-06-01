@@ -14,7 +14,7 @@ import java.util.Date;
 public class PaintResponseDto {
     private Long paintId;
     private String fileUrl;
-    private Date createDate;
+    private String createDate;
     private Date updateDate;
     private String patientCode;  // PatientEntity 대신 환자코드만 저장
     private String title;
@@ -23,7 +23,7 @@ public class PaintResponseDto {
         return new PaintResponseDto(
                 entity.getPaintId(),
                 entity.getFileUrl(),
-                entity.getCreateDate(),
+                entity.getCreateDate().toString(),
                 entity.getUpdateDate(),
                 entity.getPatient().getPatientCode(),  // PatientEntity 대신 patientCode 사용
                 entity.getTitle()

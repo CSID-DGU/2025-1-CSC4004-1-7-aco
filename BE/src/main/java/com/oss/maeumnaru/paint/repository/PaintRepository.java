@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface PaintRepository extends JpaRepository<PaintEntity, Long> {
 
     // 메소드 이름으로 날짜와 환자 코드로 그림 조회
-    Optional<PaintEntity> findByPatient_PatientCodeAndCreateDate(String patientCode, Date date);
+    Optional<PaintEntity> findByPatient_PatientCodeAndCreateDate(String patientCode, String date);
 }
