@@ -31,7 +31,8 @@ public class DiaryEntity {
     @JoinColumn(name = "patient_code")
     private PatientEntity patient;
 
-    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "diary")
     private DiaryAnalysisEntity diaryAnalysis;
+
 
 }
