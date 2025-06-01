@@ -44,6 +44,7 @@ public class DiaryAnalysisService {
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
                 analysis.setWentOutside(request.isWentOutside());
+                analysis.setCreateDate(diary.getCreateDate());
                 analysis.setResultDate(new Date());
             } else {
                 // 새로 생성
@@ -52,6 +53,7 @@ public class DiaryAnalysisService {
                         .mealCount(request.getMealCount())
                         .wakeUpTime(request.getWakeUpTime())
                         .wentOutside(request.isWentOutside())
+                        .createDate(diary.getCreateDate())
                         .resultDate(new Date())
                         .build();
                 diary.setDiaryAnalysis(analysis);
