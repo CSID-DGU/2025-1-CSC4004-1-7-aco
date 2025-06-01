@@ -46,7 +46,6 @@ public class PaintController {
         }
     }
 
-
     private String getPatientCodeByMemberId(Long memberId) {
         return patientRepository.findByMember_MemberId(memberId)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND))
