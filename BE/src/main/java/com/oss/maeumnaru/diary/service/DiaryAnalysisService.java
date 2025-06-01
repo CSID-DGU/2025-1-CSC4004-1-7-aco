@@ -46,6 +46,7 @@ public class DiaryAnalysisService {
                 analysis.setWentOutside(request.isWentOutside());
                 analysis.setCreateDate(diary.getCreateDate());
                 analysis.setResultDate(new Date());
+                analysis.setAnalyzed(true);
             } else {
                 // 새로 생성
                 analysis = DiaryAnalysisEntity.builder()
@@ -55,6 +56,7 @@ public class DiaryAnalysisService {
                         .wentOutside(request.isWentOutside())
                         .createDate(diary.getCreateDate())
                         .resultDate(new Date())
+                        .analyzed(true)
                         .build();
                 diary.setDiaryAnalysis(analysis);
             }

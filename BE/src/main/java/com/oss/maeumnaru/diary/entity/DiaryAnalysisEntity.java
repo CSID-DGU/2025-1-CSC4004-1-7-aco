@@ -31,4 +31,6 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
+    private boolean analyzed;
+
 }
