@@ -202,6 +202,10 @@ public class UserController {
             // 쿠키 삭제
             jwtTokenProvider.clearCookie(response);
 
+
+
+
+
             // 연관된 doctor 또는 patient 먼저 삭제
             if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
                 DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
