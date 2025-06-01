@@ -3,6 +3,7 @@ package com.oss.maeumnaru.paint.entity;
 import com.oss.maeumnaru.user.entity.PatientEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +41,9 @@ public class PaintEntity {
     private String title;
 
     private boolean finalized;
+
+    @Column(nullable = false)
+    private boolean chatCompleted = false;
 
 
 }

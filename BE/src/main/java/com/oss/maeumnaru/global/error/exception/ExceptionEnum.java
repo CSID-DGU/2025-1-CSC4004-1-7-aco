@@ -22,6 +22,7 @@ public enum ExceptionEnum {
     MEDITATION_DELETE_FAILED(500, "명상 정보를 삭제하는 데 실패했습니다."),
     DATABASE_ERROR(500, "데이터베이스 오류가 발생했습니다."),
 
+
     // ✅ [User 관련 예외 추가]
     MEMBER_NOT_FOUND(404, "해당 회원을 찾을 수 없습니다."),
     DUPLICATE_LOGIN_ID(409, "이미 사용 중인 로그인 ID입니다."),
@@ -35,6 +36,7 @@ public enum ExceptionEnum {
 
 
     PAINT_NOT_FOUND(404, "해당 의사를 찾을 수 없습니다."),
+    CHAT_ALREADY_COMPLETED(409, "이미 완료된 대화입니다."),
     CHAT_ALREADY_START(404, "채팅이 이미 시작되었습니다." );
     private final int status;
     private final String message;

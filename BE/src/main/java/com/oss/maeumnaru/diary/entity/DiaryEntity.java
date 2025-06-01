@@ -32,6 +32,7 @@ public class DiaryEntity {
     private PatientEntity patient;
 
     @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+
     private DiaryAnalysisEntity diaryAnalysis;
 
 }

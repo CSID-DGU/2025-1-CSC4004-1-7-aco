@@ -5,11 +5,10 @@ import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.paint.dto.PaintResponseDto;
 import com.oss.maeumnaru.paint.entity.ChatEntity;
-
-import java.text.SimpleDateFormat;
 import java.util.Random;
 import com.oss.maeumnaru.paint.repository.ChatRepository;
 import java.util.Date;
+import java.time.LocalDate;
 
 import com.oss.maeumnaru.user.entity.PatientEntity;
 import com.oss.maeumnaru.user.repository.PatientRepository;
@@ -44,9 +43,17 @@ public class PaintService {
 
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
     public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, String date) {
-        Optional<PaintEntity> paint = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
-        return paint.map(PaintResponseDto::fromEntity);
+        Optional<PaintEntity> paintOpt = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
+        paintOpt.ifPresent(paint -> {
+            String today = LocalDate.now().toString(); // "yyyy-MM-dd" 형식
+            if (!paint.getCreateDate().equals(today) && !paint.isChatCompleted()) {
+                paint.setChatCompleted(true);
+                paintRepository.save(paint);
+            }
+        });
+        return paintOpt.map(PaintResponseDto::fromEntity);
     }
+
 
     public PaintEntity getPaintEntityById(Long paintId) {
         return paintRepository.findById(paintId)
@@ -57,9 +64,9 @@ public class PaintService {
     public PaintResponseDto savePaintDraft(String patientCode, MultipartFile file, PaintRequestDto dto) throws IOException {
         try {
             // S3에 파일 업로드
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = sdf.format(dto.getCreateDate());
-            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/paint", dateStr);
+
+            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
 
@@ -81,7 +88,8 @@ public class PaintService {
                     savedPaint.getCreateDate(),
                     savedPaint.getUpdateDate(),
                     savedPaint.getPatient() != null ? savedPaint.getPatient().getPatientCode() : null,
-                    savedPaint.getTitle()
+                    savedPaint.getTitle(),
+                    savedPaint.isChatCompleted()
             );
 
         } catch (IOException e) {
@@ -111,8 +119,7 @@ public class PaintService {
             }
 
             // S3에 파일 업로드
-            String dateStr = dto.getCreateDate();
-            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
+            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);
@@ -133,7 +140,8 @@ public class PaintService {
                     paint.getCreateDate(),
                     paint.getUpdateDate(),
                     paint.getPatient() != null ? paint.getPatient().getPatientCode() : null,
-                    paint.getTitle()
+                    paint.getTitle(),
+                    paint.isChatCompleted()
             );
 
         } catch (Exception e) {
@@ -150,6 +158,7 @@ public class PaintService {
             "이 그림 속 인물이나 사물의 감정은 어떤가요?",
             "이 그림을 보면 어떤 기억이나 감정이 떠오르나요?"
     );
+
     //
     private void startChatWithPaint(PaintEntity paint) {
         // 랜덤 질문
@@ -166,7 +175,11 @@ public class PaintService {
 
     public String saveReplyAndGetNextQuestion(Long paintId, String patientReply) {
         PaintEntity paint = paintRepository.findById(paintId)
-                .orElseThrow(() -> new RuntimeException("그림을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
+
+        if (paint.isChatCompleted()) {
+            throw new ApiException(ExceptionEnum.CHAT_ALREADY_COMPLETED);
+        }
 
         // 1. 환자 응답 저장
         chatRepository.save(ChatEntity.builder()
@@ -202,9 +215,7 @@ public class PaintService {
             String patientCode = paint.getPatient().getPatientCode();
 
             // S3에 파일 업로드
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = sdf.format(dto.getCreateDate());
-            String fileUrl = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
+            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);          // 파일 URL 수정
@@ -221,13 +232,15 @@ public class PaintService {
                     paint.getCreateDate(),
                     paint.getUpdateDate(),
                     paint.getPatient() != null ? paint.getPatient().getPatientCode() : null,
-                    paint.getTitle()
+                    paint.getTitle(),
+                    paint.isChatCompleted()
             );
 
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 
     public void deletePaint(Long id) {
         // 1. 먼저 DB에서 그림 엔티티 조회
@@ -242,32 +255,13 @@ public class PaintService {
     }
 
     //대화 완료 저장
-    public void saveCompleteChat(Long paintId, List<ChatRequestDto> chatList) {
+    public void completeChat(Long paintId) {
         PaintEntity paint = paintRepository.findById(paintId)
-                .orElseThrow(() -> new RuntimeException("그림을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ExceptionEnum.PAINT_NOT_FOUND));
 
-        for (ChatRequestDto dto : chatList) {
-            // GPT 질문은 무조건 저장
-            chatRepository.save(ChatEntity.builder()
-                    .paint(paint)
-                    .writerType(ChatEntity.WriterType.CHATBOT)
-                    .chatDate(new Date())
-                    .comment(dto.getChatbotComment())
-                    .build());
+        paint.setChatCompleted(true);
+        paintRepository.save(paint);
 
-            // 환자 응답이 null 또는 빈 값이 아니면 저장
-            if (dto.getPatientComment() != null && !dto.getPatientComment().isBlank()) {
-                chatRepository.save(ChatEntity.builder()
-                        .paint(paint)
-                        .writerType(ChatEntity.WriterType.PATIENT)
-                        .chatDate(new Date())
-                        .comment(dto.getPatientComment())
-                        .build());
-            }
-        }
-    }
-    public boolean hasPaintForDate(String patientCode, String date) {
-        return paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date).isPresent();
     }
 
 }

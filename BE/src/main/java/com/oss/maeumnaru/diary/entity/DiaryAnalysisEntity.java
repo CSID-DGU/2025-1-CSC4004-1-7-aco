@@ -29,9 +29,6 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "diary_id")
-    private DiaryEntity diary;
-
-
+    @OneToOne(mappedBy = "diaryAnalysis")
+    private DiaryAnalysisEntity diaryAnalysis;
 }
