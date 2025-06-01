@@ -223,7 +223,7 @@ const DayCell = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px 10px;
   width: 64px;
   height: 64px;
 `;
@@ -237,8 +237,10 @@ const DayText = styled.div`
   line-height: 17px;
   display: flex;
   align-items: center;
+  justify-content: center;
   text-align: center;
   color: #000000;
+  margin: 0 auto;
 `;
 
 const DateRow = styled.div`
