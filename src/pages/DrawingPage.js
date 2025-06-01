@@ -388,6 +388,10 @@ const DrawingPage = () => {
                 setIsFinalSaved(false);
                 setIsPastDrawing(!isToday(date));
                 setChatCompleted(false);
+                if (canvasRef.current) {
+                    const ctx = canvasRef.current.getContext('2d');
+                    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                }
             }
         } catch (e) {
             setPaintId(null);
@@ -396,6 +400,10 @@ const DrawingPage = () => {
             setIsFinalSaved(false);
             setIsPastDrawing(!isToday(date));
             setChatCompleted(false);
+            if (canvasRef.current) {
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            }
             console.error('getPaintByDate 에러:', e);
         }
     };
