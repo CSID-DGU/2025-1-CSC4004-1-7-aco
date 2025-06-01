@@ -29,10 +29,6 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    // DiaryAnalysisEntity.java
-    @OneToOne
-    @JoinColumn(name = "diary_id")
-    private DiaryEntity diary;
-
-
+    @OneToOne(mappedBy = "diaryAnalysis")
+    private DiaryAnalysisEntity diaryAnalysis;
 }
