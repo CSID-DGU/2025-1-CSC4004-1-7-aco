@@ -27,7 +27,7 @@ public class PatientEntity {
     @JoinColumn(name = "member_id")  // FK 컬럼
     private MemberEntity member;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "patient")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private MedicalEntity medical;
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
