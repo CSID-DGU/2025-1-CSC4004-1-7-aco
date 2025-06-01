@@ -77,8 +77,8 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         String patientCode = getPatientCodeByMemberId(memberId);
-
-        if (paintId != null) {
+        boolean exists = paintService.hasPaintForDate(patientCode, dto.getCreateDate());
+        if (exists) {
             validateOwnership(paintId, memberId);
             PaintResponseDto updatedPaint = paintService.updatePaintById(paintId, file, dto);
             return ResponseEntity.ok(updatedPaint);
