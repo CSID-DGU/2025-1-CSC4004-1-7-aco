@@ -18,6 +18,7 @@ public class PaintResponseDto {
     private Date updateDate;
     private String patientCode;  // PatientEntity 대신 환자코드만 저장
     private String title;
+    private boolean chatCompleted;
     public static PaintResponseDto fromEntity(PaintEntity entity) {
         if (entity == null) return null;
         return new PaintResponseDto(
@@ -26,8 +27,8 @@ public class PaintResponseDto {
                 entity.getCreateDate().toString(),
                 entity.getUpdateDate(),
                 entity.getPatient().getPatientCode(),  // PatientEntity 대신 patientCode 사용
-                entity.getTitle()
+                entity.getTitle(),
+                entity.isChatCompleted()
         );
     }
 }
-
