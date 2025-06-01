@@ -140,6 +140,25 @@ const DrawingPage = () => {
         }
     }, [showChatModal, paintId]);
 
+    useEffect(() => {
+        if (paintInfo?.fileUrl && canvasRef.current) {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                console.log('이미지 로드 성공:', img.src);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                console.log('drawImage 호출 완료:', img.src);
+            };
+            img.onerror = (e) => {
+                console.error('이미지 로드 실패:', e, img.src);
+            };
+            img.src = paintInfo.fileUrl;
+        }
+    }, [paintInfo?.fileUrl]);
+
     const getMousePosition = (e, canvas) => {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -347,15 +366,17 @@ const DrawingPage = () => {
     };
 
     const handleCalendarClick = async (date) => {
+        console.log('날짜 클릭:', date);
         setSelectedDate(date);
         setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
         const dateKey = format(date, 'yyyy-MM-dd');
         try {
             const paint = await getPaintByDate(dateKey);
+            console.log('getPaintByDate 응답:', paint);
             if (paint && paint.paintId) {
                 setPaintId(paint.paintId);
-                console.log('paintId 저장:', paint.paintId);
                 setPaintInfo(paint);
+                console.log('setPaintInfo 호출:', paint);
                 setSavedImage(paint.fileUrl);
                 setIsFinalSaved(!!paint.chatCompleted);
                 setIsPastDrawing(!isToday(date));
@@ -375,6 +396,7 @@ const DrawingPage = () => {
             setIsFinalSaved(false);
             setIsPastDrawing(!isToday(date));
             setChatCompleted(false);
+            console.error('getPaintByDate 에러:', e);
         }
     };
 
@@ -666,7 +688,7 @@ const DrawingPage = () => {
                         <ModalBody style={{ gap: '40px' }}>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img
-                                    src={paintInfo?.fileUrl || savedImage}
+                                    src={paintInfo?.fileUrl}
                                     alt="그림 미리보기"
                                     style={{
                                         maxWidth: '350px',
