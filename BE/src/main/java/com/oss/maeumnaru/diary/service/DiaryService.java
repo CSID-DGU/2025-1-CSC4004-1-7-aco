@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
@@ -38,8 +39,9 @@ public class DiaryService {
         try {
             PatientEntity patient = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
-
-            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", String.valueOf(request.getCreateDate()) + ".txt");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(request.getCreateDate());
+            String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             DiaryEntity diary = DiaryEntity.builder()
                     .contentPath(contentPath)
@@ -72,8 +74,9 @@ public class DiaryService {
             if (!existingDiary.getPatient().getPatientCode().equals(patientCode)) {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
-
-            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", String.valueOf(existingDiary.getCreateDate()) + ".txt");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(existingDiary.getCreateDate());
+            String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
 
             existingDiary.setContentPath(contentPath);
             existingDiary.setTitle(request.getTitle());
@@ -117,6 +120,7 @@ public class DiaryService {
 
     public Optional<DiaryResponseDto> getDiaryByPatientCodeAndDate(String patientCode, String date) {
         try {
+
             Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
             return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {

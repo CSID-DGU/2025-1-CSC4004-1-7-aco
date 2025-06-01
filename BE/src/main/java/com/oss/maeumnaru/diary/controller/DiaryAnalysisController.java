@@ -43,6 +43,7 @@ public class DiaryAnalysisController {
         List<DiaryAnalysisResponseDto> response = diaryAnalysisService.findWeeklyAnalysesByPatientCode(patientCode, baseDate)
                 .stream()
                 .map(DiaryAnalysisResponseDto::fromEntity)
+
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
