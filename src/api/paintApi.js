@@ -32,8 +32,6 @@ export const savePaintDraft = async (file, dto, paintId) => {
             pair[1].text().then(text => {
                 console.log('dto:', text, 'type:', pair[1].type, pair[1]);
             });
-        } else if (pair[0] === 'paintId') {
-            console.log('paintId:', pair[1], 'type:', typeof pair[1]);
         } else {
             console.log(pair[0] + ':', pair[1], 'type:', typeof pair[1]);
         }
@@ -46,14 +44,13 @@ export const savePaintDraft = async (file, dto, paintId) => {
         };
         reader.readAsDataURL(file);
     }
-    const response = await API.post('/paint/draft', formData, {
-    });
+    const response = await API.post('/paint/draft', formData);
     console.log('[savePaintDraft] response:', response);
     return response.data;
 };
 
 // 그림 최종 저장
-export const finalizePaint = async (file, dto, paintId) => {
+export const finalizePaint = async (file, dto) => {
     // createDate를 string(YYYY-MM-DD)으로 변환
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -65,7 +62,6 @@ export const finalizePaint = async (file, dto, paintId) => {
         createDate: createDate
     };
     const formData = new FormData();
-    if (paintId) formData.append('paintId', String(paintId));
     // file을 type 명시적으로 지정해서 FormData에 추가 (최종저장)
     let fileToSendFinal = file;
     if (!(file instanceof File)) {
@@ -74,8 +70,7 @@ export const finalizePaint = async (file, dto, paintId) => {
     formData.append('file', fileToSendFinal, 'drawing.png');
     formData.append('dto', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
 
-    const response = await API.post(`/paint/finalize`, formData, {
-    });
+    const response = await API.post(`/paint/finalize`, formData);
     console.log('[finalizePaint] response:', response);
     return response.data;
 };
