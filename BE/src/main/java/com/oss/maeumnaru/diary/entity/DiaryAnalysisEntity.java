@@ -21,6 +21,8 @@ public class DiaryAnalysisEntity {
     @Temporal(TemporalType.DATE)
     private Date resultDate;
 
+    private String createDate;
+
     private Long emotionRate;
 
     private long mealCount;
@@ -29,6 +31,4 @@ public class DiaryAnalysisEntity {
 
     private boolean wentOutside;
 
-    @OneToOne(mappedBy = "diaryAnalysis")
-    private DiaryAnalysisEntity diaryAnalysis;
 }

@@ -13,19 +13,6 @@ import java.util.Optional;
 @Repository
 public interface DiaryAnalysisRepository extends JpaRepository<DiaryAnalysisEntity, Long> {
 
-    Optional<DiaryAnalysisEntity> findByDiary_DiaryId(Long diaryId);
 
-    @Query("""
-        SELECT dae
-        FROM DiaryAnalysisEntity dae
-        JOIN dae.diary d
-        JOIN d.patient p
-        WHERE p.patientCode = :patientCode
-        AND d.createDate BETWEEN :startDate AND :endDate
-        ORDER BY d.createDate
-    """)
-    List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(
-            @Param("patientCode") String patientCode,
-            @Param("startDate") String startDate,
-            @Param("endDate") String endDate);
+
 }
