@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
+
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -28,7 +30,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DiaryAnalysisService {
@@ -58,6 +60,8 @@ public class DiaryAnalysisService {
 
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
+            log.info("🔍 감정 분석 요청 시작 - 텍스트 길이: {}", actualText.length());
+
             ResponseEntity<Map> response = restTemplate.postForEntity(
                     "http://localhost:8000/predict", // FastAPI 분석 서버 엔드포인트
                     requestEntity,
@@ -65,8 +69,16 @@ public class DiaryAnalysisService {
             );
 
             Map<String, Object> responseMap = response.getBody();
+
+            if (responseMap == null || !responseMap.containsKey("emotion_score")) {
+                log.warn("⚠ 감정 분석 응답에 emotion_score가 없습니다.");
+                throw new ApiException(ExceptionEnum.SERVER_ERROR);
+            }
+
             float emotionScore = ((Number) responseMap.get("emotion_score")).floatValue();
             Long emotionRate = (long) Math.round(emotionScore * 100); // 0~100 정수 변환
+
+            log.info("✅ 감정 분석 완료 - emotionScore: {}, emotionRate: {}", emotionScore, emotionRate);
 
             // 4. 분석 결과 저장 (기존 분석이 있으면 업데이트)
             DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
