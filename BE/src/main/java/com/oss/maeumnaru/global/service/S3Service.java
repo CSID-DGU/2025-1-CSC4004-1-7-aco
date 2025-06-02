@@ -93,4 +93,15 @@ public class S3Service {
 
         s3Client.deleteObjects(deleteReq);
     }
+    public byte[] downloadFileAsBytes(String fileUrl) {
+        String key = extractKeyFromUrl(fileUrl);
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        return s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
+    }
+
 }
