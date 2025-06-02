@@ -8,18 +8,25 @@ import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import com.oss.maeumnaru.diary.repository.DiaryRepository;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
+import com.oss.maeumnaru.global.service.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,28 +35,52 @@ public class DiaryAnalysisService {
 
     private final DiaryAnalysisRepository diaryAnalysisRepository;
     private final DiaryRepository diaryRepository;
-
+    private final S3Service s3Service;
+    private final RestTemplate restTemplate;
     // 일기 분석 결과 저장 또는 수정
     @Transactional
     public DiaryAnalysisEntity saveAnalysis(Long diaryId, DiaryAnalysisRequestDto request) {
         try {
+            // 1. 일기 조회
             DiaryEntity diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
+            // 2. S3에서 일기 파일 다운로드 → 텍스트 추출
+            byte[] fileBytes = s3Service.downloadFileAsBytes(diary.getContentPath());
+            String actualText = new String(fileBytes, StandardCharsets.UTF_8);  // 인코딩 주의
+
+            // 3. 감정 분석 서버에 JSON 전송
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("text", actualText);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    "http://localhost:8000/predict", // FastAPI 분석 서버 엔드포인트
+                    requestEntity,
+                    Map.class
+            );
+
+            Map<String, Object> responseMap = response.getBody();
+            float emotionScore = ((Number) responseMap.get("emotion_score")).floatValue();
+            Long emotionRate = (long) Math.round(emotionScore * 100); // 0~100 정수 변환
+
+            // 4. 분석 결과 저장 (기존 분석이 있으면 업데이트)
             DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
 
             if (analysis != null) {
-                // 기존 분석 결과가 있을 경우 업데이트
-                analysis.setEmotionRate(request.getEmotionRate());
+                analysis.setEmotionRate(emotionRate);
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
                 analysis.setWentOutside(request.isWentOutside());
                 analysis.setCreateDate(diary.getCreateDate());
                 analysis.setResultDate(new Date());
             } else {
-                // 새로 생성
                 analysis = DiaryAnalysisEntity.builder()
-                        .emotionRate(request.getEmotionRate())
+                        .emotionRate(emotionRate)
                         .mealCount(request.getMealCount())
                         .wakeUpTime(request.getWakeUpTime())
                         .wentOutside(request.isWentOutside())
@@ -60,10 +91,16 @@ public class DiaryAnalysisService {
             }
 
             return diaryAnalysisRepository.save(analysis);
+
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
+
 
 
 
