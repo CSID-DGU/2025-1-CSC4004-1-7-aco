@@ -47,3 +47,9 @@ export const getPaintByDate = async (patientCode, date) => {
     });
     return response.data;
 }; 
+
+// 특정 그림에 대한 채팅 내용 가져오기
+export const getChatList = async (paintId) => {
+    const response = await API.get(`/paint/${paintId}/chats`);
+    return response.data;
+};
