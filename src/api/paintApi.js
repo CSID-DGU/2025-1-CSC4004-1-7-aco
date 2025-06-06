@@ -91,6 +91,7 @@ export const getChatsByPaintId = async (paintId) => {
 
 // 채팅 답변 저장 및 다음 질문 받기
 export const saveReplyAndGetNextQuestion = async (paintId, reply) => {
+    console.log('[saveReplyAndGetNextQuestion] 요청 paintId:', paintId, '요청 reply:', reply);
     const response = await API.post(`/paint/${paintId}/chat/reply`, reply, {
         headers: {
             'Content-Type': 'application/json'
