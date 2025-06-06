@@ -27,7 +27,7 @@ public class OpenAiService {
 
         JSONObject message1 = new JSONObject()
                 .put("role", "system")
-                .put("content", "당신은 감정 분석 상담사입니다. 채팅창 옆에는 사용자가 그린 그림이 띄워져있고 당신은 이 그림에 관해 사용자와 대화할 것입니다. 사용자의 응답에 따라 사용자의 감정과 그림의 의미를 더 깊이 탐색할 수 있는 질문을 해주세요.");
+                .put("content", "당신은 감정 분석 상담사입니다. 채팅창 옆에는 사용자가 그린 그림이 띄워져있고 당신은 이 그림에 관해 사용자와 대화할 것입니다. 사용자의 응답에 따라 사용자의 감정과 그림의 의미를 더 깊이 탐색할 수 있는 질문을 해주세요. 너무 길게 설명하지 말하지 말고 두 세문장으로만 대답해주세요.");
 
         JSONObject message2 = new JSONObject()
                 .put("role", "user")
@@ -38,10 +38,10 @@ public class OpenAiService {
                 .put(message2);
 
         JSONObject body = new JSONObject()
-                .put("model", "o4-mini")
+                .put("model", "gpt-4o")
                 .put("messages", messages)
-                .put("max_completion_tokens", 20)
-                .put("reasoning_effort", "medium");
+                .put("max_tokens", 70)
+                .put("temperature", 0.7);
 
         Request request = new Request.Builder()
                 .url(API_URL)
