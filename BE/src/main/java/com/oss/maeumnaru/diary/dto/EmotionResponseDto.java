@@ -11,7 +11,7 @@ import lombok.*;
 public class EmotionResponseDto {
     private Long diaryAnalysisId;
     private String createDate;
-    private Long emotionRate;
+    private float emotionRate;
 
     public static EmotionResponseDto fromEntity(DiaryAnalysisEntity entity) {
         return EmotionResponseDto.builder()
