@@ -40,7 +40,7 @@ public class OpenAiService {
         JSONObject body = new JSONObject()
                 .put("model", "o4-mini-2025-04-16")
                 .put("messages", messages)
-                .put("max_tokens", 20)
+                .put("max_completion_tokens", 20)
                 .put("temperature", 0.7);
 
         Request request = new Request.Builder()
