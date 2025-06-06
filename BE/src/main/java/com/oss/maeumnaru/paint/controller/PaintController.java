@@ -4,6 +4,7 @@ import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.paint.dto.PaintResponseDto;
+import com.oss.maeumnaru.paint.dto.ChatDto;
 import com.oss.maeumnaru.paint.entity.PaintEntity;
 import com.oss.maeumnaru.paint.service.PaintService;
 import com.oss.maeumnaru.user.entity.PatientEntity;
@@ -119,7 +120,7 @@ public class PaintController {
 
     //의사가 대화 조회에 사용
     @GetMapping("/{paintId}/chats")
-    public ResponseEntity<List<ChatEntity>> getChatsByPaintId(
+    public ResponseEntity<List<ChatDto>> getChatsByPaintId(
             @PathVariable("paintId") Long paintId,
             Authentication authentication) {
 
@@ -128,8 +129,19 @@ public class PaintController {
 
         validateOwnership(paintId, memberId);
 
-        return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId));
+        List<ChatEntity> chatEntities = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId);
+
+        List<ChatDto> chatList = chatEntities.stream()
+                .map(chat -> new ChatDto(
+                        chat.getWriterType() == ChatEntity.WriterType.PATIENT ? "patient" : "bot",
+                        chat.getComment()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(chatList);
     }
+
+
 
     // 응답과 다음 질문
     @PostMapping("/{paintId}/chat/reply")
