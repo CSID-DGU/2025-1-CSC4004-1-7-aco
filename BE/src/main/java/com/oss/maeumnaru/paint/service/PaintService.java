@@ -44,13 +44,7 @@ public class PaintService {
     // ID에 해당하는 그림 하나 조회 / 존재하지 않을 수 있으므로 Optional로
     public Optional<PaintResponseDto> findByPatient_PatientCodeAndCreateDate(String patientCode, String date) {
         Optional<PaintEntity> paintOpt = paintRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
-        paintOpt.ifPresent(paint -> {
-            String today = LocalDate.now().toString(); // "yyyy-MM-dd" 형식
-            if (!paint.getCreateDate().equals(today) && !paint.isChatCompleted()) {
-                paint.setChatCompleted(true);
-                paintRepository.save(paint);
-            }
-        });
+
         return paintOpt.map(PaintResponseDto::fromEntity);
     }
 
@@ -65,7 +59,7 @@ public class PaintService {
         try {
             // S3에 파일 업로드
 
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            String fileUrl = s3Service.uploadFile(file, patientCode + "/paint", String.valueOf(dto.getCreateDate()));
 
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
@@ -78,8 +72,12 @@ public class PaintService {
                     .updateDate(new Date())
                     .build();
 
+            System.out.println("[DEBUG] savePaintDraft() 진입");
+
             // 그림 임시 저장
             PaintEntity savedPaint = paintRepository.save(paint);
+
+            System.out.println("[DEBUG] chatCompleted in savedPaint = " + savedPaint.isChatCompleted());
 
             // 저장된 그림을 PaintResponseDto로 변환하여 반환
             return new PaintResponseDto(
@@ -119,7 +117,7 @@ public class PaintService {
             }
 
             // S3에 파일 업로드
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            String fileUrl = s3Service.uploadFile(file, patientCode + "/paint", String.valueOf(dto.getCreateDate()));
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);

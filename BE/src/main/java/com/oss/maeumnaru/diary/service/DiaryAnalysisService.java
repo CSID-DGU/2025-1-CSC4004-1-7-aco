@@ -8,38 +8,48 @@ import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import com.oss.maeumnaru.diary.repository.DiaryRepository;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
+import com.oss.maeumnaru.global.service.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
+
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DiaryAnalysisService {
 
     private final DiaryAnalysisRepository diaryAnalysisRepository;
     private final DiaryRepository diaryRepository;
-
+    private final S3Service s3Service;
     // 일기 분석 결과 저장 또는 수정
     @Transactional
     public DiaryAnalysisEntity saveAnalysis(Long diaryId, DiaryAnalysisRequestDto request) {
         try {
+            // 1. 일기 조회
             DiaryEntity diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
+            // 4. 분석 결과 저장 (기존 분석이 있으면 업데이트)
             DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
 
             if (analysis != null) {
-                // 기존 분석 결과가 있을 경우 업데이트
                 analysis.setEmotionRate(request.getEmotionRate());
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
@@ -48,7 +58,6 @@ public class DiaryAnalysisService {
                 analysis.setResultDate(new Date());
                 analysis.setAnalyzed(true);
             } else {
-                // 새로 생성
                 analysis = DiaryAnalysisEntity.builder()
                         .emotionRate(request.getEmotionRate())
                         .mealCount(request.getMealCount())
@@ -62,10 +71,16 @@ public class DiaryAnalysisService {
             }
 
             return diaryAnalysisRepository.save(analysis);
+
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
+
 
 
 
