@@ -128,7 +128,10 @@ function getCookie(name) {
 
 // 특정 날짜 그림 조회
 export const getPaintByDate = async (date) => {
-    const response = await API.get(`/paint/by-date?date=${date}`);
-    console.log('[getPaintByDate] response:', response);
+    const url = `/paint/by-date?date=${date}`;
+    console.log('[getPaintByDate] 요청 URL:', url);
+    console.log('[getPaintByDate] 요청 파라미터:', { date });
+    const response = await API.get(url);
+    console.log('[getPaintByDate] 응답:', response);
     return response.data;
 }; 

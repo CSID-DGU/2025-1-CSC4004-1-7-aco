@@ -106,4 +106,15 @@ export async function getAnalysisByDiaryId(diaryId) {
     const res = await API.get(`/diary/analysis/${diaryId}`);
     console.log('[getAnalysisByDiaryId] response:', res);
     return res.data;
+}
+
+// 파이썬 감정 분석 서버에 텍스트를 보내 emotion_rate를 받아오는 함수
+export async function getEmotionRateFromPython(text) {
+    const res = await fetch('http://127.0.0.1:8000/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    return data.emotion_rate;
 } 
