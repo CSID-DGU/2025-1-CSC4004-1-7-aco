@@ -4,6 +4,7 @@ import com.oss.maeumnaru.global.config.CustomUserDetails;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.paint.dto.PaintResponseDto;
+import com.oss.maeumnaru.paint.dto.ChatDto;
 import com.oss.maeumnaru.paint.entity.PaintEntity;
 import com.oss.maeumnaru.paint.service.PaintService;
 import com.oss.maeumnaru.user.entity.PatientEntity;
@@ -90,7 +91,7 @@ public class PaintController {
 
     // 최종저장(수정사항 반영 + 대화시작 + 이후 수정불가)
     @PostMapping("/finalize")
-    public ResponseEntity<Void> finalizePaint(
+    public ResponseEntity<PaintResponseDto> finalizePaint(
             Authentication authentication,
             @RequestPart MultipartFile file,
             @RequestPart PaintRequestDto dto) throws IOException {
@@ -98,43 +99,54 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         String patientCode = getPatientCodeByMemberId(memberId);
-        paintService.finalizePaint(patientCode, file, dto);
-        return ResponseEntity.ok().build();
+        PaintResponseDto responseDto = paintService.finalizePaint(patientCode, file, dto);
+        return ResponseEntity.ok(responseDto);
     }
 
     //그림 삭제
     @DeleteMapping("/{paintId}")
     public ResponseEntity<Void> deletePaint(
-            @PathVariable("paintId") Long id,
+            @PathVariable("paintId") Long paintId,
             Authentication authentication ) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        paintService.deletePaint(id);
+        paintService.deletePaint(paintId);
         return ResponseEntity.noContent().build();
     }
 
     //의사가 대화 조회에 사용
     @GetMapping("/{paintId}/chats")
-    public ResponseEntity<List<ChatEntity>> getChatsByPaintId(
-            @PathVariable("paintId") Long id,
+    public ResponseEntity<List<ChatDto>> getChatsByPaintId(
+            @PathVariable("paintId") Long paintId,
             Authentication authentication) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        return ResponseEntity.ok(chatRepository.findByPaint_PaintIdOrderByChatDateAsc(id));
+        List<ChatEntity> chatEntities = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId);
+
+        List<ChatDto> chatList = chatEntities.stream()
+                .map(chat -> new ChatDto(
+                        chat.getWriterType() == ChatEntity.WriterType.PATIENT ? "patient" : "bot",
+                        chat.getComment()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(chatList);
     }
+
+
 
     // 응답과 다음 질문
     @PostMapping("/{paintId}/chat/reply")
     public ResponseEntity<String> saveReplyAndGetNextQuestion(
-            @PathVariable Long id,
+            @PathVariable Long paintId,
             @RequestBody String patientReply,
             Authentication authentication) {
 
@@ -142,25 +154,25 @@ public class PaintController {
         Long memberId = principal.getMemberId();
 
         // 🔒 소유자 검증
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        String nextQuestion = paintService.saveReplyAndGetNextQuestion(id, patientReply);
+        String nextQuestion = paintService.saveReplyAndGetNextQuestion(paintId, patientReply);
         return ResponseEntity.ok(nextQuestion);
     }
 
     //채팅 완료 -> 대화 전체 리스트 받음
     @PostMapping("/{paintId}/chat/complete")
     public ResponseEntity<Void> completeChat(
-            @PathVariable Long id,
+            @PathVariable Long paintId,
             Authentication authentication ) {
 
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long memberId = principal.getMemberId();
 
         // 🔒 소유자 검증
-        validateOwnership(id, memberId);
+        validateOwnership(paintId, memberId);
 
-        paintService.completeChat(id);
+        paintService.completeChat(paintId);
         return ResponseEntity.ok().build();
     }
 
