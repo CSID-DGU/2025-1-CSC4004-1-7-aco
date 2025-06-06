@@ -38,10 +38,10 @@ public class OpenAiService {
                 .put(message2);
 
         JSONObject body = new JSONObject()
-                .put("model", "o4-mini")
+                .put("model", "gpt-4o")
                 .put("messages", messages)
-                .put("max_completion_tokens", 20)
-                .put("reasoning_effort", "medium");
+                .put("max_tokens", 20)
+                .put("temperature", 0.7);
 
         Request request = new Request.Builder()
                 .url(API_URL)
