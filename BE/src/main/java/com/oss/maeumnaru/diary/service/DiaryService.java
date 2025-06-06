@@ -40,7 +40,7 @@ public class DiaryService {
             PatientEntity patient = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
             String dateStr = request.getCreateDate();
-            String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
+            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", dateStr);
 
             DiaryEntity diary = DiaryEntity.builder()
                     .contentPath(contentPath)
@@ -74,7 +74,8 @@ public class DiaryService {
                 throw new ApiException(ExceptionEnum.FORBIDDEN_ACCESS);
             }
             String dateStr = request.getCreateDate();
-            String contentPath = s3Service.uploadFile(file, "patient/" + patientCode + "/diary", dateStr);
+            String contentPath = s3Service.uploadFile(file, patientCode + "/diary", dateStr);
+
 
             existingDiary.setContentPath(contentPath);
             existingDiary.setTitle(request.getTitle());
