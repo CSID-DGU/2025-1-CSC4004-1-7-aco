@@ -38,7 +38,6 @@ public class DiaryAnalysisService {
     private final DiaryAnalysisRepository diaryAnalysisRepository;
     private final DiaryRepository diaryRepository;
     private final S3Service s3Service;
-    private final RestTemplate restTemplate;
     // 일기 분석 결과 저장 또는 수정
     @Transactional
     public DiaryAnalysisEntity saveAnalysis(Long diaryId, DiaryAnalysisRequestDto request) {
@@ -47,44 +46,11 @@ public class DiaryAnalysisService {
             DiaryEntity diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
-            // 2. S3에서 일기 파일 다운로드 → 텍스트 추출
-            byte[] fileBytes = s3Service.downloadFileAsBytes(diary.getContentPath());
-            String actualText = new String(fileBytes, StandardCharsets.UTF_8);  // 인코딩 주의
-
-            // 3. 감정 분석 서버에 JSON 전송
-            Map<String, String> requestBody = new HashMap<>();
-            requestBody.put("text", actualText);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
-
-            log.info("🔍 감정 분석 요청 시작 - 텍스트 길이: {}", actualText.length());
-
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    "http://localhost:8000/predict", // FastAPI 분석 서버 엔드포인트
-                    requestEntity,
-                    Map.class
-            );
-
-            Map<String, Object> responseMap = response.getBody();
-
-            if (responseMap == null || !responseMap.containsKey("emotion_score")) {
-                log.warn("⚠ 감정 분석 응답에 emotion_score가 없습니다.");
-                throw new ApiException(ExceptionEnum.SERVER_ERROR);
-            }
-
-            float emotionScore = ((Number) responseMap.get("emotion_score")).floatValue();
-            Long emotionRate = (long) Math.round(emotionScore * 100); // 0~100 정수 변환
-
-            log.info("✅ 감정 분석 완료 - emotionScore: {}, emotionRate: {}", emotionScore, emotionRate);
-
             // 4. 분석 결과 저장 (기존 분석이 있으면 업데이트)
             DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
 
             if (analysis != null) {
-                analysis.setEmotionRate(emotionRate);
+                analysis.setEmotionRate(request.getEmotionRate());
                 analysis.setMealCount(request.getMealCount());
                 analysis.setWakeUpTime(request.getWakeUpTime());
                 analysis.setWentOutside(request.isWentOutside());
@@ -93,7 +59,7 @@ public class DiaryAnalysisService {
                 analysis.setAnalyzed(true);
             } else {
                 analysis = DiaryAnalysisEntity.builder()
-                        .emotionRate(emotionRate)
+                        .emotionRate(request.getEmotionRate())
                         .mealCount(request.getMealCount())
                         .wakeUpTime(request.getWakeUpTime())
                         .wentOutside(request.isWentOutside())

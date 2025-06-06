@@ -59,7 +59,7 @@ public class PaintService {
         try {
             // S3에 파일 업로드
 
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            String fileUrl = s3Service.uploadFile(file, patientCode + "/paint", String.valueOf(dto.getCreateDate()));
 
             PatientEntity patientEntity = patientRepository.findByPatientCode(patientCode)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND)); // PaintEntity 객체 생성
@@ -117,7 +117,7 @@ public class PaintService {
             }
 
             // S3에 파일 업로드
-            String fileUrl = s3Service.uploadFile(file, "paint/" + patientCode, String.valueOf(dto.getCreateDate()));
+            String fileUrl = s3Service.uploadFile(file, patientCode + "/paint", String.valueOf(dto.getCreateDate()));
 
             // 그림 정보 업데이트
             paint.setFileUrl(fileUrl);
