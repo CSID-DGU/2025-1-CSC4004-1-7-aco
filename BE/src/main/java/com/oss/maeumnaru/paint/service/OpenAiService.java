@@ -40,8 +40,8 @@ public class OpenAiService {
         JSONObject body = new JSONObject()
                 .put("model", "o4-mini")
                 .put("messages", messages)
-                .put("max_tokens", 20)       // ← max_tokens 로 수정
-                .put("temperature", 0.7);
+                .put("max_completion_tokens", 20)
+                .put("reasoning_effort", "medium");
 
         Request request = new Request.Builder()
                 .url(API_URL)
