@@ -626,10 +626,14 @@ export default function DoctorPage() {
       if (!data) {
         setPaintId("");
         setPaintFile(null);
+        setChatList([]);
         return;
       }
 
       setPaintId(data.paintId);
+      console.log("paintId 값 찍어보기", data.paintId);
+      handleGetChatList(data.paintId);
+
       const paintFile = await getPaintFile(data.fileUrl);
       console.log("paintFile", paintFile);
 
@@ -644,9 +648,25 @@ export default function DoctorPage() {
   // 해당 그림에 대한 채팅 내용 가져오기
   const handleGetChatList = async (paintId) => {
     try {
+
+      if(!paintId) {
+        setChatList([]);
+        console.log("paintId가 없음");
+        return;
+      }
+
       const data = await getChatList(paintId);
+      
+      if(!data) {
+        setChatList([]);
+        console.log("채팅 내역이 없음");
+        return;
+      }
+
       console.log("chatList", data);
       setChatList(data);
+
+      // check
     } catch (error) {
       console.error('handleGetChatList: 채팅 내용을 불러오는데 실패했습니다.');
     }
@@ -681,7 +701,7 @@ export default function DoctorPage() {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       handleGetWeeklyData(selectedPatientCode, formattedDate);
       handleGetPaintByDate(formattedDate);
-      handleGetChatList(paintId);
+      // handleGetChatList(paintId);
     }
   }, [selectedPatientCode]);
 
