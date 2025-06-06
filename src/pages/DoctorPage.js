@@ -333,6 +333,7 @@ export default function DoctorPage() {
 
   // 선택한 날짜의 환자의 그림
   const [paintFile, setPaintFile] = useState(null);
+  const [paintId, setPaintId] = useState("");
 
   // 선택한 날짜에 그림을 그린 뒤 채팅 내용
   const [chatList, setChatList] = useState([]);
@@ -623,10 +624,12 @@ export default function DoctorPage() {
       console.log("paintByDate", data);
 
       if (!data) {
+        setPaintId("");
         setPaintFile(null);
         return;
       }
 
+      setPaintId(data.paintId);
       const paintFile = await getPaintFile(data.fileUrl);
       console.log("paintFile", paintFile);
 
@@ -635,6 +638,17 @@ export default function DoctorPage() {
 
     } catch (error) {
       console.error('handleGetPaintByDate: 그림 분석 데이터를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 해당 그림에 대한 채팅 내용 가져오기
+  const handleGetChatList = async (paintId) => {
+    try {
+      const data = await getChatList(paintId);
+      console.log("chatList", data);
+      setChatList(data);
+    } catch (error) {
+      console.error('handleGetChatList: 채팅 내용을 불러오는데 실패했습니다.');
     }
   };
 
@@ -661,12 +675,13 @@ export default function DoctorPage() {
     console.log("selectedPatientCode!!", selectedPatientCode);
   };
 
-  // 환자와 날짜 선택 시 주간 데이터와 그림 관련 데이터 가져오기
+  // 환자와 날짜 선택 시 주간 데이터와 그림, 채팅 내용 가져오기
   useEffect(() => {
     if (selectedPatientCode && selectedDate) {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       handleGetWeeklyData(selectedPatientCode, formattedDate);
       handleGetPaintByDate(formattedDate);
+      handleGetChatList(paintId);
     }
   }, [selectedPatientCode]);
 
