@@ -53,10 +53,19 @@ public class OpenAiService {
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body().string();
             JSONObject result = new JSONObject(responseBody);
-            return result.getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("message")
-                    .getString("content");
+            if (result.has("choices")) {
+                return result.getJSONArray("choices")
+                        .getJSONObject(0)
+                        .getJSONObject("message")
+                        .getString("content");
+            } else if (result.has("error")) {
+                String errorMessage = result.getJSONObject("error").getString("message");
+                System.out.println("[GPT Error] " + errorMessage);
+                return "죄송합니다. GPT 호출 중 오류가 발생했어요: " + errorMessage;
+            } else {
+                return "죄송합니다. GPT의 응답 형식이 예상과 달랐습니다.";
+            }
+
         } catch (IOException e) {
             return "응답을 바탕으로 어떤 감정이 더 느껴졌는지 알려주세요."; // fallback 질문
         }
