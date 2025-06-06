@@ -130,23 +130,27 @@ const DrawingPage = () => {
     }, []);
 
     useEffect(() => {
-        if (showChatModal && paintId) {
+        if (showChatModal && selectedDate) {
             (async () => {
                 try {
-                    // 그림 정보 조회
-                    const paint = await getPaintById(paintId);
+                    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+                    // 날짜로 그림 정보 조회
+                    const paint = await getPaintByDate(dateKey);
                     setPaintInfo(paint);
-
-                    // 대화 목록 조회
-                    const chats = await getChatsByPaintId(paintId);
-                    setChatList(chats);
+                    // paintId가 있으면 대화 목록 조회
+                    if (paint && paint.paintId) {
+                        const chats = await getChatsByPaintId(paint.paintId);
+                        setChatList(chats);
+                    } else {
+                        setChatList([]);
+                    }
                 } catch (e) {
                     console.error('데이터 조회 실패:', e);
                     setChatList([]);
                 }
             })();
         }
-    }, [showChatModal, paintId]);
+    }, [showChatModal, selectedDate]);
 
     useEffect(() => {
         if (paintInfo?.fileUrl && canvasRef.current) {
@@ -587,26 +591,17 @@ const DrawingPage = () => {
                         style={{ cursor: canEdit ? 'crosshair' : 'not-allowed' }}
                     />
                     <ButtonGroup>
-                        {isToday(selectedDate) ? (
-                            chatCompleted ? (
-                                <>
-                                    <Button onClick={() => setShowChatModal(true)}>채팅 기록 보기</Button>
-                                    <DeleteButton onClick={handleDelete}>삭제하기</DeleteButton>
-                                </>
-                            ) : (
-                                <>
-                                    <Button onClick={() => clearCanvas(false)} disabled={!canEdit}>지우기</Button>
-                                    <TempSaveButton onClick={() => { setSaveMode('temp'); setShowTitleModal(true); }} disabled={!canEdit}>임시저장</TempSaveButton>
-                                    <SaveButton onClick={() => { setSaveMode('final'); setShowTitleModal(true); }} disabled={!canEdit}>최종저장</SaveButton>
-                                </>
-                            )
+                        {isFinalSaved ? (
+                            <>
+                                <Button onClick={() => setShowChatModal(true)}>채팅 기록 보기</Button>
+                                <DeleteButton onClick={handleDelete}>삭제하기</DeleteButton>
+                            </>
                         ) : (
-                            chatCompleted ? (
-                                <>
-                                    <Button onClick={() => setShowChatModal(true)}>채팅 기록 보기</Button>
-                                    <DeleteButton onClick={handleDelete}>삭제하기</DeleteButton>
-                                </>
-                            ) : null
+                            <>
+                                <Button onClick={() => clearCanvas(false)} disabled={!canEdit}>지우기</Button>
+                                <TempSaveButton onClick={() => { setSaveMode('temp'); setShowTitleModal(true); }} disabled={!canEdit}>임시저장</TempSaveButton>
+                                <SaveButton onClick={() => { setSaveMode('final'); setShowTitleModal(true); }} disabled={!canEdit}>최종저장</SaveButton>
+                            </>
                         )}
                     </ButtonGroup>
                 </DrawingArea>
@@ -729,7 +724,7 @@ const DrawingPage = () => {
                                         maxWidth: '350px',
                                         maxHeight: '350px',
                                         borderRadius: '16px',
-                                        background: '#e3e3e3'
+                                        background: '#fff'
                                     }}
                                 />
                             </div>
@@ -790,19 +785,19 @@ const DrawingPage = () => {
                                             borderRadius: '8px',
                                             border: '1px solid #ccc',
                                             fontSize: '16px',
-                                            backgroundColor: isFinalSaved ? '#f5f5f5' : '#fff',
-                                            cursor: isFinalSaved ? 'not-allowed' : 'text'
+                                            backgroundColor: chatCompleted ? '#f5f5f5' : '#fff',
+                                            cursor: chatCompleted ? 'not-allowed' : 'text'
                                         }}
                                         placeholder="메시지를 입력하세요"
-                                        disabled={isFinalSaved || isChatLoading}
+                                        disabled={chatCompleted || isChatLoading}
                                     />
                                     <Button
                                         style={{
                                             minWidth: '60px',
-                                            backgroundColor: isFinalSaved ? '#ccc' : '#fff',
-                                            cursor: isFinalSaved ? 'not-allowed' : 'pointer'
+                                            backgroundColor: chatCompleted ? '#ccc' : '#fff',
+                                            cursor: chatCompleted ? 'not-allowed' : 'pointer'
                                         }}
-                                        disabled={isFinalSaved || isChatLoading || !chatInput.trim()}
+                                        disabled={chatCompleted || isChatLoading || !chatInput.trim()}
                                         onClick={handleSendChat}
                                     >
                                         전송
