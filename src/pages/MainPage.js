@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Navigation from "../components/Navigation";
 import Calendar from "../components/Calendar";
 import DiaryEditor from "../components/DiaryEditor";
@@ -7,7 +7,7 @@ import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import AnalysisInputModal from '../components/AnalysisInputModal';
 import styled from "styled-components";
-import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId } from '../api/diary';
+import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId, getEmotionRateFromPython } from '../api/diary';
 import axios from 'axios';
 
 const MainContent = styled.main`
@@ -175,14 +175,19 @@ export default function MainPage() {
 
     const dateKey = getKSTDateKey(selectedDate);
     const isTodaySelected = getKSTDateKey(selectedDate) === getKSTDateKey(today);
-    const diary = diaryMap[dateKey];
+    const diary = diaryMap[dateKey] || { title: "", text: "", mealCount: '', outing: false };
     const hasDiary = diary && diary.id;
     const isAnalyzed = diary && (diary.analysisId || diary.analysisResult || diary.analysis);
     const canAnalyze = (
         diary &&
-        diary.title && diary.title.trim() !== '' &&
-        diary.text && diary.text.trim() !== ''
+        (diary.title ?? '').trim() !== '' &&
+        (diary.text ?? '').trim() !== ''
     );
+
+    console.log('diary:', diary);
+    console.log('title:', diary.title, typeof diary.title, `"${diary.title}"`);
+    console.log('text:', diary.text, typeof diary.text, `"${diary.text}"`);
+    console.log('canAnalyze:', canAnalyze);
 
     // 오늘 날짜 자동 선택 및 오늘 일기 자동 조회
     useEffect(() => {
@@ -310,27 +315,21 @@ export default function MainPage() {
             } else {
                 savedDiary = await createDiary(diary);
             }
-            const diaries = await getDiaryByDate(currentDateKey);
-            if (Array.isArray(diaries) && diaries.length > 0) {
-                setDiaryMap((prev) => ({ ...prev, [currentDateKey]: normalizeDiary(diaries[0]) }));
-                savedDiary = diaries[0];
-            } else if (diaries && diaries.diaryId) {
-                setDiaryMap((prev) => ({ ...prev, [currentDateKey]: normalizeDiary(diaries) }));
-                savedDiary = diaries;
+            // 파이썬 서버에서 감정점수 받아오기
+            const emotionRate = await getEmotionRateFromPython(diary.text);
+            // wakeUpTime을 'HH:mm:ss'로 변환
+            let wakeUpTimeStr = analysisInput.wakeUpTime;
+            if (wakeUpTimeStr && wakeUpTimeStr.length === 5) {
+                wakeUpTimeStr += ':00';
             }
-            if (!savedDiary || !savedDiary.diaryId) {
-                alert('해당 날짜에 저장된 일기가 없습니다.');
-                setIsAnalyzing(false);
-                return;
-            }
-            // 분석 요청 DTO
+            // 분석 요청 DTO (emotionRate 포함)
             const analysisRequest = {
                 mealCount: analysisInput.mealCount,
                 wentOutside: analysisInput.outing,
-                wakeUpTime: analysisInput.wakeUpTime,
+                wakeUpTime: wakeUpTimeStr,
+                emotionRate
             };
             await saveOrUpdateAnalysis(savedDiary.diaryId, analysisRequest);
-            // 분석 결과 모달은 더 이상 띄우지 않음
         } catch (e) {
             alert('분석 실패: ' + (e.response?.data?.message || e.message));
         } finally {
@@ -339,7 +338,8 @@ export default function MainPage() {
     };
 
     // 날짜 변경
-    const handleSelectDate = async (date) => {
+    const handleSelectDate = useCallback(async (date) => {
+        console.log('[handleSelectDate] 전달하는 날짜:', date, 'dateKey:', getKSTDateKey(date));
         const newDate = new Date(date);
         const dateKey = getKSTDateKey(newDate);
         // 콘솔에 날짜 정보 출력
@@ -389,7 +389,7 @@ export default function MainPage() {
             alert('일기 불러오기 실패: ' + (e.response?.data?.message || e.message));
             setSelectedDiaryId(null);
         }
-    };
+    }, [setDiaryMap, setSelectedDiaryId, setSelectedDate, setCurrentMonth]);
 
     // 월 변경 핸들러
     const handleChangeMonth = (date) => {
@@ -432,31 +432,10 @@ export default function MainPage() {
                                 <SaveButton onClick={handleSaveDiary}>저장하기</SaveButton>
                                 <span className="analyze-btn-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
                                     <AnalyzeButton
-                                        onClick={() => canAnalyze && !isAnalyzing && setShowAnalyzeConfirm(true)}
-                                        disabled={isAnalyzing || !canAnalyze}
+                                        onClick={() => setShowAnalyzeConfirm(true)}
                                     >
                                         {isAnalyzing ? "저장 중..." : "최종 저장"}
                                     </AnalyzeButton>
-                                    {!canAnalyze && (
-                                        <span className="analyze-tooltip" style={{
-                                            position: 'absolute',
-                                            top: '-32px',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            background: '#222',
-                                            color: '#fff',
-                                            padding: '4px 10px',
-                                            borderRadius: '6px',
-                                            fontSize: 13,
-                                            whiteSpace: 'nowrap',
-                                            zIndex: 10,
-                                            pointerEvents: 'none',
-                                            opacity: 0,
-                                            transition: 'opacity 0.2s',
-                                        }}>
-                                            빈칸을 모두 채워주세요
-                                        </span>
-                                    )}
                                 </span>
                             </>
                         )}
@@ -474,31 +453,10 @@ export default function MainPage() {
                                 }}>삭제하기</DeleteButton>
                                 <span className="analyze-btn-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
                                     <AnalyzeButton
-                                        onClick={() => canAnalyze && !isAnalyzing && setShowAnalyzeConfirm(true)}
-                                        disabled={isAnalyzing || !canAnalyze}
+                                        onClick={() => setShowAnalyzeConfirm(true)}
                                     >
                                         {isAnalyzing ? "저장 중..." : "최종 저장"}
                                     </AnalyzeButton>
-                                    {!canAnalyze && (
-                                        <span className="analyze-tooltip" style={{
-                                            position: 'absolute',
-                                            top: '-32px',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            background: '#222',
-                                            color: '#fff',
-                                            padding: '4px 10px',
-                                            borderRadius: '6px',
-                                            fontSize: 13,
-                                            whiteSpace: 'nowrap',
-                                            zIndex: 10,
-                                            pointerEvents: 'none',
-                                            opacity: 0,
-                                            transition: 'opacity 0.2s',
-                                        }}>
-                                            빈칸을 모두 채워주세요
-                                        </span>
-                                    )}
                                 </span>
                             </>
                         )}
@@ -540,6 +498,8 @@ export default function MainPage() {
                     onCancel={() => setShowAnalyzeConfirm(false)}
                     onConfirm={async (input) => {
                         await handleAnalyze(selectedDate, input);
+                        console.log('onConfirm selectedDate:', selectedDate);
+                        await handleSelectDate(selectedDate);
                         setShowAnalyzeConfirm(false);
                     }}
                 />
