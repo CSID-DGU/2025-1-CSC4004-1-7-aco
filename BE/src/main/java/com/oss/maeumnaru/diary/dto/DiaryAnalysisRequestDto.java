@@ -16,7 +16,7 @@ public class DiaryAnalysisRequestDto {
 
     private long mealCount;
 
-    private Time wakeUpTime;
+    private LocalTime wakeUpTime;
 
     private boolean wentOutside;
 
