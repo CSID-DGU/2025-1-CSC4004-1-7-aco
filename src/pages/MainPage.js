@@ -7,7 +7,7 @@ import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import AnalysisInputModal from '../components/AnalysisInputModal';
 import styled from "styled-components";
-import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId, getEmotionRateFromPython } from '../api/diary';
+import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId, getEmotionRateFromPython, fetchEmotionMap } from '../api/diary';
 import axios from 'axios';
 
 const MainContent = styled.main`
@@ -116,17 +116,6 @@ function getKSTDateKey(date) {
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
-
-// 감정 점수 맵 API 요청 함수
-async function fetchEmotionMap(year, month) {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`/api/diary/emotion-map?year=${year}&month=${month}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('감정 점수 불러오기 실패');
-    return await res.json(); // { '2025-05-01': 0.7, ... }
-}
-
 // 감정 점수 → 7단계 색상 매핑 함수
 function getEmotionColor(score) {
     if (score === null || score === undefined) return '#eee'; // 점수 없음
@@ -317,7 +306,8 @@ export default function MainPage() {
             }
             // 파이썬 서버에서 감정점수 받아오기
             const emotionRate = await getEmotionRateFromPython(diary.text);
-            // wakeUpTime을 'HH:mm:ss'로 변환
+            console.log('최종 저장 시 받아온 emotion_rate:', emotionRate);
+            // wakeUpTime을 'HH:mm:ss' 문자열로 변환
             let wakeUpTimeStr = analysisInput.wakeUpTime;
             if (wakeUpTimeStr && wakeUpTimeStr.length === 5) {
                 wakeUpTimeStr += ':00';
@@ -326,7 +316,7 @@ export default function MainPage() {
             const analysisRequest = {
                 mealCount: analysisInput.mealCount,
                 wentOutside: analysisInput.outing,
-                wakeUpTime: wakeUpTimeStr,
+                wakeUpTime: wakeUpTimeStr, // 다시 문자열로!
                 emotionRate
             };
             await saveOrUpdateAnalysis(savedDiary.diaryId, analysisRequest);
@@ -400,7 +390,14 @@ export default function MainPage() {
     useEffect(() => {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
-        fetchEmotionMap(year, month).then(setEmotionMap).catch(console.error);
+        fetchEmotionMap(year, month).then((data) => {
+            // [{ diaryAnalysisId, createDate, emotionRate }, ...] -> { 'YYYY-MM-DD': emotionRate, ... }
+            const map = {};
+            data.forEach(item => {
+                map[item.createDate] = item.emotionRate;
+            });
+            setEmotionMap(map);
+        }).catch(console.error);
     }, [currentMonth]);
 
     return (
