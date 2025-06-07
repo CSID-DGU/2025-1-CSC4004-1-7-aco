@@ -10,6 +10,8 @@ public enum ExceptionEnum {
     FORBIDDEN_ACCESS(403, "접근 권한이 없습니다."),
     SERVER_ERROR(500, "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR(500, "데이터베이스 오류가 발생했습니다."),
+    INVALID_DATE_FORMAT(400, "잘못된 날짜 형식입니다."),
+
 
     // Diary 관련
     DIARY_NOT_FOUND(404, "해당 일기를 찾을 수 없습니다."),
