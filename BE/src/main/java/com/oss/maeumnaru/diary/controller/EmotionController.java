@@ -25,13 +25,14 @@ public class EmotionController {
 
     @GetMapping("/mainpage")
     public ResponseEntity<List<DiaryAnalysisResponseDto>> getDiariesByMonthAndYear(
+
             Authentication authentication,
             @RequestParam String year,
             @RequestParam String month) {
 
         String loginId = authentication.getName();
         MemberEntity member = MemberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new ApiException(ExceptionEnum.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
 
         String patientCode = member.getPatient() != null
                 ? member.getPatient().getPatientCode()
@@ -41,8 +42,8 @@ public class EmotionController {
             throw new ApiException(ExceptionEnum.PATIENT_NOT_FOUND);
         }
 
-        List<DiaryAnalysisResponseDto> diaries = EmotionService.getAnalysesByPatientCodeAndMonth(patientCode, year, month);
 
-        return ResponseEntity.ok(diaries);
+        List<DiaryAnalysisResponseDto> diaries = EmotionService.getAnalysesByPatientCodeAndMonth(patientCode, year, month);
+        return ResponseEntity.ok(emotionRates);
     }
 }

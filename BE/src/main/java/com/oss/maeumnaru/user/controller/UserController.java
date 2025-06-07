@@ -84,85 +84,16 @@ public class UserController {
     // 마이페이지 - 내 정보 조회
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponseDTO> getMyInfo(Authentication authentication) {
-        System.out.println("authentication = " + authentication);
-        System.out.println("authentication.getPrincipal() = " + authentication.getPrincipal());
-        System.out.println("authentication.getName() = " + authentication.getName());
-
-        String loginId = authentication.getName();
-
-        MemberEntity member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
-
-        String hospital = null;
-        String patientCode = null;  // 기본 null
-
-        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
-            // 환자 병원명 조회
-            hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
-                    .map(DoctorEntity::getHospital)
-                    .orElse(null);
-
-        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
-            hospital = patientRepository.findByMember_MemberId(member.getMemberId())
-                    .map(PatientEntity::getPatientHospital)
-                    .orElse(null);
-            // 환자코드 조회
-            patientCode = patientRepository.findByMember_MemberId(member.getMemberId())
-                    .map(PatientEntity::getPatientCode)
-                    .orElse(null);
-        }
-
-        UserProfileResponseDTO response = UserProfileResponseDTO.builder()
-                .memberId(member.getMemberId())
-                .name(member.getName())
-                .loginId(member.getLoginId())
-                .email(member.getEmail())
-                .phone(member.getPhone())
-                .gender(String.valueOf(member.getGender()))
-                .memberType(member.getMemberType().name())
-                .birthDate(member.getBirthDate() != null ? member.getBirthDate().toString() : null)
-                .createDate(member.getCreateDate() != null ? member.getCreateDate().toString() : null)
-                .hospital(hospital)
-                .patientCode(patientCode)
-                .build();
-
+        UserProfileResponseDTO response = userService.getMyInfo(authentication.getName());
         return ResponseEntity.ok(response);
     }
 
-
+    // 마이페이지 - 내 정보 수정
     @PutMapping("/me")
     public ResponseEntity<Void> updateMyInfo(
             @RequestBody UserUpdateRequestDTO dto,
             Authentication authentication) {
-
-        String loginId = authentication.getName();
-        MemberEntity member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
-
-        if (dto.getEmail() != null) member.setEmail(dto.getEmail());
-
-        if (dto.getPassword() != null) {
-            // 🔒 비밀번호 암호화 후 저장
-            member.setPassword(passwordEncoder.encode(dto.getPassword()));
-        }
-
-        if (dto.getPhone() != null) member.setPhone(dto.getPhone());
-
-        if (dto.getHospital() != null) {
-            if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
-                doctorRepository.findByMember_MemberId(member.getMemberId()).ifPresent(doctor -> {
-                    doctor.setHospital(dto.getHospital());
-                    doctorRepository.save(doctor);
-                });
-            } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
-                patientRepository.findByMember_MemberId(member.getMemberId()).ifPresent(patient -> {
-                    patient.setPatientHospital(dto.getHospital());
-                    patientRepository.save(patient);
-                });
-            }
-        }
-
-        memberRepository.save(member);
+        userService.updateMyInfo(authentication.getName(), dto);
         return ResponseEntity.ok().build();
     }
 
@@ -170,52 +101,7 @@ public class UserController {
     // 회원 탈퇴 (Redis 삭제 + 쿠키 삭제 + DB 삭제)
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawMyAccount(Authentication authentication, HttpServletResponse response) {
-        String loginId = authentication.getName();
-        MemberEntity member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
-        String memberType = String.valueOf(member.getMemberType());  // DOCTOR 또는 PATIENT
-
-        if ("DOCTOR".equalsIgnoreCase(memberType)) {
-            DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
-                    .orElseThrow(() -> new RuntimeException("의사 정보가 없습니다."));
-            String licenseNumber = doctor.getLicenseNumber();
-
-            // 예: S3에서 의사 면허증 파일 경로
-            String folderPrefix = "doctor/" + licenseNumber + "/";
-
-            s3Service.deleteFolder(folderPrefix);
-
-
-        }
-        else if ("PATIENT".equalsIgnoreCase(memberType)) {
-            PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
-                    .orElseThrow(() -> new RuntimeException("환자 정보가 없습니다."));
-            String patientCode = patient.getPatientCode();
-            // 예: S3에서 의사 면허증 파일 경로
-            String folderPrefix = "patient/" + patientCode + "/";
-
-            s3Service.deleteFolder(folderPrefix);
-            // Redis 토큰 삭제
-            //
-            tokenRedisRepository.deleteById(String.valueOf(member.getMemberId()));
-
-            // 쿠키 삭제
-            jwtTokenProvider.clearCookie(response);
-
-            // 연관된 doctor 또는 patient 먼저 삭제
-            if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
-                DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
-                        .orElseThrow(() -> new RuntimeException("해당 의사를 찾을 수 없습니다."));
-                if (doctor.getCertificationPath() != null) {
-                    s3Service.deleteFile(doctor.getCertificationPath());
-                }
-                doctorRepository.delete(doctor);
-            } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
-                patientRepository.delete(patient);
-            }
-            memberRepository.delete(member);
-            return ResponseEntity.ok().build();
-        }
+        userService.withdrawMyAccount(authentication.getName(), response);
         return ResponseEntity.ok().build();
     }
 }

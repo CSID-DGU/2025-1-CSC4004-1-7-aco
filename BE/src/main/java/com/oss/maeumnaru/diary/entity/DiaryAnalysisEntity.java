@@ -23,12 +23,14 @@ public class DiaryAnalysisEntity {
 
     private String createDate;
 
-    private long emotionRate;
+    private Float emotionRate;
 
     private long mealCount;
 
     private LocalTime wakeUpTime;
 
     private boolean wentOutside;
+
+    private Boolean analyzed;
 
 }
