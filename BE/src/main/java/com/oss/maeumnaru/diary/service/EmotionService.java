@@ -20,11 +20,25 @@ import java.util.stream.Collectors;
 public class EmotionService {
 
     private final DiaryRepository diaryRepository;
-    private final DiaryAnalysisRepository diaryAnalysisRepository;
 
     public List<EmotionResponseDto> getEmotionRatesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
-            return diaryRepository.findEmotionRatesByPatientCodeAndYearAndMonth(patientCode, year, month);
+            List<Object[]> rows = diaryRepository.findEmotionRatesByPatientCodeAndYearAndMonth(patientCode, year, month);
+            List<EmotionResponseDto> result = new ArrayList<>();
+
+            for (Object[] row : rows) {
+                Long diaryAnalysisId = ((Number) row[0]).longValue();
+                String createDate = (String) row[1];
+                Float emotionRate = row[2] != null ? ((Number) row[2]).floatValue() : null;
+
+                result.add(EmotionResponseDto.builder()
+                        .diaryAnalysisId(diaryAnalysisId)
+                        .createDate(createDate)
+                        .emotionRate(emotionRate)
+                        .build());
+            }
+
+            return result;
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
