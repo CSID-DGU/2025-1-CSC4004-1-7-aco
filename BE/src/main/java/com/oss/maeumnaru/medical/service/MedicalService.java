@@ -14,11 +14,8 @@ import org.springframework.stereotype.Service;
 import com.oss.maeumnaru.medical.dto.MedicalResponseDto;
 import com.oss.maeumnaru.medical.dto.PatientResponseDto;
 
-
-
 import java.util.Date;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -41,10 +38,17 @@ public class MedicalService {
                 .map(medical -> {
                     System.out.println(">>> doctorLicenseNumber = " + medical.getDoctor().getLicenseNumber());
                     PatientEntity patient = medical.getPatient();
+                    MemberEntity member = patient.getMember();
+
+                    // birthDate null 체크
+                    if (member.getBirthDate() == null) {
+                        throw new ApiException(ExceptionEnum.INVALID_INPUT);
+                    }
+
                     return MedicalResponseDto.builder()
                             .patientCode(patient.getPatientCode())
-                            .patientName(patient.getMember().getName())
-                            .patientBirthDate(patient.getMember().getBirthDate().toString())
+                            .patientName(member.getName())
+                            .patientBirthDate(member.getBirthDate().toString())
                             .doctorName(doctor.getMember().getName())
                             .doctorLicenseNumber(doctor.getLicenseNumber())
                             .firstTreat(medical.getFirstTreat())
@@ -75,10 +79,15 @@ public class MedicalService {
 
         MedicalEntity saved = medicalRepository.save(medical);
 
+        MemberEntity member = patient.getMember();
+        if (member.getBirthDate() == null) {
+            throw new ApiException(ExceptionEnum.INVALID_INPUT);
+        }
+
         return MedicalResponseDto.builder()
                 .patientCode(patient.getPatientCode())
-                .patientName(patient.getMember().getName())
-                .patientBirthDate(patient.getMember().getBirthDate().toString())
+                .patientName(member.getName())
+                .patientBirthDate(member.getBirthDate().toString())
                 .doctorName(doctor.getMember().getName())
                 .doctorLicenseNumber(doctor.getLicenseNumber())
                 .firstTreat(saved.getFirstTreat())
@@ -86,14 +95,15 @@ public class MedicalService {
                 .build();
     }
 
-
-
     // 환자 상세 페이지
     public PatientResponseDto getPatientDetail(String patientCode) {
         PatientEntity patient = patientRepository.findById(patientCode)
                 .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
 
         MemberEntity member = patient.getMember();
+        if (member.getBirthDate() == null) {
+            throw new ApiException(ExceptionEnum.INVALID_INPUT);
+        }
 
         return PatientResponseDto.builder()
                 .name(member.getName())

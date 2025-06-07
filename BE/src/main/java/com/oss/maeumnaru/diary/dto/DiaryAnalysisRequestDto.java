@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @Builder
 public class DiaryAnalysisRequestDto {
 
-    private long emotionRate;
+    private Float emotionRate;
 
     private long mealCount;
 

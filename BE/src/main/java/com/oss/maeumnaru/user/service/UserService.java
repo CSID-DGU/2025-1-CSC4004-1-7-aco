@@ -1,13 +1,17 @@
 package com.oss.maeumnaru.user.service;
 
 import com.oss.maeumnaru.global.config.CustomUserDetails;
+import com.oss.maeumnaru.global.error.exception.ApiException;
+import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
 import com.oss.maeumnaru.global.jwt.JwtTokenProvider;
 import com.oss.maeumnaru.global.redis.TokenRedis;
 import com.oss.maeumnaru.global.redis.TokenRedisRepository;
 import com.oss.maeumnaru.global.service.S3Service;
 import com.oss.maeumnaru.user.dto.request.LoginRequestDTO;
 import com.oss.maeumnaru.user.dto.request.SignUpRequestDTO;
+import com.oss.maeumnaru.user.dto.request.UserUpdateRequestDTO;
 import com.oss.maeumnaru.user.dto.response.TokenResponseDTO;
+import com.oss.maeumnaru.user.dto.response.UserProfileResponseDTO;
 import com.oss.maeumnaru.user.entity.*;
 import com.oss.maeumnaru.user.repository.*;
 import jakarta.servlet.http.HttpServletResponse;
@@ -55,7 +59,13 @@ public class UserService {
 
     public void signUp(SignUpRequestDTO dto, MultipartFile file) throws IOException {
         try {
-            System.out.println("회원가입 요청 들어옴: " + dto);
+            if (memberRepository.findByLoginId(dto.loginId()).isPresent()) {
+                throw new ApiException(ExceptionEnum.DUPLICATE_LOGIN_ID);
+            }
+
+            if (memberRepository.findByEmail(dto.email()).isPresent()) {
+                throw new ApiException(ExceptionEnum.DUPLICATE_EMAIL);
+            }
 
             MemberEntity member = MemberEntity.builder()
                     .name(dto.name())
@@ -69,24 +79,19 @@ public class UserService {
                     .createDate(new Date())
                     .build();
 
-            System.out.println("MemberEntity 생성 완료: " + member);
 
             member = memberRepository.save(member);
 
             if (dto.memberType() == MemberEntity.MemberType.DOCTOR) {
-                System.out.println("DOCTOR 처리 중");
-
                 if (dto.licenseNumber() == null || dto.licenseNumber().isBlank()) {
-                    throw new IllegalArgumentException("의사의 licenseNumber는 필수입니다.");
+                    throw new ApiException(ExceptionEnum.MISSING_LICENSE_NUMBER);
                 }
-
                 if (file == null || file.isEmpty()) {
-                    throw new IllegalArgumentException("파일이 비어있거나 존재하지 않습니다.");
+                    throw new ApiException(ExceptionEnum.FILE_REQUIRED);
                 }
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String dateStr = sdf.format(member.getCreateDate());
-
+                String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(member.getCreateDate());
                 String fileUrl = s3Service.uploadFile(file, "doctor/" + dto.licenseNumber(), dateStr);
+
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())
                         .hospital(dto.hospital())
@@ -96,8 +101,7 @@ public class UserService {
 
                 doctorRepository.save(doctor);
 
-            } else {
-                System.out.println("PATIENT 처리 중");
+            } else if (dto.memberType() == MemberEntity.MemberType.PATIENT) {
                 String randomPatientCode;
                 do {
                     randomPatientCode = generatePatientCode(6);
@@ -108,9 +112,10 @@ public class UserService {
                         .patientHospital(dto.hospital())
                         .member(member)
                         .build();
-
                 patientRepository.save(patient);
 
+            } else {
+                throw new ApiException(ExceptionEnum.INVALID_MEMBER_TYPE);
             }
 
             System.out.println("회원가입 처리 완료");
@@ -152,7 +157,7 @@ public class UserService {
             System.out.println("Authentication 객체 생성 완료: " + authentication.getName());
 
             // JWT 토큰 생성
-            // ✅ 토큰 생성
+            // 토큰 생성
             JwtTokenProvider.TokenPair tokenPair = jwtTokenProvider.generateTokenPair(authentication);
 
             System.out.println("토큰 생성 완료: access = " + tokenPair.accessToken());
@@ -177,8 +182,93 @@ public class UserService {
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("로그인 중 오류 발생: " + e.getMessage());
+            throw new ApiException(ExceptionEnum.LOGIN_FAILED);
         }
+    }
+    public UserProfileResponseDTO getMyInfo(String loginId) {
+        MemberEntity member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
+
+        String hospital = null;
+        String patientCode = null;
+
+        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+            hospital = doctorRepository.findByMember_MemberId(member.getMemberId())
+                    .map(DoctorEntity::getHospital)
+                    .orElse(null);
+        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+            hospital = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientHospital)
+                    .orElse(null);
+            patientCode = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .map(PatientEntity::getPatientCode)
+                    .orElse(null);
+        }
+
+        return UserProfileResponseDTO.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .loginId(member.getLoginId())
+                .email(member.getEmail())
+                .phone(member.getPhone())
+                .gender(String.valueOf(member.getGender()))
+                .memberType(member.getMemberType().name())
+                .birthDate(member.getBirthDate() != null ? member.getBirthDate().toString() : null)
+                .createDate(member.getCreateDate() != null ? member.getCreateDate().toString() : null)
+                .hospital(hospital)
+                .patientCode(patientCode)
+                .build();
+    }
+
+    public void updateMyInfo(String loginId, UserUpdateRequestDTO dto) {
+        MemberEntity member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
+
+        if (dto.getEmail() != null) member.setEmail(dto.getEmail());
+        if (dto.getPassword() != null) member.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPhone() != null) member.setPhone(dto.getPhone());
+
+        if (dto.getHospital() != null) {
+            if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+                doctorRepository.findByMember_MemberId(member.getMemberId())
+                        .ifPresentOrElse(
+                                doctor -> {
+                                    doctor.setHospital(dto.getHospital());
+                                    doctorRepository.save(doctor);
+                                },
+                                () -> { throw new ApiException(ExceptionEnum.DOCTOR_NOT_FOUND); }
+                        );
+            } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+                patientRepository.findByMember_MemberId(member.getMemberId())
+                        .ifPresentOrElse(
+                                patient -> {
+                                    patient.setPatientHospital(dto.getHospital());
+                                    patientRepository.save(patient);
+                                },
+                                () -> { throw new ApiException(ExceptionEnum.PATIENT_NOT_FOUND); }
+                        );
+            }
+        }
+
+        memberRepository.save(member);
+    }
+
+    public void withdrawMyAccount(String loginId, HttpServletResponse response) {
+        MemberEntity member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
+
+        if (member.getMemberType() == MemberEntity.MemberType.DOCTOR) {
+            DoctorEntity doctor = doctorRepository.findByMember_MemberId(member.getMemberId())
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.DOCTOR_NOT_FOUND));
+            s3Service.deleteFolder("doctor/" + doctor.getLicenseNumber() + "/");
+        } else if (member.getMemberType() == MemberEntity.MemberType.PATIENT) {
+            PatientEntity patient = patientRepository.findByMember_MemberId(member.getMemberId())
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.PATIENT_NOT_FOUND));
+            s3Service.deleteFolder("patient/" + patient.getPatientCode() + "/");
+        }
+
+        tokenRedisRepository.deleteById(member.getLoginId());
+        jwtTokenProvider.clearCookie(response);
+        memberRepository.delete(member);
     }
 }

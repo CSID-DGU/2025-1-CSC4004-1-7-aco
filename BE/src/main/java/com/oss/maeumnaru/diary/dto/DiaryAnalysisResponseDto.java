@@ -15,11 +15,12 @@ public class DiaryAnalysisResponseDto {
 
     private Long diaryAnalysisId;
     private Date resultDate;  // 엔티티의 diaryReultDate 오타 수정해서 일치시킴
-    private long emotionRate;
+    private Float emotionRate;
     private long mealCount;
     private LocalTime wakeUpTime;
     private boolean wentOutside;
     private String createDate;
+    private Boolean analyzed;
 
     public static DiaryAnalysisResponseDto fromEntity(DiaryAnalysisEntity entity) {
         return DiaryAnalysisResponseDto.builder()
@@ -30,6 +31,7 @@ public class DiaryAnalysisResponseDto {
                 .wakeUpTime(entity.getWakeUpTime())
                 .wentOutside(entity.isWentOutside())
                 .createDate(entity.getCreateDate())
+                .analyzed(entity.getAnalyzed())
                 .build();
     }
 }

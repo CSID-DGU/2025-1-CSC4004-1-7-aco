@@ -30,8 +30,6 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final PatientRepository patientRepository;
-    private final DoctorRepository doctorRepository;
-    private final MedicalRepository medicalRepository;
     private final S3Service s3Service;
 
     @Transactional
@@ -54,13 +52,13 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(saved);
 
         } catch (IOException e) {
-            log.error("createDiary IOException", e);
+            log.error("File upload error", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
-            log.error("createDiary DatabaseException", e);
+            log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            log.error("createDiary UnknownException", e);
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -84,13 +82,13 @@ public class DiaryService {
             return DiaryResponseDto.fromEntity(diaryRepository.save(existingDiary));
 
         } catch (IOException e) {
-            log.error("updateDiary IOException", e);
+            log.error("File upload error", e);
             throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (DataAccessException e) {
-            log.error("updateDiary DatabaseException", e);
+            log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            log.error("updateDiary UnknownException", e);
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -109,10 +107,10 @@ public class DiaryService {
             diaryRepository.delete(existingDiary);
 
         } catch (DataAccessException e) {
-            log.error("deleteDiary DatabaseException", e);
+            log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            log.error("deleteDiary UnknownException", e);
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -123,10 +121,10 @@ public class DiaryService {
             Optional<DiaryEntity> diary = diaryRepository.findByPatient_PatientCodeAndCreateDate(patientCode, date);
             return diary.map(DiaryResponseDto::fromEntity);
         } catch (DataAccessException e) {
-            log.error("getDiaryByPatientCodeAndDate DatabaseException", e);
+            log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            log.error("getDiaryByPatientCodeAndDate UnknownException", e);
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
