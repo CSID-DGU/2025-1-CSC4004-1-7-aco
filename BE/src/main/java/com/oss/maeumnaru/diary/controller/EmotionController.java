@@ -44,6 +44,6 @@ public class EmotionController {
 
 
         List<DiaryAnalysisResponseDto> diaries = EmotionService.getAnalysesByPatientCodeAndMonth(patientCode, year, month);
-        return ResponseEntity.ok(emotionRates);
+        return ResponseEntity.ok(diaries);
     }
 }
