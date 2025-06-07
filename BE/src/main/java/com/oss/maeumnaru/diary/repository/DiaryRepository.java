@@ -23,21 +23,21 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     List<DiaryEntity> findByPatient_PatientCodeAndCreateDateBetween(String patientCode, String startDate, String endDate);
 
     // 💡 연-월 기준으로 diary_analysis_id join해서 emotion_rate 가져오는 Native Query
-    @Query(value = """
-        SELECT 
-            da.diary_analysis_id AS diaryAnalysisId,
-            d.create_date AS createDate,
-            da.emotion_rate AS emotionRate
-        FROM 
-            diary d
-        JOIN 
-            diary_analysis da 
-            ON d.diary_analysis_id = da.diary_analysis_id
-        WHERE 
-            d.patient_code = :patientCode
-            AND SUBSTRING(d.create_date, 1, 4) = :year
-            AND SUBSTRING(d.create_date, 6, 2) = :month
-    """, nativeQuery = true)
+        @Query(value = """
+            SELECT 
+                da.diary_analysis_id AS diaryAnalysisId,
+                d.create_date AS createDate,
+                da.emotion_rate AS emotionRate
+            FROM 
+                diary d
+            JOIN 
+                diary_analysis da 
+                ON d.diary_analysis_id = da.diary_analysis_id
+            WHERE 
+                d.patient_code = :patientCode
+                AND SUBSTRING(d.create_date, 1, 4) = :year
+                AND SUBSTRING(d.create_date, 6, 2) = :month
+        """, nativeQuery = true)
     List<Object[]> findEmotionRatesByPatientCodeAndYearAndMonth(
             @Param("patientCode") String patientCode,
             @Param("year") String year,

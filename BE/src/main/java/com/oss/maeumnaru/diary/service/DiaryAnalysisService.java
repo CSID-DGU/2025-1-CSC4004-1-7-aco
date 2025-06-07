@@ -42,11 +42,11 @@ public class DiaryAnalysisService {
     @Transactional
     public DiaryAnalysisEntity saveAnalysis(Long diaryId, DiaryAnalysisRequestDto request) {
         try {
-            // 1. 일기 조회
+            // 일기 조회
             DiaryEntity diary = diaryRepository.findById(diaryId)
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
 
-            // 4. 분석 결과 저장 (기존 분석이 있으면 업데이트)
+            // 분석 결과 저장 (기존 분석이 있으면 업데이트)
             DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
 
             if (analysis != null) {
@@ -75,7 +75,6 @@ public class DiaryAnalysisService {
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -91,8 +90,10 @@ public class DiaryAnalysisService {
                     .orElseThrow(() -> new ApiException(ExceptionEnum.DIARY_NOT_FOUND));
             return Optional.ofNullable(diaryEntity.getDiaryAnalysis());
         } catch (DataAccessException e) {
+            log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
@@ -101,33 +102,28 @@ public class DiaryAnalysisService {
     @Transactional(readOnly = true)
     public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, String baseDate) {
         try {
-            System.out.println("Service 진입: findWeeklyAnalysesByPatientCode");
-            System.out.println("입력된 patientCode: " + patientCode);
-            System.out.println("입력된 baseDate: " + baseDate);
 
             // 날짜 파싱
             LocalDate base = LocalDate.parse(baseDate);
 
             // 시작일과 종료일 계산
-            String startDate = base.minusDays(6).toString();  // 예: 2025-05-26
-            String endDate = base.toString();                 // 예: 2025-06-01
-            System.out.println("startDate: " + startDate);
-            System.out.println("endDate: " + endDate);
+            String startDate = base.minusDays(6).toString();
+            String endDate = base.toString();
 
             // DiaryEntity 목록 조회
             List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDateBetween(patientCode, startDate, endDate);
-            System.out.println("조회된 일기 수: " + diaries.size());
 
             // DiaryAnalysisEntity만 추출
-            List<DiaryAnalysisEntity> result = diaries.stream()
+            return diaries.stream()
                     .map(DiaryEntity::getDiaryAnalysis)
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .toList();
 
-            System.out.println("분석 결과 수: " + result.size());
-            return result;
+        } catch (DataAccessException e) {
+            log.error("Database error occurred", e);
+            throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Server error occurred", e);
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
