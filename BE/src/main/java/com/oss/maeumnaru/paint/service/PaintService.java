@@ -92,7 +92,7 @@ public class PaintService {
 
         } catch (IOException e) {
             // 파일 업로드 중 오류가 발생하면 예외 처리
-            throw new ApiException(ExceptionEnum.S3_UPLOAD_FAILED);
+            throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (Exception e) {
             // 그 외 예기치 않은 예외 처리
             throw new ApiException(ExceptionEnum.SERVER_ERROR);

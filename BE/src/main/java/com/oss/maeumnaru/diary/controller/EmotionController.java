@@ -29,7 +29,7 @@ public class EmotionController {
 
         String loginId = authentication.getName();
         MemberEntity member = MemberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new ApiException(ExceptionEnum.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
 
         String patientCode = member.getPatient() != null
                 ? member.getPatient().getPatientCode()
