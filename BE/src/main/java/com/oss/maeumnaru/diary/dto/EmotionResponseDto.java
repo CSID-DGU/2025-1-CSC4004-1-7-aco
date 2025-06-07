@@ -12,12 +12,4 @@ public class EmotionResponseDto {
     private Long diaryAnalysisId;
     private String createDate;
     private Float emotionRate;
-
-//    public static EmotionResponseDto fromEntity(DiaryAnalysisEntity entity) {
-//        return EmotionResponseDto.builder()
-//                .diaryAnalysisId(entity.getDiaryAnalysisId())
-//                .createDate(entity.getCreateDate())
-//                .emotionRate(entity.getEmotionRate())
-//                .build();
-//    }
 }
