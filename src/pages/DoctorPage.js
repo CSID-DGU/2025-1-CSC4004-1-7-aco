@@ -513,8 +513,7 @@ export default function DoctorPage() {
         return {
           date: dateStr,
           // 감정 수치 (-1 ~ 1 사이값)
-          // emotion: dayData.emotion || null,
-          emotion: 0.5,
+          emotion: dayData.emotion || null,
           // 식사 횟수 (0 ~ 3)
           meal: dayData.mealCount || null,
           // 외출 여부 (0 또는 1)
@@ -631,7 +630,8 @@ export default function DoctorPage() {
       }
 
       setPaintId(data.paintId);
-      console.log("paintId 값 찍어보기", data.paintId);
+      console.log("paintId 값 찍어보기 - data.paintId", data.paintId);
+      console.log("paintId 값 찍어보기 - paintId", paintId);
       handleGetChatList(data.paintId);
 
       const paintFile = await getPaintFile(data.fileUrl);
@@ -649,17 +649,19 @@ export default function DoctorPage() {
   const handleGetChatList = async (paintId) => {
     try {
 
-      if(!paintId) {
+      if (!paintId) {
         setChatList([]);
         console.log("paintId가 없음");
         return;
       }
 
+      console.log("paintId에 대한 채팅 내용 가져오기");
       const data = await getChatList(paintId);
-      
-      if(!data) {
+      console.log("채팅 내용 받아옴");
+
+      if (!data) {
         setChatList([]);
-        console.log("채팅 내역이 없음");
+        console.log("채팅 내용이 없음");
         return;
       }
 
@@ -850,37 +852,49 @@ export default function DoctorPage() {
 
             <div>
               <SectionTitle>그림과 채팅 내용</SectionTitle>
-              <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center',
-                width: '500px', aspectRatio: '4/3', border: '1px solid #ddd', backgroundColor: '#f9f9f9'}}>
-                {paintFile ? (
-                  <img src={paintFile} alt="환자 그림" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', }} />
-                ) : (
-                  <div
-                    style={{ color: '#888', fontSize: 15, textAlign: 'center', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                  >
-                    해당 일자의 그림 분석 데이터가 없습니다.
-                  </div>
-                )}
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '40px', alignItems: 'flex-start', }}>
+                <div className="paint-container" style={{
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  width: '500px', aspectRatio: '4/3', border: '1px solid #ddd', backgroundColor: '#f9f9f9'
+                }}>
+                  {paintFile ? (
+                    <img src={paintFile} alt="환자 그림" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', }} />
+                  ) : (
+                    <div
+                      style={{ color: '#888', fontSize: 15, textAlign: 'center', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      해당 일자의 그림 분석 데이터가 없습니다.
+                    </div>
+                  )}
+                </div>
+
+                <div className="chat-container"
+                  style={{
+                    width: '100%',
+                    maxWidth: '546px', height: '375px', overflowY: 'auto', paddingRight: '8px',
+                  }}>
+                  {chatList.map((chat, index) => (
+                    <div key={index} style={{
+                      display: 'flex',
+                      justifyContent: chat.writerType === 'bot' ? 'flex-start' : 'flex-end',
+                      marginBottom: '8px',
+                    }}>
+                      <div style={{
+                        backgroundColor: chat.writerType === 'bot' ? '#b6b8b8' : '#0089ED',
+                        color: '#fff',
+                        padding: '8px 12px',
+                        borderRadius: '16px',
+                        maxWidth: '70%', // 💡 말풍선 최대 너비
+                        wordBreak: 'break-word', // 💡 단어 줄바꿈 허용
+                        whiteSpace: 'pre-wrap',  // 💡 줄바꿈 문자 유지 + 자동 줄바꿈
+                      }}>
+                        {chat.comment}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="chat-container">
-                {chatList.map((chat, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    justifyContent: chat.sender === 'chat-bot' ? 'flex-start' : 'flex-end',
-                    marginBottom: '8px'
-                  }}>
-                    <div style={{
-                      backgroundColor: chat.sender === 'chat-bot' ? '#f0f0f0' : '#0089ED',
-                      color: '#fff',
-                      padding: '8px 12px',
-                      borderRadius: '16px'
-                    }}>
-                      {chat.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
             </div>
 
