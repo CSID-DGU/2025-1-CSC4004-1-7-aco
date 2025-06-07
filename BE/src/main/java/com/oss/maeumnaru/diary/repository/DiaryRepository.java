@@ -21,12 +21,16 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     List<DiaryEntity> findByPatient_PatientCodeAndCreateDateBetween(String patientCode, String startDate, String endDate);
 
     // 연-월 조회용 JPQL
-    @Query("SELECT d FROM DiaryEntity d " +
-            "WHERE d.patient.patientCode = :patientCode " +
-            "AND SUBSTRING(d.createDate, 1, 4) = :year " +
-            "AND SUBSTRING(d.createDate, 6, 2) = :month")
+    @Query("""
+    SELECT d FROM DiaryEntity d
+    JOIN FETCH d.diaryAnalysis da
+    WHERE d.patient.patientCode = :patientCode
+      AND SUBSTRING(d.createDate, 1, 4) = :year
+      AND SUBSTRING(d.createDate, 6, 2) = :month
+    """)
     List<DiaryEntity> findByPatient_PatientCodeAndYearAndMonth(
             @Param("patientCode") String patientCode,
             @Param("year") String year,
             @Param("month") String month);
+
 }
