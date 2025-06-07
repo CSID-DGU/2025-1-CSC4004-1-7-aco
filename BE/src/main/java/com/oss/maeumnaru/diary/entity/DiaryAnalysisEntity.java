@@ -23,7 +23,7 @@ public class DiaryAnalysisEntity {
 
     private String createDate;
 
-    private float emotionRate;
+    private Float emotionRate;
 
     private long mealCount;
 

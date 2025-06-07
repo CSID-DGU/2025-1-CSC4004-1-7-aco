@@ -15,7 +15,7 @@ public class DiaryAnalysisResponseDto {
 
     private Long diaryAnalysisId;
     private Date resultDate;  // 엔티티의 diaryReultDate 오타 수정해서 일치시킴
-    private float emotionRate;
+    private Float emotionRate;
     private long mealCount;
     private LocalTime wakeUpTime;
     private boolean wentOutside;
