@@ -1,5 +1,6 @@
 package com.oss.maeumnaru.diary.controller;
 
+import com.oss.maeumnaru.diary.dto.DiaryAnalysisResponseDto;
 import com.oss.maeumnaru.diary.dto.DiaryResponseDto;
 import com.oss.maeumnaru.diary.service.EmotionService;
 import com.oss.maeumnaru.global.error.exception.ApiException;
@@ -22,7 +23,7 @@ public class EmotionController {
     private final MemberRepository MemberRepository;
 
     @GetMapping("/mainpage")
-    public ResponseEntity<List<DiaryResponseDto>> getDiariesByMonthAndYear(
+    public ResponseEntity<List<DiaryAnalysisResponseDto>> getDiariesByMonthAndYear(
             Authentication authentication,
             @RequestParam String year,
             @RequestParam String month) {
@@ -39,7 +40,7 @@ public class EmotionController {
             throw new ApiException(ExceptionEnum.PATIENT_NOT_FOUND);
         }
 
-        List<DiaryResponseDto> diaries = EmotionService.getDiariesByPatientCodeAndMonth(patientCode, year, month);
+        List<DiaryAnalysisResponseDto> diaries = EmotionService.getAnalysesByPatientCodeAndMonth(patientCode, year, month);
 
         return ResponseEntity.ok(diaries);
     }
