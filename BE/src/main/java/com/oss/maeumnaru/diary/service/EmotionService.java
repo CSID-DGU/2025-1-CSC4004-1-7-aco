@@ -34,7 +34,7 @@ public class EmotionService {
         try {
             // 1. 해당 환자의 연-월 일기 조회
             List<DiaryEntity> diaries = diaryRepository
-                    .findByPatient_PatientCodeAndYearAndMonth(patientCode, year, month);
+                    .findByPatientCodeAndYearAndMonth(patientCode, year, month);
 
             if (diaries.isEmpty()) {
                 return Collections.emptyList();
