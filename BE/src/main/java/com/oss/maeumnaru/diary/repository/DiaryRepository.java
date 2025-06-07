@@ -1,6 +1,7 @@
 // DiaryRepository.java
 package com.oss.maeumnaru.diary.repository;
 
+import com.oss.maeumnaru.diary.dto.EmotionResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,22 @@ public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
             @Param("patientCode") String patientCode,
             @Param("year") String year,
             @Param("month") String month);
+
+    @Query("""
+    SELECT new com.oss.maeumnaru.diary.dto.EmotionResponseDto(
+        da.diaryAnalysisId,
+        d.createDate,
+        da.emotionRate
+    )
+    FROM DiaryEntity d
+    JOIN DiaryAnalysisEntity da ON d.diaryAnalysis.diaryAnalysisId = da.diaryAnalysisId
+    WHERE d.patient.patientCode = :patientCode
+      AND SUBSTRING(d.createDate, 1, 4) = :year
+      AND SUBSTRING(d.createDate, 6, 2) = :month
+""")
+    List<EmotionResponseDto> findEmotionRatesByPatientCodeAndYearAndMonth(
+            @Param("patientCode") String patientCode,
+            @Param("year") String year,
+            @Param("month") String month
+    );
 }

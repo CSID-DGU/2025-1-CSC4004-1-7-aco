@@ -24,30 +24,7 @@ public class EmotionService {
 
     public List<EmotionResponseDto> getEmotionRatesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
-            // DiaryEntity 조회
-            List<DiaryEntity> diaries = diaryRepository
-                    .findByPatient_PatientCodeAndYearAndMonth(patientCode, year, month);
-
-            List<EmotionResponseDto> result = new ArrayList<>();
-
-            for (DiaryEntity diary : diaries) {
-                Long diaryAnalysisId = diary.getDiaryAnalysis() != null
-                        ? diary.getDiaryAnalysis().getDiaryAnalysisId()
-                        : null;
-
-                if (diaryAnalysisId != null) {
-                    DiaryAnalysisEntity analysis = diaryAnalysisRepository.findById(diaryAnalysisId).orElse(null);
-                    if (analysis != null && analysis.getEmotionRate() != null) {
-                        result.add(EmotionResponseDto.builder()
-                                .diaryAnalysisId(analysis.getDiaryAnalysisId())
-                                .createDate(diary.getCreateDate())
-                                .emotionRate(analysis.getEmotionRate())
-                                .build());
-                    }
-                }
-            }
-
-            return result;
+            return diaryRepository.findEmotionRatesByPatientCodeAndYearAndMonth(patientCode, year, month);
         } catch (DataAccessException e) {
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
         } catch (Exception e) {
