@@ -249,6 +249,10 @@ const MeditationPage = () => {
     const [maxTime, setMaxTime] = useState(INIT_TIME);
     const timerRef = useRef();
 
+    const audioRef = useRef(null);
+
+    const [playingId, setPlayingId] = useState(null); // 현재 재생 중인 명상 ID
+
     useEffect(() => {
         fetchMeditations();
     }, []);
@@ -351,6 +355,34 @@ const MeditationPage = () => {
     const percent = Math.max(0, time / maxTime);
     const offset = CIRCUM * (1 - percent);
 
+    // 오디오 재생 함수
+    const handlePlayAudio = (filePath, meditationId) => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        audioRef.current = new window.Audio(filePath);
+        audioRef.current.play();
+        setPlayingId(meditationId);
+        audioRef.current.onended = () => setPlayingId(null);
+    };
+
+    const handlePauseAudio = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+        }
+        setPlayingId(null);
+    };
+
+    // 컴포넌트 언마운트 시 오디오 정지
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        };
+    }, []);
+
     if (isLoading) {
         return (
             <MeditationPageContainer>
@@ -418,18 +450,39 @@ const MeditationPage = () => {
                             <SearchButton onClick={handleSearch}>검색</SearchButton>
                         </SearchBar>
                         <MusicList>
-                            {filteredMeditations.map((meditation) => (
-                                <MusicItem
-                                    key={meditation.meditationId}
-                                    onClick={() => handleMeditationClick(meditation.meditationId)}
-                                >
-                                    <MusicInfo>
-                                        <MusicTitle>{meditation.meditationTitle}</MusicTitle>
-                                        <MusicDuration>소요 시간: {formatDuration(meditation.durationTime)}</MusicDuration>
-                                    </MusicInfo>
-                                    <PlayButton>재생</PlayButton>
-                                </MusicItem>
-                            ))}
+                            {filteredMeditations.map((meditation) => {
+                                const isPlaying = playingId === meditation.meditationId;
+                                return (
+                                    <MusicItem
+                                        key={meditation.meditationId}
+                                        onClick={() => handleMeditationClick(meditation.meditationId)}
+                                    >
+                                        <MusicInfo>
+                                            <MusicTitle>{meditation.meditationTitle}</MusicTitle>
+                                            <MusicDuration>소요 시간: {formatDuration(meditation.durationTime)}</MusicDuration>
+                                        </MusicInfo>
+                                        {isPlaying ? (
+                                            <PlayButton
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handlePauseAudio();
+                                                }}
+                                            >
+                                                일시정지
+                                            </PlayButton>
+                                        ) : (
+                                            <PlayButton
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handlePlayAudio(meditation.filePath, meditation.meditationId);
+                                                }}
+                                            >
+                                                재생
+                                            </PlayButton>
+                                        )}
+                                    </MusicItem>
+                                );
+                            })}
                         </MusicList>
                     </MusicSection>
                 </ContentWrapper>

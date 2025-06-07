@@ -45,6 +45,7 @@ const DrawingPage = () => {
     const [chatCompleted, setChatCompleted] = useState(false);
     const [showLoadingModal, setShowLoadingModal] = useState(false);
     const [skipGetPaintByDate, setSkipGetPaintByDate] = useState(false);
+    const chatListRef = useRef(null);
 
     const colors = [
         '#000000', // 검정
@@ -170,6 +171,12 @@ const DrawingPage = () => {
             img.src = paintInfo.fileUrl;
         }
     }, [paintInfo?.fileUrl]);
+
+    useEffect(() => {
+        if (chatListRef.current) {
+            chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+        }
+    }, [chatList]);
 
     const getMousePosition = (e, canvas) => {
         const rect = canvas.getBoundingClientRect();
@@ -729,15 +736,19 @@ const DrawingPage = () => {
                                 />
                             </div>
                             <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                <div style={{
-                                    flex: 1,
-                                    overflowY: 'auto',
-                                    background: '#f7f7fa',
-                                    borderRadius: '12px',
-                                    padding: '16px',
-                                    marginBottom: '12px',
-                                    minHeight: '300px'
-                                }}>
+                                <div
+                                    ref={chatListRef}
+                                    style={{
+                                        flex: 1,
+                                        overflowY: 'scroll',
+                                        background: '#f7f7fa',
+                                        borderRadius: '12px',
+                                        padding: '16px',
+                                        marginBottom: '12px',
+                                        minHeight: '300px',
+                                        maxHeight: '350px'
+                                    }}
+                                >
                                     {chatList.length === 0 ? (
                                         <div style={{ color: '#888', textAlign: 'center', marginTop: '40%' }}>
                                             AI 챗봇과의 대화가 여기에 표시됩니다.
