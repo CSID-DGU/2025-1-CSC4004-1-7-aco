@@ -12,6 +12,7 @@ import com.oss.maeumnaru.user.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.oss.maeumnaru.paint.entity.ChatEntity;
@@ -119,16 +120,11 @@ public class PaintController {
         return ResponseEntity.noContent().build();
     }
 
-    //의사가 대화 조회에 사용
+    // 모든 사용자 접근 가능 (의사/환자 제한 없음)
     @GetMapping("/{paintId}/chats")
     public ResponseEntity<List<ChatDto>> getChatsByPaintId(
             @PathVariable("paintId") Long paintId,
             Authentication authentication) {
-
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = principal.getMemberId();
-
-        validateOwnership(paintId, memberId);
 
         List<ChatEntity> chatEntities = chatRepository.findByPaint_PaintIdOrderByChatDateAsc(paintId);
 
@@ -141,6 +137,8 @@ public class PaintController {
 
         return ResponseEntity.ok(chatList);
     }
+
+
 
 
 
