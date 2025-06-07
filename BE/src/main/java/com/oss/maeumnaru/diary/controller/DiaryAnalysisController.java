@@ -1,5 +1,6 @@
 package com.oss.maeumnaru.diary.controller;
 
+
 import com.oss.maeumnaru.diary.dto.DiaryAnalysisRequestDto;
 import com.oss.maeumnaru.diary.dto.DiaryAnalysisResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
