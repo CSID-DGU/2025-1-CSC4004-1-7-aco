@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const days = ['Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, onChangeMonth }) => {
     const today = new Date();
@@ -172,6 +172,7 @@ const MonthYear = styled.div`
   font-size: 24px;
   line-height: 29px;
   color: #000000;
+  padding-left: 20px;
 `;
 
 const NavigationButtons = styled.div`
@@ -208,8 +209,9 @@ const DaysContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 442px;
-  height: 379px;
+  width: 100%;
+  height: auto;
+  min-height: 379px;
 `;
 
 const DaysRow = styled.div`
@@ -218,7 +220,6 @@ const DaysRow = styled.div`
   align-items: center;
   width: 442px;
   height: 64px;
-  margin: -1px 0;
 `;
 
 const DayCell = styled.div`
@@ -226,14 +227,14 @@ const DayCell = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px 10px;
   width: 64px;
   height: 64px;
 `;
 
 const DayText = styled.div`
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
   font-family: 'Inter';
   font-weight: 600;
   font-size: 14px;
@@ -242,6 +243,7 @@ const DayText = styled.div`
   align-items: center;
   text-align: center;
   color: #000000;
+  justify-content: center;
 `;
 
 const DateRow = styled.div`
@@ -250,7 +252,6 @@ const DateRow = styled.div`
   align-items: center;
   width: 442px;
   height: 64px;
-  margin: -1px 0;
 `;
 
 const DateCell = styled.div`
@@ -259,7 +260,7 @@ const DateCell = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 12px;
   width: 64px;
   height: 64px;
   border: 1px solid #D5D4DF;
@@ -322,8 +323,8 @@ const DateCell = styled.div`
 `;
 
 const DateText = styled.div`
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
   font-family: 'Inter';
   font-weight: 600;
   font-size: 14px;
@@ -331,6 +332,7 @@ const DateText = styled.div`
   display: flex;
   align-items: center;
   text-align: center;
+  justify-content: center;
   color: ${props => {
     if (props.$inactive) return '#A8A8A8';
     if (props.$emotion) {

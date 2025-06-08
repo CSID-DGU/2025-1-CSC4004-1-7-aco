@@ -10,13 +10,21 @@ export const signIn = async (id, password) => {
 };
 
 export const signUpDoctor = async (formData) => {
-    const response = await API.post('/user/signup', formData);
+    const response = await API.post('/user/signup', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
     console.log('[signUpDoctor] response:', response);
     return response.data;
 };
 
 export const signUpPatient = async (formData) => {
-    const response = await API.post('/user/signup', formData);
+    const response = await API.post('/user/signup', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
     console.log('[signUpPatient] response:', response);
     return response.data;
 };
