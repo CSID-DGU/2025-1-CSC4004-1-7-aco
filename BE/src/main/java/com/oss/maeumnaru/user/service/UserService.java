@@ -90,8 +90,7 @@ public class UserService {
                     throw new ApiException(ExceptionEnum.FILE_REQUIRED);
                 }
                 String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(member.getCreateDate());
-                //String fileUrl = s3Service.uploadFile(file, "doctor/" + dto.licenseNumber(), dateStr);
-                String fileUrl = "1";
+                String fileUrl = s3Service.uploadFile(file, "doctor/" + dto.licenseNumber(), dateStr);
                 DoctorEntity doctor = DoctorEntity.builder()
                         .licenseNumber(dto.licenseNumber())
                         .hospital(dto.hospital())
