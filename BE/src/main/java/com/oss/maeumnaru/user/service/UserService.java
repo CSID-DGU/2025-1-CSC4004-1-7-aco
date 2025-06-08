@@ -176,9 +176,10 @@ public class UserService {
 
         } catch (ApiException e) {
             throw e;
-        } catch (Exception e) {
-            throw new ApiException(ExceptionEnum.LOGIN_FAILED);
         }
+//        catch (Exception e) {
+//            throw new ApiException(ExceptionEnum.LOGIN_FAILED);
+//        }
     }
     public UserProfileResponseDTO getMyInfo(String loginId) {
         MemberEntity member = memberRepository.findByLoginId(loginId)
