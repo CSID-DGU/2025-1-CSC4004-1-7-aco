@@ -284,18 +284,18 @@ const ErrorMessage = styled.div`
 `;
 
 // 감정 그래프의 점(dot) 클릭 시 모달 띄우는 커스텀 Dot 컴포넌트
-const CustomDot = (props) => {
-  const { cx, cy, payload, onClick } = props;
+// const CustomDot = (props) => {
+//   const { cx, cy, payload, onClick } = props;
 
-  // console.log("payload", payload);
+//   // console.log("payload", payload);
 
-  // emotion이 null이면 dot을 그리지 않음
-  if (payload.emotion === null || payload.emotion === undefined) return null;
-  return (
-    <circle cx={cx} cy={cy} r={7} stroke="#0089ED" fill="#fff" strokeWidth={2}
-      style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onClick(payload)} />
-  );
-};
+//   // emotion이 null이면 dot을 그리지 않음
+//   if (payload.emotion === null || payload.emotion === undefined) return null;
+//   return (
+//     <circle cx={cx} cy={cy} r={7} stroke="#0089ED" fill="#fff" strokeWidth={2}
+//       style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onClick(payload)} />
+//   );
+// };
 
 export default function DoctorPage() {
   // 의사가 등록한 환자 리스트
@@ -340,6 +340,23 @@ export default function DoctorPage() {
 
   // selectedDate를 항상 KST로 변환해서 사용
   const kstSelectedDate = selectedDate; // 이미 KST이므로 변환 불필요
+
+  const CustomDot = (props) => {
+    const { cx, cy, payload, onClick } = props;
+
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fill="#fff"
+        stroke="#0089ED"
+        strokeWidth={2}
+        cursor="pointer"
+        onClick={() => onClick?.(payload)}
+      />
+    )
+  }
 
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {
@@ -513,8 +530,9 @@ export default function DoctorPage() {
         return {
           date: dateStr,
           // 감정 수치 (-1 ~ 1 사이값)
-          // emotion: dayData.emotion || null,
-          emotion: 0.5,
+          emotion: dayData.emotion || null,
+          //emotion: 0.47,
+
           // 식사 횟수 (0 ~ 3)
           meal: dayData.mealCount || null,
           // 외출 여부 (0 또는 1)
@@ -575,6 +593,11 @@ export default function DoctorPage() {
         const diaryFile = await getDiaryFile(diaryContent.contentPath);
         console.log("diaryFile", diaryFile);
 
+        if (!diaryFile) {
+          console.log("일기 내용 파일 받아오기 실패");
+          return;
+        }
+
         setModalDiary({ diaryContent, diaryFile });
 
         console.log("modalDiary", modalDiary);
@@ -631,7 +654,8 @@ export default function DoctorPage() {
       }
 
       setPaintId(data.paintId);
-      console.log("paintId 값 찍어보기", data.paintId);
+      console.log("paintId 값 찍어보기 - data.paintId", data.paintId);
+      console.log("paintId 값 찍어보기 - paintId", paintId);
       handleGetChatList(data.paintId);
 
       const paintFile = await getPaintFile(data.fileUrl);
@@ -649,17 +673,19 @@ export default function DoctorPage() {
   const handleGetChatList = async (paintId) => {
     try {
 
-      if(!paintId) {
+      if (!paintId) {
         setChatList([]);
         console.log("paintId가 없음");
         return;
       }
 
+      console.log("paintId에 대한 채팅 내용 가져오기");
       const data = await getChatList(paintId);
-      
-      if(!data) {
+      console.log("채팅 내용 받아옴");
+
+      if (!data) {
         setChatList([]);
-        console.log("채팅 내역이 없음");
+        console.log("채팅 내용이 없음");
         return;
       }
 
@@ -779,8 +805,16 @@ export default function DoctorPage() {
                         dataKey="emotion"
                         stroke="#0089ED"
                         strokeWidth={2}
-                        dot={<CustomDot onClick={handleDotClick} />}
-                        activeDot={<CustomDot onClick={handleDotClick} />}
+                        dot={(props) => {
+                          const { key, payload, ...rest } = props;
+                          if (payload.emotion === null || payload.emotion === undefined) return null;
+                          return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
+                        }}
+                        activeDot={(props) => {
+                          const { key, payload, ...rest } = props;
+                          if (payload.emotion === null || payload.emotion === undefined) return null;
+                          return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
+                        }}
                         connectNulls={false}
                       />
                     </LineChart>
@@ -819,7 +853,7 @@ export default function DoctorPage() {
               </thead>
               <tbody>
                 <tr>
-                  {weekStats.map((d, idx) => (
+                  {weekStats.map((d) => (
                     <td key={d.date} style={{ width: 156.7, background: d.outing === true || d.outing === false ? '#fff' : 'inherit' }}>
                       {d.outing === true ? 'O' : d.outing === false ? 'X' : '-'}
                     </td>
@@ -841,7 +875,7 @@ export default function DoctorPage() {
                 <tr>
                   {weekStats.map((d) => (
                     <td key={d.date} style={{ width: 156.7, background: d.wakeTime ? '#fff' : 'inherit' }}>
-                      {d.wakeTime || '-'}
+                      {d.wakeTime ? d.wakeTime.slice(0, 5) : '-'}
                     </td>
                   ))}
                 </tr>
@@ -850,37 +884,52 @@ export default function DoctorPage() {
 
             <div>
               <SectionTitle>그림과 채팅 내용</SectionTitle>
-              <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center',
-                width: '500px', aspectRatio: '4/3', border: '1px solid #ddd', backgroundColor: '#f9f9f9'}}>
-                {paintFile ? (
-                  <img src={paintFile} alt="환자 그림" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', }} />
-                ) : (
-                  <div
-                    style={{ color: '#888', fontSize: 15, textAlign: 'center', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                  >
-                    해당 일자의 그림 분석 데이터가 없습니다.
-                  </div>
-                )}
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '40px', alignItems: 'flex-start', }}>
+                <div className="paint-container" style={{
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  width: '500px', aspectRatio: '4/3', border: '1px solid #ddd', backgroundColor: '#f9f9f9'
+                }}>
+                  {paintFile ? (
+                    <img src={paintFile} alt="환자 그림" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', }} />
+                  ) : (
+                    <div
+                      style={{ color: '#888', fontSize: 15, textAlign: 'center', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                    >
+                      해당 일자의 그림 분석 데이터가 없습니다.
+                    </div>
+                  )}
+                </div>
+
+                <div className="chat-container"
+                  style={{
+                    width: '100%',
+                    maxWidth: '546px',
+                    height: '375px',
+                    overflowY: 'auto',
+                    paddingRight: '8px',
+                  }}>
+                  {chatList.map((chat, index) => (
+                    <div key={index} style={{
+                      display: 'flex',
+                      justifyContent: chat.writerType === 'bot' ? 'flex-start' : 'flex-end',
+                      marginBottom: '8px',
+                    }}>
+                      <div style={{
+                        backgroundColor: chat.writerType === 'bot' ? '#b6b8b8' : '#0089ED',
+                        color: '#fff',
+                        padding: '8px 12px',
+                        borderRadius: '16px',
+                        maxWidth: '70%',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                      }}>
+                        {chat.comment}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="chat-container">
-                {chatList.map((chat, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    justifyContent: chat.sender === 'chat-bot' ? 'flex-start' : 'flex-end',
-                    marginBottom: '8px'
-                  }}>
-                    <div style={{
-                      backgroundColor: chat.sender === 'chat-bot' ? '#f0f0f0' : '#0089ED',
-                      color: '#fff',
-                      padding: '8px 12px',
-                      borderRadius: '16px'
-                    }}>
-                      {chat.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
             </div>
 
