@@ -209,6 +209,8 @@ const SignupDoctor = () => {
         formData.append("licenseNumber", state.licenseNumber);
         formData.append("certificationFile", state.certification);
 
+        console.log("formData", formData);
+
         try {
             const response = await signUpDoctor(formData);
             console.log(response);
