@@ -133,7 +133,7 @@ const SignupDoctor = () => {
     const handleSignUpDoctor = async () => {
         // 에러 상태 초기화
         setError("");
-        
+
         // 각 필드의 유효성 검사를 위한 새로운 에러 상태
         const newErrors = {
             name: !state.name,
@@ -151,7 +151,7 @@ const SignupDoctor = () => {
 
         // 빈 필드가 있는지 확인
         const hasEmptyField = Object.values(newErrors).some(error => error);
-        
+
         if (hasEmptyField) {
             setErrors(newErrors);
             setError("모든 항목을 입력해주세요.");
@@ -160,21 +160,21 @@ const SignupDoctor = () => {
 
         // 이메일 형식 검사
         if (!isEmailValid(state.email)) {
-            setErrors(prev => ({...prev, email: true}));
+            setErrors(prev => ({ ...prev, email: true }));
             setError("올바른 이메일 형식을 입력해주세요.");
             return;
         }
 
         // 비밀번호 일치 확인
         if (state.password !== state.confirmPw) {
-            setErrors(prev => ({...prev, confirmPw: true}));
+            setErrors(prev => ({ ...prev, confirmPw: true }));
             setError("비밀번호가 일치하지 않습니다.");
             return;
         }
 
         // 생년월일 형식 확인
         if (!isBirthDateValid(state.birthDate)) {
-            setErrors(prev => ({...prev, birthDate: true}));
+            setErrors(prev => ({ ...prev, birthDate: true }));
             setError("생년월일은 YYYY-MM-DD 형식으로 입력해주세요.");
             return;
         }
@@ -209,7 +209,10 @@ const SignupDoctor = () => {
         formData.append("licenseNumber", state.licenseNumber);
         formData.append("certificationFile", state.certification);
 
-        console.log("formData", formData);
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value);
+        }
+
 
         try {
             const response = await signUpDoctor(formData);
@@ -230,55 +233,55 @@ const SignupDoctor = () => {
             <div className="formgriddp">
                 <div className="formcolumndp">
                     <div className="row">
-                        <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"} 
+                        <Input name="name" label={"이름"} placeholder={"이름을 입력해주세요"}
                             value={state.name} onChange={handleOnChange} isError={errors.name} />
                         <div className="gender-row-dp">
                             <div className="gender-label-dp">성별</div>
                             <div className="gender-buttons-dp">
-                                <Button 
-                                    text={"남자"} 
-                                    type={"MALE"} 
+                                <Button
+                                    text={"남자"}
+                                    type={"MALE"}
                                     onClick={() => {
-                                        setState(prev => ({...prev, gender:"MALE"}));
+                                        setState(prev => ({ ...prev, gender: "MALE" }));
                                         if (errors.gender) {
-                                            setErrors(prev => ({...prev, gender: false}));
+                                            setErrors(prev => ({ ...prev, gender: false }));
                                             setError("");
                                         }
-                                    }} 
+                                    }}
                                     isSelected={state.gender === "MALE"}
                                     className={errors.gender ? "Button_error" : ""} />
-                                <Button 
-                                    text={"여자"} 
-                                    type={"FEMALE"} 
+                                <Button
+                                    text={"여자"}
+                                    type={"FEMALE"}
                                     onClick={() => {
-                                        setState(prev => ({...prev, gender:"FEMALE"}));
+                                        setState(prev => ({ ...prev, gender: "FEMALE" }));
                                         if (errors.gender) {
-                                            setErrors(prev => ({...prev, gender: false}));
+                                            setErrors(prev => ({ ...prev, gender: false }));
                                             setError("");
                                         }
-                                    }} 
+                                    }}
                                     isSelected={state.gender === "FEMALE"}
                                     className={errors.gender ? "Button_error" : ""} />
                             </div>
                         </div>
                     </div>
 
-                    <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"} 
+                    <Input name="email" label={"이메일"} placeholder={"이메일을 입력해주세요"}
                         value={state.email} onChange={handleOnChange} isError={errors.email} />
-                    <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"} 
+                    <Input name="id" label={"아이디"} placeholder={"아이디를 입력해주세요"}
                         value={state.id} onChange={handleOnChange} isError={errors.id} />
-                    <Input name="password" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"} 
+                    <Input name="password" label={"비밀번호"} placeholder={"비밀번호를 입력해주세요"}
                         value={state.password} onChange={handleOnChange} type="password" isError={errors.password} />
-                    <Input name="confirmPw" label={"비밀번호 확인"} placeholder={"비밀번호를 다시 입력해주세요"} 
+                    <Input name="confirmPw" label={"비밀번호 확인"} placeholder={"비밀번호를 다시 입력해주세요"}
                         value={state.confirmPw} onChange={handleOnChange} type="password" isError={errors.confirmPw} />
                 </div>
 
                 <div className="formcolumndp">
-                    <Input name="birthDate" label={"생년월일"} placeholder={"YYYY-MM-DD"} 
+                    <Input name="birthDate" label={"생년월일"} placeholder={"YYYY-MM-DD"}
                         value={state.birthDate} onChange={handleBirthDateChange} isError={errors.birthDate} />
-                    <Input name="phone" label={"연락처"} placeholder={"01000000000"} 
+                    <Input name="phone" label={"연락처"} placeholder={"01000000000"}
                         value={state.phone} onChange={handleOnChange} isError={errors.phone} />
-                    <Input name="hospital" label={"근무 병원"} placeholder={"현재 근무 중인 병원을 입력해주세요"} 
+                    <Input name="hospital" label={"근무 병원"} placeholder={"현재 근무 중인 병원을 입력해주세요"}
                         value={state.hospital} onChange={handleOnChange} isError={errors.hospital} />
                     <div className="input-wrapper">
                         <label className="input-label">파일 선택</label>
@@ -288,7 +291,7 @@ const SignupDoctor = () => {
                             <img src={attach_file} alt="파일 첨부" className="upload-icon" />
                         </label>
                     </div>
-                    <Input name="licenseNumber" label={"의사 면허 번호"} placeholder={"의사 면허 번호를 입력해주세요"} 
+                    <Input name="licenseNumber" label={"의사 면허 번호"} placeholder={"의사 면허 번호를 입력해주세요"}
                         value={state.licenseNumber} onChange={handleOnChange} isError={errors.licenseNumber} />
                 </div>
             </div>
