@@ -593,7 +593,7 @@ export default function DoctorPage() {
         const diaryFile = await getDiaryFile(diaryContent.contentPath);
         console.log("diaryFile", diaryFile);
 
-        if(!diaryFile) {
+        if (!diaryFile) {
           console.log("일기 내용 파일 받아오기 실패");
           return;
         }
@@ -806,12 +806,12 @@ export default function DoctorPage() {
                         stroke="#0089ED"
                         strokeWidth={2}
                         dot={(props) => {
-                          const {key, payload, ...rest} = props;
+                          const { key, payload, ...rest } = props;
                           if (payload.emotion === null || payload.emotion === undefined) return null;
                           return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
                         }}
                         activeDot={(props) => {
-                          const {key, payload, ...rest} = props;
+                          const { key, payload, ...rest } = props;
                           if (payload.emotion === null || payload.emotion === undefined) return null;
                           return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
                         }}
@@ -875,7 +875,7 @@ export default function DoctorPage() {
                 <tr>
                   {weekStats.map((d) => (
                     <td key={d.date} style={{ width: 156.7, background: d.wakeTime ? '#fff' : 'inherit' }}>
-                      {d.wakeTime || '-'}
+                      {d.wakeTime ? d.wakeTime.slice(0, 5) : '-'}
                     </td>
                   ))}
                 </tr>
