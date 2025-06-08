@@ -40,18 +40,16 @@ public class EmotionService {
                 return Collections.emptyList();
             }
 
-            // 2. diaryAnalysisId만 추출하여 조회
             List<DiaryAnalysisResponseDto> result = new ArrayList<>();
 
             for (DiaryEntity diary : diaries) {
-                Long analysisId = diary.getDiaryAnalysis().getDiaryAnalysisId(); // <- 해당 getter 필요
-                if (analysisId != null) {
-                    diaryAnalysisRepository.findById(analysisId)
-                            .ifPresent(analysis ->
-                                    result.add(DiaryAnalysisResponseDto.fromEntity(analysis))
-                            );
+                DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
+                if (analysis != null && analysis.getDiaryAnalysisId() != null) {
+                    diaryAnalysisRepository.findById(analysis.getDiaryAnalysisId())
+                            .ifPresent(a -> result.add(DiaryAnalysisResponseDto.fromEntity(a)));
                 }
             }
+
 
             return result;
         } catch (DataAccessException e) {
