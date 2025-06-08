@@ -9,6 +9,7 @@ import com.oss.maeumnaru.diary.repository.DiaryAnalysisRepository;
 import com.oss.maeumnaru.diary.repository.DiaryRepository;
 import com.oss.maeumnaru.global.error.exception.ApiException;
 import com.oss.maeumnaru.global.error.exception.ExceptionEnum;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -29,7 +30,7 @@ public class EmotionService {
     private final DiaryRepository diaryRepository;
     private final DiaryAnalysisRepository diaryAnalysisRepository;
 
-
+    @Transactional
     public List<DiaryAnalysisResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
             String monthPrefix = String.format("%s-%02d", year, Integer.parseInt(month));
@@ -43,11 +44,16 @@ public class EmotionService {
             List<DiaryAnalysisResponseDto> result = new ArrayList<>();
 
             for (DiaryEntity diary : diaries) {
-                DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
-                if (analysis != null && analysis.getDiaryAnalysisId() != null) {
-                    result.add(DiaryAnalysisResponseDto.fromEntity(analysis));
+                try {
+                    DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
+                    if (analysis != null && analysis.getDiaryAnalysisId() != null) {
+                        result.add(DiaryAnalysisResponseDto.fromEntity(analysis));
+                    }
+                } catch (NullPointerException e) {
+                    log.warn("Null analysis encountered for diaryId: {}", diary.getDiaryId());
                 }
             }
+
 
             return result;
         } catch (DataAccessException e) {
