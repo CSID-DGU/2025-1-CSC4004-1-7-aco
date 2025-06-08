@@ -58,7 +58,10 @@ public enum ExceptionEnum {
 
     // 채팅 관련
     CHAT_ALREADY_COMPLETED(409, "이미 완료된 대화입니다."),
-    CHAT_ALREADY_START(409, "채팅이 이미 시작되었습니다.");
+    CHAT_ALREADY_START(409, "채팅이 이미 시작되었습니다."),
+    OPENAI_API_KEY_MISSING(500, "OpenAI API Key가 설정되지 않았습니다."),
+    OPENAI_API_CALL_FAILED(500, "OpenAI 호출 중 오류가 발생했습니다.");
+
 
     private final int status;
     private final String message;

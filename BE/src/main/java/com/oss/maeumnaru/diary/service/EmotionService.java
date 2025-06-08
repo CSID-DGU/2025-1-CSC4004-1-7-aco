@@ -1,6 +1,8 @@
 package com.oss.maeumnaru.diary.service;
 
-import com.oss.maeumnaru.diary.dto.EmotionResponseDto;
+
+import com.oss.maeumnaru.diary.dto.DiaryAnalysisResponseDto;
+import com.oss.maeumnaru.diary.dto.DiaryResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryAnalysisEntity;
 import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import com.oss.maeumnaru.diary.repository.DiaryAnalysisRepository;
@@ -13,7 +15,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+
+import java.util.Collections;
+
 import java.util.List;
+
 
 @Slf4j
 @Service
@@ -21,22 +27,30 @@ import java.util.List;
 public class EmotionService {
 
     private final DiaryRepository diaryRepository;
+    private final DiaryAnalysisRepository diaryAnalysisRepository;
 
-    public List<EmotionResponseDto> getEmotionRatesByPatientCodeAndMonth(String patientCode, String year, String month) {
+
+    public List<EmotionResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
-            List<Object[]> rows = diaryRepository.findEmotionRatesByPatientCodeAndYearAndMonth(patientCode, year, month);
-            List<EmotionResponseDto> result = new ArrayList<>();
+            // 1. 해당 환자의 연-월 일기 조회
+            List<DiaryEntity> diaries = diaryRepository
+                    .findByPatientCodeAndYearAndMonth(patientCode, year, month);
 
-            for (Object[] row : rows) {
-                Long diaryAnalysisId = ((Number) row[0]).longValue();
-                String createDate = (String) row[1];
-                Float emotionRate = row[2] != null ? ((Number) row[2]).floatValue() : null;
+            if (diaries.isEmpty()) {
+                return Collections.emptyList();
+            }
 
-                result.add(EmotionResponseDto.builder()
-                        .diaryAnalysisId(diaryAnalysisId)
-                        .createDate(createDate)
-                        .emotionRate(emotionRate)
-                        .build());
+            // 2. diaryAnalysisId만 추출하여 조회
+            List<DiaryAnalysisResponseDto> result = new ArrayList<>();
+
+            for (DiaryEntity diary : diaries) {
+                Long analysisId = diary.getDiaryAnalysis().getDiaryAnalysisId(); // <- 해당 getter 필요
+                if (analysisId != null) {
+                    diaryAnalysisRepository.findById(analysisId)
+                            .ifPresent(analysis ->
+                                    result.add(DiaryAnalysisResponseDto.fromEntity(analysis))
+                            );
+                }
             }
 
             return result;
