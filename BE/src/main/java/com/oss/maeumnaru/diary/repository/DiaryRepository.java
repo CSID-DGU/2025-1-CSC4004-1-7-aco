@@ -1,7 +1,5 @@
 // DiaryRepository.java
 package com.oss.maeumnaru.diary.repository;
-
-import com.oss.maeumnaru.diary.dto.EmotionResponseDto;
 import com.oss.maeumnaru.diary.entity.DiaryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
