@@ -32,9 +32,9 @@ public class EmotionService {
 
     public List<DiaryAnalysisResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
-            // 1. 해당 환자의 연-월 일기 조회
-            List<DiaryEntity> diaries = diaryRepository
-                    .findByPatientCodeAndYearAndMonth(patientCode, year, month);
+            String monthPrefix = String.format("%s-%02d", year, Integer.parseInt(month));
+
+            List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDateStartingWith(patientCode, monthPrefix);
 
             if (diaries.isEmpty()) {
                 return Collections.emptyList();
@@ -45,11 +45,9 @@ public class EmotionService {
             for (DiaryEntity diary : diaries) {
                 DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
                 if (analysis != null && analysis.getDiaryAnalysisId() != null) {
-                    diaryAnalysisRepository.findById(analysis.getDiaryAnalysisId())
-                            .ifPresent(a -> result.add(DiaryAnalysisResponseDto.fromEntity(a)));
+                    result.add(DiaryAnalysisResponseDto.fromEntity(analysis));
                 }
             }
-
 
             return result;
         } catch (DataAccessException e) {
@@ -60,4 +58,6 @@ public class EmotionService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
+
 }
