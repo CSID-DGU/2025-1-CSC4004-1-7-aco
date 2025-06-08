@@ -118,25 +118,22 @@ public class UserService {
                 throw new ApiException(ExceptionEnum.INVALID_MEMBER_TYPE);
             }
 
-            System.out.println("회원가입 처리 완료");
 
+        } catch (ApiException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ApiException(ExceptionEnum.FILE_UPLOAD_FAILED);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("회원가입 중 오류 발생: " + e.getMessage());
+            throw new ApiException(ExceptionEnum.SIGNUP_FAILED);
         }
     }
     public TokenResponseDTO login(LoginRequestDTO dto, HttpServletResponse response) {
         try {
-            System.out.println("로그인 요청: " + dto.loginId());
-
             MemberEntity member = memberRepository.findByLoginId(dto.loginId())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 아이디의 회원이 존재하지 않습니다."));
-
-
-            System.out.println("DB에서 찾은 사용자: " + member.getEmail());
+                    .orElseThrow(() -> new ApiException(ExceptionEnum.USER_NOT_FOUND));
 
             if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
-                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+                throw new ApiException(ExceptionEnum.INVALID_PASSWORD);
             }
 
             // 인증 객체 생성
@@ -154,13 +151,10 @@ public class UserService {
             );
 
 
-            System.out.println("Authentication 객체 생성 완료: " + authentication.getName());
-
             // JWT 토큰 생성
             // 토큰 생성
             JwtTokenProvider.TokenPair tokenPair = jwtTokenProvider.generateTokenPair(authentication);
 
-            System.out.println("토큰 생성 완료: access = " + tokenPair.accessToken());
 
             // Redis 저장
             tokenRedisRepository.save(new TokenRedis(
@@ -169,7 +163,6 @@ public class UserService {
                     tokenPair.refreshToken()
             ));
 
-            System.out.println("Redis 저장 완료");
 
             // 쿠키 저장
             jwtTokenProvider.saveCookie(response, tokenPair.accessToken());
@@ -181,6 +174,8 @@ public class UserService {
                     member.getName()
             );
 
+        } catch (ApiException e) {
+            throw e;
         } catch (Exception e) {
             throw new ApiException(ExceptionEnum.LOGIN_FAILED);
         }
