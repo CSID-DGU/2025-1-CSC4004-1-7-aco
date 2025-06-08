@@ -30,7 +30,7 @@ public class EmotionService {
     private final DiaryAnalysisRepository diaryAnalysisRepository;
 
 
-    public List<EmotionResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
+    public List<DiaryAnalysisResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
             // 1. 해당 환자의 연-월 일기 조회
             List<DiaryEntity> diaries = diaryRepository
