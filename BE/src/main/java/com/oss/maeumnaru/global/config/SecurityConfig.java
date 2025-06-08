@@ -64,7 +64,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);  // 쿠키 허용
         // CORS 허용 도메인에 'https://maeumnaru-osp7.web.app' 추가
-        config.setAllowedOrigins(List.of("https://maeumnaru-aco.web.app", "http://localhost:3000", "https://maeumnaru-osp7.web.app/"));  // 여러 도메인 허용
+        config.setAllowedOrigins(List.of("https://maeumnaru-aco.web.app", "http://localhost:3000", "https://maeumnaru-osp7.web.app"));  // 여러 도메인 허용
         config.addAllowedHeader("*");  // 모든 헤더 허용
         config.addAllowedMethod("*");  // 모든 HTTP 메서드 허용
 
