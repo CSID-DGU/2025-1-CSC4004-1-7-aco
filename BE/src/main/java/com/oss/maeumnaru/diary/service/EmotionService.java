@@ -46,7 +46,7 @@ public class EmotionService {
             for (DiaryEntity diary : diaries) {
                 try {
                     DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
-                    if (analysis != null && analysis.getDiaryAnalysisId() != null) {
+                    if (analysis != null) {
                         result.add(DiaryAnalysisResponseDto.fromEntity(analysis));
                     }
                 } catch (NullPointerException e) {
