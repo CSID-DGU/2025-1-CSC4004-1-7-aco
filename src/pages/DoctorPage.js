@@ -284,18 +284,18 @@ const ErrorMessage = styled.div`
 `;
 
 // 감정 그래프의 점(dot) 클릭 시 모달 띄우는 커스텀 Dot 컴포넌트
-const CustomDot = (props) => {
-  const { cx, cy, payload, onClick } = props;
+// const CustomDot = (props) => {
+//   const { cx, cy, payload, onClick } = props;
 
-  // console.log("payload", payload);
+//   // console.log("payload", payload);
 
-  // emotion이 null이면 dot을 그리지 않음
-  if (payload.emotion === null || payload.emotion === undefined) return null;
-  return (
-    <circle cx={cx} cy={cy} r={7} stroke="#0089ED" fill="#fff" strokeWidth={2}
-      style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onClick(payload)} />
-  );
-};
+//   // emotion이 null이면 dot을 그리지 않음
+//   if (payload.emotion === null || payload.emotion === undefined) return null;
+//   return (
+//     <circle cx={cx} cy={cy} r={7} stroke="#0089ED" fill="#fff" strokeWidth={2}
+//       style={{ cursor: 'pointer', pointerEvents: 'all' }} onClick={() => onClick(payload)} />
+//   );
+// };
 
 export default function DoctorPage() {
   // 의사가 등록한 환자 리스트
@@ -340,6 +340,23 @@ export default function DoctorPage() {
 
   // selectedDate를 항상 KST로 변환해서 사용
   const kstSelectedDate = selectedDate; // 이미 KST이므로 변환 불필요
+
+  const CustomDot = (props) => {
+    const { cx, cy, payload, onClick } = props;
+
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fill="#fff"
+        stroke="#0089ED"
+        strokeWidth={2}
+        cursor="pointer"
+        onClick={() => onClick?.(payload)}
+      />
+    )
+  }
 
   // 달력에서 날짜 클릭 시
   const handleDateChange = (date) => {
@@ -514,6 +531,8 @@ export default function DoctorPage() {
           date: dateStr,
           // 감정 수치 (-1 ~ 1 사이값)
           emotion: dayData.emotion || null,
+          //emotion: 0.47,
+
           // 식사 횟수 (0 ~ 3)
           meal: dayData.mealCount || null,
           // 외출 여부 (0 또는 1)
@@ -573,6 +592,11 @@ export default function DoctorPage() {
 
         const diaryFile = await getDiaryFile(diaryContent.contentPath);
         console.log("diaryFile", diaryFile);
+
+        if(!diaryFile) {
+          console.log("일기 내용 파일 받아오기 실패");
+          return;
+        }
 
         setModalDiary({ diaryContent, diaryFile });
 
@@ -781,8 +805,16 @@ export default function DoctorPage() {
                         dataKey="emotion"
                         stroke="#0089ED"
                         strokeWidth={2}
-                        dot={<CustomDot onClick={handleDotClick} />}
-                        activeDot={<CustomDot onClick={handleDotClick} />}
+                        dot={(props) => {
+                          const {key, payload, ...rest} = props;
+                          if (payload.emotion === null || payload.emotion === undefined) return null;
+                          return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
+                        }}
+                        activeDot={(props) => {
+                          const {key, payload, ...rest} = props;
+                          if (payload.emotion === null || payload.emotion === undefined) return null;
+                          return <CustomDot key={key} payload={payload} {...rest} onClick={handleDotClick} />;
+                        }}
                         connectNulls={false}
                       />
                     </LineChart>
@@ -821,7 +853,7 @@ export default function DoctorPage() {
               </thead>
               <tbody>
                 <tr>
-                  {weekStats.map((d, idx) => (
+                  {weekStats.map((d) => (
                     <td key={d.date} style={{ width: 156.7, background: d.outing === true || d.outing === false ? '#fff' : 'inherit' }}>
                       {d.outing === true ? 'O' : d.outing === false ? 'X' : '-'}
                     </td>
@@ -871,7 +903,10 @@ export default function DoctorPage() {
                 <div className="chat-container"
                   style={{
                     width: '100%',
-                    maxWidth: '546px', height: '375px', overflowY: 'auto', paddingRight: '8px',
+                    maxWidth: '546px',
+                    height: '375px',
+                    overflowY: 'auto',
+                    paddingRight: '8px',
                   }}>
                   {chatList.map((chat, index) => (
                     <div key={index} style={{
@@ -884,9 +919,9 @@ export default function DoctorPage() {
                         color: '#fff',
                         padding: '8px 12px',
                         borderRadius: '16px',
-                        maxWidth: '70%', // 💡 말풍선 최대 너비
-                        wordBreak: 'break-word', // 💡 단어 줄바꿈 허용
-                        whiteSpace: 'pre-wrap',  // 💡 줄바꿈 문자 유지 + 자동 줄바꿈
+                        maxWidth: '70%',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
                       }}>
                         {chat.comment}
                       </div>
