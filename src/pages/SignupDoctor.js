@@ -207,7 +207,7 @@ const SignupDoctor = () => {
         formData.append("gender", state.gender);
         formData.append("hospital", state.hospital);
         formData.append("licenseNumber", state.licenseNumber);
-        formData.append("certificationFile", state.certification);
+        formData.append("file", state.certification);
 
         for (let [key, value] of formData.entries()) {
             console.log(`${key}:`, value);
