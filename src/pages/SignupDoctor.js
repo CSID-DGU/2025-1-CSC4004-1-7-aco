@@ -213,7 +213,6 @@ const SignupDoctor = () => {
             console.log(`${key}:`, value);
         }
 
-
         try {
             const response = await signUpDoctor(formData);
             console.log(response);
