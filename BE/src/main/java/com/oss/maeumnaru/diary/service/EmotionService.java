@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -33,29 +34,19 @@ public class EmotionService {
     @Transactional
     public List<DiaryAnalysisResponseDto> getAnalysesByPatientCodeAndMonth(String patientCode, String year, String month) {
         try {
+            // yyyy-MM prefix 만들기
             String monthPrefix = String.format("%s-%02d", year, Integer.parseInt(month));
 
+            // 해당 월의 일기 조회
             List<DiaryEntity> diaries = diaryRepository.findByPatient_PatientCodeAndCreateDateStartingWith(patientCode, monthPrefix);
 
-            if (diaries.isEmpty()) {
-                return Collections.emptyList();
-            }
+            // 분석만 추출하여 DTO로 변환
+            return diaries.stream()
+                    .map(DiaryEntity::getDiaryAnalysis)
+                    .filter(Objects::nonNull)
+                    .map(DiaryAnalysisResponseDto::fromEntity)
+                    .toList();
 
-            List<DiaryAnalysisResponseDto> result = new ArrayList<>();
-
-            for (DiaryEntity diary : diaries) {
-                try {
-                    DiaryAnalysisEntity analysis = diary.getDiaryAnalysis();
-                    if (analysis != null) {
-                        result.add(DiaryAnalysisResponseDto.fromEntity(analysis));
-                    }
-                } catch (NullPointerException e) {
-                    log.warn("Null analysis encountered for diaryId: {}", diary.getDiaryId());
-                }
-            }
-
-
-            return result;
         } catch (DataAccessException e) {
             log.error("Database error occurred", e);
             throw new ApiException(ExceptionEnum.DATABASE_ERROR);
@@ -64,6 +55,7 @@ public class EmotionService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 
 
 }
