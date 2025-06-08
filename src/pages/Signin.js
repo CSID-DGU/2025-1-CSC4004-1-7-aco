@@ -22,28 +22,22 @@ const Signin = () => {
 
     const handleLogin = async () => {
         setErrMsg("");
-
         try {
             const response = await signIn(state.id, state.password);
-
-            console.log("response", response);
-
-            // 로컬에 역할 저장
+            // accessToken을 쿠키에 저장
+            document.cookie = `accessToken=${response.accessToken}; path=/;`;
             localStorage.setItem('role', response.memberType);
             localStorage.setItem('userName', response.name);
-            console.log("memberType", response.memberType);
 
-            // navigate("/testdoctor");
-
-            if(response.memberType === "DOCTOR") {
-                navigate("/doctor");
-            } else {
-                navigate("/mainpage");
-            }
+            setTimeout(() => {
+                if(response.memberType === "DOCTOR") {
+                    navigate("/doctor");
+                } else {
+                    navigate("/mainpage");
+                }
+            }, 1000); // 1초 지연
         }
-
         catch (error) {
-            console.error("로그인 실패 에러:", error);
             if (error.response?.data?.message) {
                 setErrMsg(error.response.data.message);
             } else {

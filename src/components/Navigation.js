@@ -139,15 +139,13 @@ const Navigation = () => {
     const handleLogout = async () => {
         try {
             await signOut();
-        } catch (error) {
-            console.error("로그아웃 실패:", error);
-        } finally {
-            localStorage.removeItem('userName');
+            // accessToken 쿠키 삭제
+            document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             localStorage.removeItem('role');
-            localStorage.clear();
-            setShowLogoutModal(false);
-            alert('로그아웃 되었습니다!');
+            localStorage.removeItem('userName');
             navigate('/signin');
+        } catch (error) {
+            console.error('로그아웃 중 오류가 발생했습니다:', error);
         }
     };
 

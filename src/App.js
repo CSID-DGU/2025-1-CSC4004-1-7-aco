@@ -12,6 +12,7 @@ import SignupFinish from "./pages/SignupFinish";
 import MypageDoctor from "./pages/MypageDoctor";
 import MypagePatient from "./pages/MypagePatient";
 import styled from 'styled-components';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 const BACKGROUND_VIDEOS = [
@@ -126,17 +127,42 @@ function AppContent() {
       )}
       <Routes>
         <Route path="/" element={<Navigate to="/signin" replace />} />
-        <Route path="/mainpage" element={<MainPage />} />
-        <Route path="/drawing" element={<DrawingPage />} />
-        <Route path="/meditation" element={<MeditationPage />} />
-        <Route path="/doctor" element={<DoctorPage />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignupChoice />} />
         <Route path="/signup/doctor" element={<SignupDoctor />} />
         <Route path="/signup/patient" element={<SignupPatient />} />
         <Route path="/signup/finish" element={<SignupFinish />} />
-        <Route path="/mypage/doctor" element={<MypageDoctor />} />
-        <Route path="/mypage/patient" element={<MypagePatient />} />
+        
+        <Route path="/mainpage" element={
+          <ProtectedRoute>
+            <MainPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/drawing" element={
+          <ProtectedRoute>
+            <DrawingPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/meditation" element={
+          <ProtectedRoute>
+            <MeditationPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor" element={
+          <ProtectedRoute>
+            <DoctorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/mypage/doctor" element={
+          <ProtectedRoute>
+            <MypageDoctor />
+          </ProtectedRoute>
+        } />
+        <Route path="/mypage/patient" element={
+          <ProtectedRoute>
+            <MypagePatient />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   );
