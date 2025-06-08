@@ -98,7 +98,6 @@ public class DiaryAnalysisService {
         }
     }
 
-    // 최근 7일간 분석 결과 조회
     @Transactional(readOnly = true)
     public List<DiaryAnalysisEntity> findWeeklyAnalysesByPatientCode(String patientCode, String baseDate) {
         try {
@@ -127,4 +126,5 @@ public class DiaryAnalysisService {
             throw new ApiException(ExceptionEnum.SERVER_ERROR);
         }
     }
+
 }
