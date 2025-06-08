@@ -46,7 +46,10 @@ public class S3Service {
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
+        System.out.println("S3 upload: folder = " + folderName);
+        System.out.println("S3 upload: key = " + key);
+        System.out.println("S3 upload: content-type = " + file.getContentType());
+        System.out.println("S3 upload: file name = " + file.getOriginalFilename());
         return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
     }
 
