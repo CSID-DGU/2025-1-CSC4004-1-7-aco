@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import Navigation from "../components/Navigation";
+import styled from "styled-components";
 import Calendar from "../components/Calendar";
 import DiaryEditor from "../components/DiaryEditor";
-import AnalysisModal from "../components/AnalysisModal";
+import Navigation from "../components/Navigation";
 import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import AnalysisInputModal from '../components/AnalysisInputModal';
-import styled from "styled-components";
-import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId, getEmotionRateFromPython, fetchEmotionMap } from '../api/diary';
+import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getEmotionRateFromPython, fetchEmotionMap } from '../api/diary';
 import axios from 'axios';
 
 const MainContent = styled.main`
@@ -120,13 +119,13 @@ function getKSTDateKey(date) {
 function getEmotionColor(score) {
     if (score === null || score === undefined) return '#eee'; // 점수 없음
     const colors = [
-        '#003366', // 찐한 파랑 (매우 우울)
-        '#336699',
-        '#6699cc',
-        '#99ccff',
-        '#b3e0ff',
-        '#cceeff',
-        '#e6f7ff'  // 연한 파랑 (행복)
+        '#CCCCFF', // 매우 우울
+        '#CCDDFF', // 우울
+        '#CCEEFF', // 약간 우울
+        '#CCFFEE', // 보통
+        '#CCFFCC', // 약간 행복
+        '#EEFFCC', // 행복
+        '#FFFFCC'  // 매우 행복
     ];
     const idx = Math.min(6, Math.max(0, Math.floor(((score + 1) / 2) * 7)));
     return colors[idx];
@@ -139,14 +138,6 @@ function normalizeDiary(diary) {
         ...diary,
         id: diary.diaryId || diary.id,
     };
-}
-
-// 쿠키에서 accessToken을 읽는 함수
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
 }
 
 export default function MainPage() {
@@ -391,10 +382,12 @@ export default function MainPage() {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
         fetchEmotionMap(year, month).then((data) => {
-            // [{ diaryAnalysisId, createDate, emotionRate }, ...] -> { 'YYYY-MM-DD': emotionRate, ... }
+            // [{ diaryAnalysisId, createDate, emotionRate, ... }, ...] -> { 'YYYY-MM-DD': emotionRate, ... }
             const map = {};
             data.forEach(item => {
-                map[item.createDate] = item.emotionRate;
+                if (item.createDate && item.emotionRate !== undefined) {
+                    map[item.createDate] = item.emotionRate;
+                }
             });
             setEmotionMap(map);
         }).catch(console.error);
@@ -412,6 +405,7 @@ export default function MainPage() {
                         getEmotionColor={getEmotionColor}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
+                        showLegend={true}
                     />
                 </CalendarWrapper>
                 <DiaryArea>

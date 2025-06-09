@@ -4,7 +4,7 @@ import Calendar from '../components/Calendar';
 import './DrawingPage.css';
 import Navigation from "../components/Navigation";
 import { format } from 'date-fns';
-import { savePaintDraft, finalizePaint, getPaintById, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat, deletePaint, getPaintByDate } from '../api/paintApi';
+import { savePaintDraft, finalizePaint, getPaintByDate, getChatsByPaintId, saveReplyAndGetNextQuestion, completeChat, deletePaint } from '../api/paintApi';
 
 const DRAWING_STORAGE_KEY = 'drawing_records_v1';
 
@@ -29,7 +29,6 @@ const DrawingPage = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [showTitleModal, setShowTitleModal] = useState(false);
     const [drawingTitle, setDrawingTitle] = useState("");
-    const [savedImage, setSavedImage] = useState(null);
     const [showChatModal, setShowChatModal] = useState(false);
     const [drawingRecords, setDrawingRecords] = useState({});
     const [selectedRecord, setSelectedRecord] = useState(null);
@@ -96,7 +95,6 @@ const DrawingPage = () => {
                 if (paint && paint.paintId) {
                     setPaintId(paint.paintId);
                     setPaintInfo(paint);
-                    setSavedImage(paint.fileUrl);
                     setIsFinalSaved(!!paint.chatCompleted);
                     setIsPastDrawing(!isToday(selectedDate));
                     setChatCompleted(!!paint.chatCompleted);
@@ -105,7 +103,6 @@ const DrawingPage = () => {
                         setPaintId(null); console.log('setPaintId(null) 호출: useEffect - 오늘 날짜에 그림 없음');
                     }
                     setPaintInfo(null);
-                    setSavedImage(null);
                     setIsFinalSaved(false);
                     setIsPastDrawing(!isToday(selectedDate));
                     setChatCompleted(false);
@@ -115,13 +112,12 @@ const DrawingPage = () => {
                     setPaintId(null); console.log('setPaintId(null) 호출: useEffect - 에러 발생');
                 }
                 setPaintInfo(null);
-                setSavedImage(null);
                 setIsFinalSaved(false);
                 setIsPastDrawing(!isToday(selectedDate));
                 setChatCompleted(false);
             }
         })();
-    }, [selectedDate, skipGetPaintByDate]);
+    }, [selectedDate, skipGetPaintByDate, paintId]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -231,22 +227,12 @@ const DrawingPage = () => {
             const res = await savePaintDraft(blob, dto, paintId);
             setPaintId(res.paintId);
             setPaintInfo(res);
-            setSavedImage(dataUrl);
             setSkipGetPaintByDate(true);
-            setTimeout(() => setSkipGetPaintByDate(false), 1000); // 1초 후에만 다시 허용
+            setTimeout(() => setSkipGetPaintByDate(false), 1000);
             alert('임시저장되었습니다.');
         } catch (e) {
             alert('임시저장 실패: ' + (e.response?.data?.message || e.message));
         }
-    };
-
-    const handleTempSaveWithTitle = async () => {
-        if (!drawingTitle.trim()) {
-            alert('제목을 입력해주세요!');
-            return;
-        }
-        await handleTempSave();
-        setShowTitleModal(false);
     };
 
     const handleFinalSave = async () => {
@@ -261,27 +247,22 @@ const DrawingPage = () => {
         const dto = { title: drawingTitle, createDate };
         try {
             let tempPaintId = paintId;
-            // paintId가 없으면 임시저장 먼저!
             if (!tempPaintId) {
                 const tempRes = await savePaintDraft(blob, dto, null);
-                console.log('임시저장 paintId:', tempRes.paintId);
                 tempPaintId = tempRes.paintId;
                 setPaintId(tempPaintId);
             }
-            // paintId로 최종저장
             const res = await finalizePaint(blob, dto, tempPaintId);
             if (res && res.paintId) {
                 setPaintId(res.paintId);
                 setShowLoadingModal(false);
                 setShowChatModal(true);
             }
-            console.log('최종저장 후 paintId:', res.paintId);
-            setSavedImage(dataUrl);
             setIsFinalSaved(true);
             setShowTitleModal(false);
             alert('최종저장되었습니다.');
             setSkipGetPaintByDate(true);
-            setTimeout(() => setSkipGetPaintByDate(false), 1000); // 1초 후에만 다시 허용
+            setTimeout(() => setSkipGetPaintByDate(false), 1000);
         } catch (e) {
             setShowLoadingModal(false);
             alert('최종저장 실패: ' + (e.response?.data?.message || e.message));
@@ -322,26 +303,10 @@ const DrawingPage = () => {
         }
     };
 
-    const saveDrawing = (isModal = false) => {
-        setShowTitleModal(true);
-    };
-
     const saveRecord = (dateKey, record) => {
         const newRecords = { ...drawingRecords, [dateKey]: record };
         setDrawingRecords(newRecords);
         localStorage.setItem(DRAWING_STORAGE_KEY, JSON.stringify(newRecords));
-    };
-
-    const handleTitleSave = () => {
-        const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
-        const dataUrl = canvas.toDataURL('image/png');
-        setSavedImage(dataUrl);
-        setShowTitleModal(false);
-        setShowChatModal(true);
-        setIsFinalSaved(true);
-        const dateKey = format(selectedDate, 'yyyy-MM-dd');
-        saveRecord(dateKey, { title: drawingTitle, image: dataUrl, chats: [] });
-        if (showModal) setShowModal(false);
     };
 
     const handleDelete = () => {
@@ -415,14 +380,12 @@ const DrawingPage = () => {
                 setPaintId(paint.paintId);
                 setPaintInfo(paint);
                 console.log('setPaintInfo 호출:', paint);
-                setSavedImage(paint.fileUrl);
                 setIsFinalSaved(!!paint.chatCompleted);
                 setIsPastDrawing(!isToday(date));
                 setChatCompleted(!!paint.chatCompleted);
             } else {
                 setPaintId(null); console.log('setPaintId(null) 호출: handleCalendarClick - 그림 없음');
                 setPaintInfo(null);
-                setSavedImage(null);
                 setIsFinalSaved(false);
                 setIsPastDrawing(!isToday(date));
                 setChatCompleted(false);
@@ -434,7 +397,6 @@ const DrawingPage = () => {
         } catch (e) {
             setPaintId(null); console.log('setPaintId(null) 호출: handleCalendarClick - 에러 발생');
             setPaintInfo(null);
-            setSavedImage(null);
             setIsFinalSaved(false);
             setIsPastDrawing(!isToday(date));
             setChatCompleted(false);
@@ -513,31 +475,6 @@ const DrawingPage = () => {
         }
     };
 
-    const handleFinalSaveWithTitle = async () => {
-        if (!drawingTitle.trim()) {
-            alert('제목을 입력해주세요!');
-            return;
-        }
-        const canvas = showModal ? modalCanvasRef.current : canvasRef.current;
-        const dataUrl = canvas.toDataURL('image/png');
-        const blob = await (await fetch(dataUrl)).blob();
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        const createDate = `${yyyy}-${mm}-${dd}`;
-        const dto = { title: drawingTitle, createDate };
-        try {
-            await finalizePaint(blob, dto, paintId);
-            setSavedImage(dataUrl);
-            setIsFinalSaved(true);
-            setShowTitleModal(false);
-            alert('최종저장되었습니다.');
-        } catch (e) {
-            alert('최종저장 실패: ' + (e.response?.data?.message || e.message));
-        }
-    };
-
     // 팔레트/버튼 활성화 조건
     const canEdit = isToday(selectedDate) && !isFinalSaved;
 
@@ -552,6 +489,7 @@ const DrawingPage = () => {
                         tileContent={({ date, view }) => view === 'month' ? renderDayContents(date.getDate(), date) : null}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
+                        showLegend={false}
                     />
                 </CalendarWrapper>
                 <DrawingArea>
