@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import 'react-calendar/dist/Calendar.css';
@@ -314,7 +314,6 @@ export default function DoctorPage() {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [patientEmotionMap, setPatientEmotionMap] = useState({});
 
   // 환자 추가 모달 창
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
@@ -635,9 +634,8 @@ export default function DoctorPage() {
     }
   };
 
-  // 선택된 날짜의 그림 분석 데이터 가져오기
-  const handleGetPaintByDate = async (date) => {
-
+  const handleGetPaintByDate = useCallback(async (date) => {
+    if (!selectedPatientCode) return;
     try {
       console.log("date", date);
       console.log("date type", typeof date);
@@ -647,27 +645,48 @@ export default function DoctorPage() {
       console.log("paintByDate", data);
 
       if (!data) {
-        setPaintId("");
+        setPaintId(null);
         setPaintFile(null);
         setChatList([]);
         return;
       }
 
       setPaintId(data.paintId);
-      console.log("paintId 값 찍어보기 - data.paintId", data.paintId);
-      console.log("paintId 값 찍어보기 - paintId", paintId);
       handleGetChatList(data.paintId);
-
       const paintFile = await getPaintFile(data.fileUrl);
-      console.log("paintFile", paintFile);
-
       setPaintFile(paintFile);
-      console.log("paintFile", paintFile);
-
     } catch (error) {
       console.error('handleGetPaintByDate: 그림 분석 데이터를 불러오는데 실패했습니다.');
     }
-  };
+  }, [selectedPatientCode]);
+
+  useEffect(() => {
+    if (selectedPatientCode) {
+      handleGetPaintByDate();
+    }
+  }, [selectedPatientCode, selectedDate, handleGetPaintByDate]);
+
+  useEffect(() => {
+    if (selectedPatientCode) {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekData = [];
+      
+      for (let i = 0; i < 7; i++) {
+        const currentDate = addDays(weekStart, i);
+        const dateKey = format(currentDate, 'yyyy-MM-dd');
+        const emotion = weekStats.find(d => d.date === dateKey)?.emotion || null;
+        const meal = weekStats.find(d => d.date === dateKey)?.meal || null;
+        
+        weekData.push({
+          date: dateKey,
+          emotion,
+          meal
+        });
+      }
+      
+      setWeekStats(weekData);
+    }
+  }, [selectedPatientCode, selectedDate, weekStats]);
 
   // 해당 그림에 대한 채팅 내용 가져오기
   const handleGetChatList = async (paintId) => {
@@ -711,6 +730,7 @@ export default function DoctorPage() {
     p.patientBirthDate.toLowerCase().includes(search.toLowerCase())
   );
 
+  // PatientCard 클릭 핸들러
   // 선택된 날짜의 데이터
   const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
 
@@ -730,6 +750,34 @@ export default function DoctorPage() {
       // handleGetChatList(paintId);
     }
   }, [selectedPatientCode]);
+
+  useEffect(() => {
+    if (selectedPatientCode) {
+      handleGetPaintByDate();
+    }
+  }, [selectedPatientCode, selectedDate, handleGetPaintByDate]);
+
+  useEffect(() => {
+    if (selectedPatientCode) {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekData = [];
+      
+      for (let i = 0; i < 7; i++) {
+        const currentDate = addDays(weekStart, i);
+        const dateKey = format(currentDate, 'yyyy-MM-dd');
+        const emotion = weekStats.find(d => d.date === dateKey)?.emotion || null;
+        const meal = weekStats.find(d => d.date === dateKey)?.meal || null;
+        
+        weekData.push({
+          date: dateKey,
+          emotion,
+          meal
+        });
+      }
+      
+      setWeekStats(weekData);
+    }
+  }, [selectedPatientCode, selectedDate, weekStats]);
 
   return (
     <>
@@ -786,7 +834,7 @@ export default function DoctorPage() {
             <DoctorCalendar
               selectedDate={selectedDate}
               onSelectDate={handleDateChange}
-              patientEmotionMap={patientEmotionMap}
+              patientEmotionMap={weekStats.map(d => ({ date: d.date, emotion: d.emotion }))}
               currentMonth={currentMonth}
               onChangeMonth={handleChangeMonth}
             />

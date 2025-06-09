@@ -1,9 +1,8 @@
 import './Signin.css';
 import Button from "../components/Button";
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn } from '../api/auth';
-import axios from 'axios';
 
 const Signin = () => {
     const navigate = useNavigate();
@@ -39,17 +38,10 @@ const Signin = () => {
             }, 1000); // 1초 지연
         }
         catch (error) {
-            if (axios.isAxiosError(error)) {
-                const data = error.response?.data;
-                console.log("error data", data);
-
-                if (error.response?.status === 401) {
-                    setErrMsg(data.message);
-                } else {
-                    setErrMsg("로그인 중 알 수 없는 오류가 발생했습니다.")
-                }
+            if (error.response?.status === 401) {
+                setErrMsg(error.response?.data.message);
             } else {
-                setErrMsg("알 수 없는 오류가 발생했습니다.")
+                setErrMsg("로그인 중 알 수 없는 오류가 발생했습니다.")
             }
         }
     }
