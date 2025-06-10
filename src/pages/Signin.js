@@ -59,7 +59,7 @@ const Signin = () => {
 
             {/* 글씨 부분 */}
             <div className="titlewrap">
-                <div className="welcome">
+                {/* <div className="welcome">
                     정신 건강 케어 플랫폼
                 </div>
                 <div className="signin">
@@ -67,7 +67,14 @@ const Signin = () => {
                 </div>
                 <div className='name'>
                     마음나루
+                </div> */}
+                <div className="welcome">
+                    WELCOME TO
                 </div>
+                <div className="signin">
+                    마음나루
+                </div>
+
             </div>
 
             {/* 사용자로부터 입력받기 + 버튼 */}
