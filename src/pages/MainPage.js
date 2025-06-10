@@ -120,13 +120,13 @@ function getKSTDateKey(date) {
 function getEmotionColor(score) {
     if (score === null || score === undefined) return '#eee'; // 점수 없음
     const colors = [
-        '#003366', // 찐한 파랑 (매우 우울)
-        '#336699',
-        '#6699cc',
-        '#99ccff',
-        '#b3e0ff',
-        '#cceeff',
-        '#e6f7ff'  // 연한 파랑 (행복)
+        '#CCCCFF', // 매우 우울
+        '#CCDDFF', // 우울
+        '#CCEEFF', // 약간 우울
+        '#CCFFEE', // 보통
+        '#CCFFCC', // 약간 행복
+        '#EEFFCC', // 행복
+        '#FFFFCC'  // 매우 행복
     ];
     const idx = Math.min(6, Math.max(0, Math.floor(((score + 1) / 2) * 7)));
     return colors[idx];
@@ -391,10 +391,12 @@ export default function MainPage() {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth() + 1;
         fetchEmotionMap(year, month).then((data) => {
-            // [{ diaryAnalysisId, createDate, emotionRate }, ...] -> { 'YYYY-MM-DD': emotionRate, ... }
+            // [{ diaryAnalysisId, createDate, emotionRate, ... }, ...] -> { 'YYYY-MM-DD': emotionRate, ... }
             const map = {};
             data.forEach(item => {
+                if (item.createDate && item.emotionRate !== undefined) {
                 map[item.createDate] = item.emotionRate;
+                }
             });
             setEmotionMap(map);
         }).catch(console.error);

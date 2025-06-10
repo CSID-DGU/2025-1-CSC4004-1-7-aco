@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const days = ['Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, onChangeMonth }) => {
+const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, onChangeMonth, showLegend }) => {
     const today = new Date();
     // 한국 시간으로 변환
     const koreaTime = new Date(today.getTime() + (9 * 60 * 60 * 1000));
@@ -139,6 +139,40 @@ const Calendar = ({ selectedDate, onSelectDate, emotionMap = {}, currentMonth, o
                     </DateRow>
                 ))}
             </DaysContainer>
+            {showLegend && (
+                <EmotionLegend>
+                    <LegendItems>
+                        <LegendItem>
+                            <ColorBox color="#CCCCFF" />
+                            <LegendText>매우 우울</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#CCDDFF" />
+                            <LegendText>우울</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#CCEEFF" />
+                            <LegendText>약간 우울</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#CCFFEE" />
+                            <LegendText>보통</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#CCFFCC" />
+                            <LegendText>약간 행복</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#EEFFCC" />
+                            <LegendText>행복</LegendText>
+                        </LegendItem>
+                        <LegendItem>
+                            <ColorBox color="#FFFFCC" />
+                            <LegendText>매우 행복</LegendText>
+                        </LegendItem>
+                    </LegendItems>
+                </EmotionLegend>
+            )}
         </CalendarContainer>
     );
 };
@@ -266,25 +300,18 @@ const DateCell = styled.div`
   border: 1px solid #D5D4DF;
   background: ${props => {
     if (props.$inactive) return '#F2F3F7';
-    if (props.$emotion) {
-      switch (props.$emotion) {
-        case 'very_happy':
-          return '#F0FFFF';  // 매우 행복 - 거의 흰색
-        case 'happy':
-          return '#E0FFFF';  // 행복 - 매우 연한 파란색
-        case 'slightly_happy':
-          return '#ADD8E6';  // 약간 행복 - 연한 파란색
-        case 'normal':
-          return '#87CEEB';  // 보통 - 하늘색
-        case 'slightly_sad':
-          return '#4169E1';  // 약간 우울 - 로얄 블루
-        case 'sad':
-          return '#0000CD';  // 우울 - 중간 파란색
-        case 'very_sad':
-          return '#000080';  // 매우 우울 - 진한 파란색
-        default:
-          return '#FFFFFF';
-      }
+    if (props.$emotion !== null && props.$emotion !== undefined) {
+      const colors = [
+        '#CCCCFF', // 매우 우울
+        '#CCDDFF', // 우울
+        '#CCEEFF', // 약간 우울
+        '#CCFFEE', // 보통
+        '#CCFFCC', // 약간 행복
+        '#EEFFCC', // 행복
+        '#FFFFCC'  // 매우 행복
+      ];
+      const idx = Math.min(6, Math.max(0, Math.floor(((props.$emotion + 1) / 2) * 7)));
+      return colors[idx];
     }
     return '#FFFFFF';
   }};
@@ -347,6 +374,41 @@ const DateText = styled.div`
     return '#000000';
   }};
   transition: all 0.2s ease;
+`;
+
+const EmotionLegend = styled.div`
+    margin-top: 85px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    width: 100%;
+`;
+
+const LegendItems = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+`;
+
+const LegendItem = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+`;
+
+const ColorBox = styled.div`
+    width: 12px;
+    height: 12px;
+    background: ${props => props.color};
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+`;
+
+const LegendText = styled.div`
+    font-family: 'Inter';
+    font-size: 10px;
+    color: #666;
 `;
 
 export default Calendar;

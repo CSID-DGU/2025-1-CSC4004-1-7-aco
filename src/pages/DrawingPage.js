@@ -552,6 +552,7 @@ const DrawingPage = () => {
                         tileContent={({ date, view }) => view === 'month' ? renderDayContents(date.getDate(), date) : null}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
+                        showLegend={false}
                     />
                 </CalendarWrapper>
                 <DrawingArea>

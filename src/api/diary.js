@@ -110,7 +110,8 @@ export async function getAnalysisByDiaryId(diaryId) {
 
 // 파이썬 감정 분석 서버에 텍스트를 보내 emotion_rate를 받아오는 함수
 export async function getEmotionRateFromPython(text) {
-    const res = await fetch('https://along-contract-learn-astronomy.trycloudflare.com/predict', {
+    const EMOTION_API_URL = process.env.REACT_APP_EMOTION_API_URL || 'https://fastapi-app-271183340702.asia-northeast3.run.app/predict';
+    const res = await fetch(EMOTION_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
@@ -126,5 +127,5 @@ export async function fetchEmotionMap(year, month) {
         params: { year, month }
     });
     console.log('감정 점수 맵 API 응답:', res.data);
-    return res.data; // [{ diaryAnalysisId, createDate, emotionRate }, ...]
+    return res.data; // [{ diaryAnalysisId, createDate, emotionRate, mealCount, wakeUpTime, wentOutside, analyzed }, ...]
 } 
