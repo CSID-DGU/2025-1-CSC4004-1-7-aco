@@ -2,9 +2,9 @@
     position: absolute;
 
     width: 100%;
-    max-width: 800px;
+    max-width: 850px;
     height: 100%;
-    max-height: 700px;
+    max-height: 800px;
     padding: 0 50px 0 50px;
     margin-top: 15px;
     left: 50%;
@@ -24,18 +24,19 @@
 }
 
 .titledp {
-    margin-top: 20px;
+    margin-top: 30px;
     margin-bottom: 20px;
+    margin-left: 25px;
     align-self: flex-start;
 }
 
 .welcomedp {
-    font-size: 14px;
+    font-size: 18px;
     margin-left: 2px;
 }
 
 .signupdp {
-    font-size: 40px;
+    font-size: 52px;
     font-weight: 600;
 }
 
@@ -47,14 +48,14 @@
     width: 100%;
     max-width: 800px;
     height: 100%;
-    max-height: 470px;
+    max-height: 535px;
 }
 
 .formcolumndp {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
 
 }
 
@@ -71,13 +72,13 @@
 }
 
 .gender-label-dp {
-    font-size: 14px;
+    font-size: 18px;
 }
 
 .gender-buttons-dp {
     display: flex;
     gap: 6px;
-    margin-top: 5px;
+    margin-top: 6.5px;
 }
 
 .input-wrapper {
@@ -88,9 +89,8 @@
 }
 
 .input-label {
-    font-size: 14px;
-    margin-top: 4px;
-    margin-bottom: 5px;
+    font-size: 18px;
+    margin-bottom: 4px;
     color: #212529;
 }
 
@@ -102,7 +102,7 @@
     padding-left: 18px;
     padding-right: 10px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -121,7 +121,7 @@
     flex-grow: 1;
     font-weight: normal;
     line-height: 1.5;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .upload-icon {
@@ -131,16 +131,21 @@
 }
 
 .signupDoctorError {
-    min-height: 20px;
+    min-height: 30px;
     color: red;
-    font-size: 13px;
-    margin-top: 8px;
-    margin-bottom: 10px;
+
+    margin-top: 6px;
+    margin-bottom: 8px;
     text-align: center;
+    font-weight: 600;
+}
+
+.error-text {
+    font-size: 17px !important;
 }
 
 .signupbtndt {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     width: 100%;
     display: flex;
     justify-content: center;

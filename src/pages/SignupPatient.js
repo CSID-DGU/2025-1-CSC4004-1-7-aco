@@ -4,6 +4,7 @@ import Input from "../components/Input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpPatient } from "../api/auth";
+import axios from "axios";
 
 const SignupPatient = () => {
     const navigate = useNavigate();
@@ -229,7 +230,21 @@ const SignupPatient = () => {
             console.log(response);
             navigate("/signup/finish");
         } catch (error) {
-            console.error("환자 회원가입 실패:", error);
+            if (axios.isAxiosError(error)) {
+                const data = error.response?.data;
+                console.log("error data", data);
+
+                // ID, 이메일 중복
+                if (error.response?.status === 409 ||
+                    error.response?.status === 400 ||
+                    error.response?.status === 500) {
+                    setError(data.message);
+                } else {
+                    setError("회원가입 중 알 수 없는 오류가 발생했습니다.")
+                }
+            } else {
+                setError("알 수 없는 오류가 발생했습니다.")
+            }
         }
     };
 
