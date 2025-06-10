@@ -60,12 +60,9 @@ const Signin = () => {
             {/* 글씨 부분 */}
             <div className="titlewrap">
                 <div className="welcome">
-                    정신 건강 케어 플랫폼
+                    SIGN IN TO
                 </div>
                 <div className="signin">
-                    로그인
-                </div>
-                <div className='name'>
                     마음나루
                 </div>
             </div>

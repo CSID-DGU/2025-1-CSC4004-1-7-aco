@@ -5,7 +5,7 @@
     width: 100%;
     max-width: 900px;
     height: 100%;
-    max-height: 600px;
+    max-height: 700px;
     padding: 0 20px;
     margin-top: 50px;
     left: 50%;
@@ -31,12 +31,12 @@
 }
 
 .welcomepp {
-    font-size: 13px;
+    font-size: 18px;
     margin-left: 2px;
 }
 
 .signuppp {
-    font-size: 40px;
+    font-size: 52px;
     font-weight: 600;
 }
 
@@ -75,13 +75,13 @@
 
 
 .gender-label-pp {
-    font-size: 14px;
+    font-size: 17px;
 }
 
 .gender-buttons-pp {
     display: flex;
     gap: 6px;
-    margin-top: 5px;
+    margin-top: 7px;
 }
 
 .signupbtnpt {
@@ -98,6 +98,7 @@
     margin-top: 10px;
     margin-bottom: 10px;
     text-align: center;
+    font-weight: 600;
 }
 
 .error-text {

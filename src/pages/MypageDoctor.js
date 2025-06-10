@@ -5,6 +5,7 @@ import Navigation from "../components/Navigation"
 import { useNavigate } from "react-router-dom";
 import { getUserInfo, updateUserInfo } from "../api/mypage";
 import { deleteUser } from "../api/auth";
+import axios from "axios";
 
 const MypageDoctor = () => {
     const navigate = useNavigate();
@@ -116,10 +117,26 @@ const MypageDoctor = () => {
     // 회원 탈퇴
     const handleDeleteUser = async () => {
         if (window.confirm("정말로 탈퇴하시겠습니까?")) {
-            const response = await deleteUser();
-            console.log(response);
-            alert("탈퇴가 완료되었습니다.");
-            navigate("/");
+            try {
+                const response = await deleteUser();
+                console.log(response);
+                alert("탈퇴가 완료되었습니다.");
+                navigate("/");
+            } catch (error) {
+                // if (axios.isAxiosError(error)) {
+                //     const data = error.response?.data;
+                //     console.log("error data", data);
+
+                //     if (error.response?.status === 500) {
+                //         setErrMsg(data.message);
+                //     } else {
+                //         setErrMsg("회원 탈퇴 중 알 수 없는 오류가 발생했습니다.")
+                //     }
+                // } else {
+                //     setErrMsg("알 수 없는 오류가 발생했습니다.")
+                // }
+            }
+
         }
     };
 

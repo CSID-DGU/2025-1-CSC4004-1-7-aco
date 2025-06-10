@@ -530,7 +530,7 @@ export default function DoctorPage() {
         return {
           date: dateStr,
           // 감정 수치 (-1 ~ 1 사이값)
-          emotion: dayData.emotion || null,
+          emotion: dayData.emotionRate || null,
           //emotion: 0.47,
 
           // 식사 횟수 (0 ~ 3)
@@ -793,12 +793,12 @@ export default function DoctorPage() {
             <ChartCol>
               <div>
                 <SectionTitle>감정 수치 (주간)</SectionTitle>
-                <ChartBox>
+                <ChartBox style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis domain={[-1, 1]} tickCount={5} label={{ value: '감정 수치', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }} />
+                      <YAxis domain={[-1, 1]} tickCount={5} /*label={{ value: '감정 수치', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }}*/ />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
                       <Line
                         type="monotone"
@@ -825,12 +825,12 @@ export default function DoctorPage() {
 
               <div>
                 <SectionTitle>식사 횟수 (일별)</SectionTitle>
-                <ChartBox>
+                <ChartBox style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weekStats} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" tickFormatter={d => d.slice(5)} />
-                      <YAxis allowDecimals={false} label={{ value: '식사 횟수', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }} />
+                      <YAxis allowDecimals={false} /*label={{ value: '식사 횟수', angle: -90, position: 'insideLeft', offset: 10, dy: 30 }}*/ />
                       <Tooltip formatter={(v) => v === null ? '-' : v} />
                       <Bar dataKey="meal" fill="#00C49F" radius={[8, 8, 0, 0]} />
                     </BarChart>
