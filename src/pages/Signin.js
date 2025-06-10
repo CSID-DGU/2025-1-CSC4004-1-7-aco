@@ -1,8 +1,9 @@
 import './Signin.css';
 import Button from "../components/Button";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn } from '../api/auth';
+import axios from 'axios';
 
 const Signin = () => {
     const navigate = useNavigate();
@@ -38,10 +39,17 @@ const Signin = () => {
             }, 1000); // 1초 지연
         }
         catch (error) {
-            if (error.response?.status === 401) {
-                setErrMsg(error.response?.data.message);
+            if (axios.isAxiosError(error)) {
+                const data = error.response?.data;
+                console.log("error data", data);
+
+                if (error.response?.status === 401) {
+                    setErrMsg(data.message);
+                } else {
+                    setErrMsg("로그인 중 알 수 없는 오류가 발생했습니다.")
+                }
             } else {
-                setErrMsg("로그인 중 알 수 없는 오류가 발생했습니다.")
+                setErrMsg("알 수 없는 오류가 발생했습니다.")
             }
         }
     }
@@ -52,9 +60,12 @@ const Signin = () => {
             {/* 글씨 부분 */}
             <div className="titlewrap">
                 <div className="welcome">
-                    SIGN IN TO
+                    정신 건강 케어 플랫폼
                 </div>
                 <div className="signin">
+                    로그인
+                </div>
+                <div className='name'>
                     마음나루
                 </div>
             </div>
