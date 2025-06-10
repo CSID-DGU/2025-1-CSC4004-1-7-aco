@@ -530,8 +530,8 @@ export default function DoctorPage() {
         return {
           date: dateStr,
           // 감정 수치 (-1 ~ 1 사이값)
-          emotion: dayData.emotion || null,
-          //emotion: 0.47,
+
+          emotion: dayData.emotionRate || null,
 
           // 식사 횟수 (0 ~ 3)
           meal: dayData.mealCount || null,
@@ -712,7 +712,7 @@ export default function DoctorPage() {
   );
 
   // 선택된 날짜의 데이터
-  const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
+  // const dayStat = weekStats.find(d => d.date === format(kstSelectedDate, 'yyyy-MM-dd'));
 
   // PatientCard 클릭 핸들러
   const handlePatientSelect = (patientCode) => {
@@ -730,6 +730,10 @@ export default function DoctorPage() {
       // handleGetChatList(paintId);
     }
   }, [selectedPatientCode]);
+
+  useEffect(() => {
+    console.log("weekStates updated", weekStats);
+  }, [weekStats]);
 
   return (
     <>
