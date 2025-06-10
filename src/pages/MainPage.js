@@ -395,7 +395,7 @@ export default function MainPage() {
             const map = {};
             data.forEach(item => {
                 if (item.createDate && item.emotionRate !== undefined) {
-                map[item.createDate] = item.emotionRate;
+                    map[item.createDate] = item.emotionRate;
                 }
             });
             setEmotionMap(map);
@@ -414,6 +414,7 @@ export default function MainPage() {
                         getEmotionColor={getEmotionColor}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
+                        showLegend={true}
                     />
                 </CalendarWrapper>
                 <DiaryArea>
