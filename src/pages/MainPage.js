@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import styled from "styled-components";
+import Navigation from "../components/Navigation";
 import Calendar from "../components/Calendar";
 import DiaryEditor from "../components/DiaryEditor";
-import Navigation from "../components/Navigation";
+import AnalysisModal from "../components/AnalysisModal";
 import DiaryModal from "../components/DiaryModal";
 import ConfirmModal from "../components/ConfirmModal";
 import AnalysisInputModal from '../components/AnalysisInputModal';
-import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getEmotionRateFromPython, fetchEmotionMap } from '../api/diary';
+import styled from "styled-components";
+import { createDiary, updateDiary, deleteDiary, getDiaryByDate, saveOrUpdateAnalysis, getAnalysisByDiaryId, getEmotionRateFromPython, fetchEmotionMap } from '../api/diary';
 import axios from 'axios';
 
 const MainContent = styled.main`
@@ -138,6 +139,14 @@ function normalizeDiary(diary) {
         ...diary,
         id: diary.diaryId || diary.id,
     };
+}
+
+// 쿠키에서 accessToken을 읽는 함수
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
 }
 
 export default function MainPage() {
@@ -386,7 +395,7 @@ export default function MainPage() {
             const map = {};
             data.forEach(item => {
                 if (item.createDate && item.emotionRate !== undefined) {
-                    map[item.createDate] = item.emotionRate;
+                map[item.createDate] = item.emotionRate;
                 }
             });
             setEmotionMap(map);
@@ -405,7 +414,6 @@ export default function MainPage() {
                         getEmotionColor={getEmotionColor}
                         currentMonth={currentMonth}
                         onChangeMonth={handleChangeMonth}
-                        showLegend={true}
                     />
                 </CalendarWrapper>
                 <DiaryArea>
